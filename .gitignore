@@ -1,0 +1,33 @@
+# ===============================
+# 🔒 STRUCTURE-DRIVEN SYSTEM IGNORE
+# ===============================
+
+# OS/Editor Junk
+.DS_Store
+*.swp
+*.bak
+*~
+
+# Python Virtual Environments
+.venv/
+env/
+__pycache__/
+*.pyc
+
+# Bash runtime/debug artifacts
+*.log
+*.tmp
+*.out
+
+# Spec snapshots / diffs (generated)
+structure.spec.auto
+structure.snapshot
+structure.diff
+spec.diff.txt
+
+# Optional local config
+.env
+.envrc
+env.sh
+runtime.cfg.local
+
