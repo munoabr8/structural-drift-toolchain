@@ -1,0 +1,9 @@
+{
+  "bash_min_version": 4.0,
+  "fsm_states": ["INIT", "VALIDATE_COMMAND", "EXECUTE_GIT", "DONE", "ERROR"],
+  "valid_commands": ["clone", "branch", "commit","status"],
+  "default_git_branch": "main",
+  "git_remote": "origin",
+  "script_protection_enforce_read_only": true,
+  "script_protection_auto_regenerate": true
+}
