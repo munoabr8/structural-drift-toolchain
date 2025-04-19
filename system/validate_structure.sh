@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
 
-# 🧰 Helper functions
+# === Hardened Structure Validator ===
+
+# ✅ Color-coded log functions
 log_success() {
   echo -e "\033[1;32m✅ $1\033[0m"
 }
@@ -18,35 +20,53 @@ show_usage() {
   echo -e "\033[1;33mUsage:\033[0m"
   echo "  ./validate_structure.sh <structure.spec>"
   echo
-  echo "Checks file and symlink integrity based on a provided structure specification."
-  echo
-  echo -e "\033[1;33mExample:\033[0m"
-  echo "  ./validate_structure.sh system/structure.spec"
-  echo
-  echo "Each line in the spec should be either:"
-  echo "  - A required file path"
-  echo "  - A symlink in the format: symlink_path -> target_path"
+  echo "Each line must be one of:"
+  echo "  - A valid relative file or dir path (e.g. ./attn/context-status.sh)"
+  echo "  - A line starting with: 'dir:', 'file:', or 'link:'"
+  echo "    - dir: ./path"
+  echo "    - file: ./path"
+  echo "    - link: ./symlink -> ./target"
   echo
 }
 
-# 🗂️ Structure Validator
-SPEC_FILE="$1"
+SPEC_FILE="${1:-}"
 
-if [ -z "$SPEC_FILE" ] || [[ "$SPEC_FILE" == "--help" ]] || [[ "$SPEC_FILE" == "-h" ]]; then
+if [[ -z "$SPEC_FILE" || "$SPEC_FILE" == "--help" || "$SPEC_FILE" == "-h" ]]; then
   show_usage
   exit 0
 fi
 
 [ -f "$SPEC_FILE" ] || { log_error "Spec file not found: $SPEC_FILE"; exit 1; }
 
-log_info "Reading spec: $SPEC_FILE"
+log_info "Reading structure spec: $SPEC_FILE"
 
-while IFS= read -r line || [ -n "$line" ]; do
+while IFS= read -r line || [[ -n "$line" ]]; do
   [[ "$line" =~ ^#.*$ || -z "$line" ]] && continue
 
-  if [[ "$line" == *"->"* ]]; then
-    src=$(echo "$line" | awk '{print $1}')
-    tgt=$(echo "$line" | awk '{print $3}')
+  if [[ "$line" == dir:* ]]; then
+    dir_path="${line#dir: }"
+    if [ ! -d "$dir_path" ]; then
+      log_error "Missing directory: $dir_path"
+      exit 1
+    fi
+    log_success "Directory OK: $dir_path"
+    continue
+  fi
+
+  if [[ "$line" == file:* ]]; then
+    file_path="${line#file: }"
+    if [ ! -f "$file_path" ]; then
+      log_error "Missing file: $file_path"
+      exit 1
+    fi
+    log_success "File OK: $file_path"
+    continue
+  fi
+
+  if [[ "$line" == link:* ]]; then
+    link_def="${line#link: }"
+    src=$(echo "$link_def" | awk '{print $1}')
+    tgt=$(echo "$link_def" | awk '{print $3}')
 
     if [ ! -L "$src" ]; then
       log_error "Missing symlink: $src"
@@ -60,25 +80,20 @@ while IFS= read -r line || [ -n "$line" ]; do
     fi
 
     log_success "Symlink OK: $src -> $tgt"
-  else
-    # Strip leading ./ for consistency
-    line="${line#./}"
-
-    if [[ "$line" == */ ]]; then
-      if [ ! -d "$line" ]; then
-        log_error "Missing directory: $line"
-        exit 1
-      fi
-      log_success "Directory OK: $line"
-    else
-      if [ ! -f "$line" ]; then
-        log_error "Missing file: $line"
-        exit 1
-      fi
-      log_success "File OK: $line"
-    fi
+    continue
   fi
 
+  # Fallback: assume it's a raw relative path
+  if [ -f "$line" ]; then
+    log_success "File OK: $line"
+  elif [ -d "$line" ]; then
+    log_success "Directory OK: $line"
+  elif [ -L "$line" ]; then
+    log_success "Symlink OK (untyped): $line -> $(readlink "$line")"
+  else
+    log_error "Missing or unknown path: $line"
+    exit 1
+  fi
 done < "$SPEC_FILE"
 
-log_success "🎉 Structure check passed."
+log_success "🎉 Structure validation passed."

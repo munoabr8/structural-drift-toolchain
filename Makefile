@@ -5,7 +5,7 @@ VALIDATOR=./system/validate_structure.sh
 CONTEXT_CHECK=./attn/context-status.sh
 SNAPSHOT_GEN=../debugtools/structureDebugging.sh
 
-.PHONY: health precommit-check check-structure-drift snapshot-structure enforce-structure context-health snapshot-and-promote
+.PHONY: health precommit-check check-structure-drift snapshot-structure enforce-structure context-health snapshot-and-promote detect
 
 health:
 	@echo "🩺 Running full system health check..."
@@ -15,6 +15,10 @@ health:
 
 precommit-check:
 	@make check-structure-drift
+
+ 
+detect-garbage:
+	@bash ./tools/detect_garbage.sh $(STRUCTURE_SPEC)
 
 check-structure-drift:
 	@echo "🚨 Enforcing structure integrity..."
