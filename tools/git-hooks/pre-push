@@ -1,0 +1,19 @@
+#!/bin/bash
+
+
+# Never edit .git/hooks/ directly.
+# Always treat it as a runtime mirror of what's versioned in tools/git-hooks/.
+
+# Get to project root regardless of where this is called from
+REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+cd "$REPO_ROOT"
+
+echo "🛡️  Running pre-push structural checks..."
+
+make check-structure-drift || { echo "❌ Drift detected — push blocked."; exit 1; }
+make enforce-structure || { echo "❌ Structure invalid — push blocked."; exit 1; }
+make test-structure || { echo "❌ Structure tests failed — push blocked."; exit 1; }
+make test-negative-structure || { echo "❌ Negative structure tests failed — push blocked."; exit 1; }
+make test-garbage || { echo "❌ Garbage detection failed — push blocked."; exit 1; }
+
+echo "✅ All checks passed. Push allowed."
