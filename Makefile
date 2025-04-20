@@ -5,7 +5,7 @@ VALIDATOR=./system/validate_structure.sh
 CONTEXT_CHECK=./attn/context-status.sh
 SNAPSHOT_GEN=../debugtools/structureDebugging.sh
 
-.PHONY: health precommit-check check-structure-drift snapshot-structure enforce-structure context-health snapshot-and-promote detect
+.PHONY: doctor health test-garbage-detector test-negative-structure precommit-check check-structure-drift snapshot-structure enforce-structure context-health snapshot-and-promote detect
 
 health:
 	@echo "🩺 Running full system health check..."
@@ -16,6 +16,29 @@ health:
 precommit-check:
 	@make check-structure-drift
 
+test-all:
+	@make test-structure
+	@make test-garbage-detector
+	@make test-negative-structure
+
+install-hooks:
+	@bash tools/install-hooks.sh
+
+test-structure:
+	@echo "🧪 Running structure validation tests..."
+	@bats system-test/structure_validator
+
+test-negative-structure:
+	@echo "❗ Running negative structure validation tests..."
+	@bats system-test/structure_negative_tests
+
+test-garbage-detector:
+	@echo "🧪 Running garbage_detector validation tests..."
+	@bats system-test/garbage_detector
+	
+
+doctor:
+	@bash ./tools/doctor.sh $(STRUCTURE_SPEC)
  
 detect-garbage:
 	@bash ./tools/detect_garbage.sh $(STRUCTURE_SPEC)

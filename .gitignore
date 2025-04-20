@@ -8,6 +8,9 @@
 *.bak
 *~
 
+# Temporary dirs created by tests
+/tmp/
+
 # Python Virtual Environments
 .venv/
 env/

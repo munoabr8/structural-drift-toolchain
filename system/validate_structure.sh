@@ -84,16 +84,17 @@ while IFS= read -r line || [[ -n "$line" ]]; do
   fi
 
   # Fallback: assume it's a raw relative path
-  if [ -f "$line" ]; then
-    log_success "File OK: $line"
-  elif [ -d "$line" ]; then
-    log_success "Directory OK: $line"
-  elif [ -L "$line" ]; then
-    log_success "Symlink OK (untyped): $line -> $(readlink "$line")"
-  else
-    log_error "Missing or unknown path: $line"
-    exit 1
-  fi
+  trimmed_line="$(echo "$line" | xargs)"
+if [ -f "$trimmed_line" ]; then
+  log_success "File OK: $trimmed_line"
+elif [ -d "$trimmed_line" ]; then
+  log_success "Directory OK: $trimmed_line"
+elif [ -L "$trimmed_line" ]; then
+  log_success "Symlink OK (untyped): $trimmed_line -> $(readlink "$trimmed_line")"
+else
+  log_error "Missing or unknown path: $trimmed_line"
+  exit 1
+fi
 done < "$SPEC_FILE"
 
 log_success "🎉 Structure validation passed."

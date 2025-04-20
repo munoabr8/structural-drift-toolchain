@@ -1,7 +1,20 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+#tools/
+#├── structure/
+#│   ├── validate_structure.sh
+#│   ├── detect_garbage.sh        split + slim down
+#│   ├── parse_structure_spec.sh  reusable normalized path extractor
+#│   ├── read_structure_ignore.sh reusable ignore pattern matcher
+#│   └── generate_snapshot.sh     DRY snapshot logic
+
+
+#!/usr/bin/env bash
+set -euo pipefail
+
 SPEC_FILE="${1:-system/structure.spec}"
+IGNORE_FILE=".structure.ignore"
 
 if [ ! -f "$SPEC_FILE" ]; then
   echo "❌ Spec file not found: $SPEC_FILE"
@@ -12,8 +25,17 @@ echo "🗑️  Detecting undeclared files and directories..."
 echo "📘 Input spec path: $SPEC_FILE"
 echo "📍 PWD: $(pwd)"
 
-IGNORE_DIRS=(".git" "__pycache__" "node_modules" ".idea" ".vscode" ".structure.snapshot")
+IGNORE_DIRS=(".git" "__pycache__" "node_modules" ".idea" ".vscode")
 declare -A declared_paths
+declare -a ignored_patterns
+
+# Load .structure.ignore if it exists
+if [[ -f "$IGNORE_FILE" ]]; then
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    [[ "$line" =~ ^#.*$ || -z "$line" ]] && continue
+    ignored_patterns+=("$line")
+  done < "$IGNORE_FILE"
+fi
 
 # === SPEC PARSER ===
 while IFS= read -r line || [[ -n "$line" ]]; do
@@ -31,13 +53,14 @@ while IFS= read -r line || [[ -n "$line" ]]; do
   fi
 
   real=$(realpath -sm "$clean" 2>/dev/null || echo "$clean")
-  echo "📜 Declared spec path (norm): $real"
   declared_paths["$real"]=1
 done < "$SPEC_FILE"
 
 # === FILE SYSTEM WALKER ===
 while IFS= read -r actual; do
   skip=0
+
+  # Skip ignored directories
   for ignore in "${IGNORE_DIRS[@]}"; do
     if [[ "$actual" == *"/$ignore"* ]]; then
       skip=1
@@ -46,9 +69,21 @@ while IFS= read -r actual; do
   done
   [ "$skip" -eq 1 ] && continue
 
+  # Normalize path
   abs=$(realpath -sm "$actual")
-  echo "🔍 FS path (norm): $abs"
+
+  # Skip ignored patterns
+  for pattern in "${ignored_patterns[@]}"; do
+    if [[ "$actual" == $pattern || "$actual" == ./$pattern ]]; then
+      skip=1
+      break
+    fi
+  done
+  [ "$skip" -eq 1 ] && continue
+
+  # Compare against declared
   if [[ -z "${declared_paths["$abs"]+x}" ]]; then
     echo "❌ Untracked: $actual"
   fi
 done < <(find . -type f -o -type d -o -type l)
+
