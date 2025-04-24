@@ -4,6 +4,8 @@ dir: .
 dir: ./attn
 dir: ./config
 dir: ./modules
+dir: ./modules/example_module
+dir: ./modules/example_module/scripts
 dir: ./modules/prototype
 dir: ./modules/unit_testing
 dir: ./modules/unit_testing/environment
@@ -20,8 +22,8 @@ dir: ./tmp
 dir: ./tools
 dir: ./tools/git-hooks
 file: ./.DS_Store
+file: ./.gitignore
 file: ./.structure.ignore
-file: ./.structure.snapshot
 file: ./Makefile
 file: ./README.md
 file: ./attn/context-status.sh
@@ -30,6 +32,7 @@ file: ./config/runtime.cfg
 file: ./config/runtime_flags.sh
 file: ./main.sh
 file: ./modules/.DS_Store
+file: ./modules/example_module/scripts/start.sh
 file: ./modules/prototype/envManager.sh
 file: ./modules/prototype/fsm_git_handler.sh
 file: ./modules/prototype/prototypeManager.env
@@ -51,14 +54,17 @@ file: ./system-test/structure_negative_tests/test-invalid-structure.bats
 file: ./system-test/structure_validator/test-raw-path.bats
 file: ./system-test/structure_validator/test-valid-structure.bats
 file: ./system/.DS_Store
-file: ./system/structure.spec
 file: ./system/validate_structure.sh
 file: ./test/toggle_module_contracts.bats
 file: ./toggle.sh
+file: ./tools/.DS_Store
+file: ./tools/aggregate_structure.sh
 file: ./tools/detect_garbage.sh
 file: ./tools/doctor.sh
 file: ./tools/garbage_debug_output.txt
+file: ./tools/generate_all_module_specs.sh
 file: ./tools/git-hooks/pre-push
 file: ./tools/install-hooks.sh
 file: ./tools/setup.sh
+file: ./tools/test_write.txt
 file: ./tools/untracked_debug.txt
