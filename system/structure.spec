@@ -17,6 +17,7 @@ dir: ./system-test
 dir: ./system-test/garbage_detector
 dir: ./system-test/structure_negative_tests
 dir: ./system-test/structure_validator
+dir: ./system/make
 dir: ./test
 dir: ./tmp
 dir: ./tools
@@ -25,6 +26,7 @@ file: ./.DS_Store
 file: ./.gitignore
 file: ./.structure.ignore
 file: ./Makefile
+file: ./Makefile.legacy
 file: ./README.md
 file: ./attn/context-status.sh
 file: ./config/.DS_Store
@@ -54,6 +56,13 @@ file: ./system-test/structure_negative_tests/test-invalid-structure.bats
 file: ./system-test/structure_validator/test-raw-path.bats
 file: ./system-test/structure_validator/test-valid-structure.bats
 file: ./system/.DS_Store
+file: ./system/make/garbage.mk
+file: ./system/make/health.mk
+file: ./system/make/hooks.mk
+file: ./system/make/modules.mk
+file: ./system/make/preflight.mk
+file: ./system/make/structure.mk
+file: ./system/make/test.mk
 file: ./system/validate_structure.sh
 file: ./test/toggle_module_contracts.bats
 file: ./toggle.sh
@@ -68,3 +77,4 @@ file: ./tools/install-hooks.sh
 file: ./tools/setup.sh
 file: ./tools/test_write.txt
 file: ./tools/untracked_debug.txt
+file: ./tools/validate_ignore.sh

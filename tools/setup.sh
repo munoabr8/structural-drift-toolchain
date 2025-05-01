@@ -55,3 +55,21 @@ echo "  • make diff-structure"
 echo "  • make check-structure-drift"
 echo "  • make health"
 
+if ! grep -q "alias diffspec=" ~/.bashrc; then
+  echo "alias diffspec='make diff-structure'" >> ~/.bashrc
+  echo "✅ Added 'diffspec' alias to ~/.bashrc"
+else
+  echo "ℹ️  Alias 'diffspec' already present in ~/.bashrc"
+fi
+
+
+echo "🔗 Adding useful developer aliases..."
+
+# Safe for repeat calls
+if ! grep -q "alias diffspec=" ~/.bashrc ~/.zshrc 2>/dev/null; then
+  echo "alias diffspec='make diff-structure'" >> ~/.bashrc 2>/dev/null || true
+  echo "alias diffspec='make diff-structure'" >> ~/.zshrc 2>/dev/null || true
+  echo "✅ Alias added to shell profile. Reload your terminal to use 'diffspec'."
+else
+  echo "ℹ️  Alias 'diffspec' already present."
+fi

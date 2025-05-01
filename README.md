@@ -45,3 +45,14 @@ breaks or misleads.
 
 #Lines starting with `#` are comments and ignored.
 
+
+
+
+## 🧪 Developer Utilities
+
+### `diffspec` Alias
+
+This project provides an alias to simplify structure spec drift checks:
+
+```bash
+diffspec  # Same as: make diff-structure

@@ -1,0 +1,25 @@
+STRUCTURE_SPEC=./system/structure.spec
+VALIDATOR=./system/validate_structure.sh
+CONTEXT_CHECK=./attn/context-status.sh
+SNAPSHOT_GEN=../debugtools/structureDebugging.sh
+
+
+
+
+validate-ignore:
+	@bash tools/validate_ignore.sh
+
+preflight-drift:
+	@echo "🔍 Checking for structure drift..."
+	@bash $(SNAPSHOT_GEN) generate_structure_spec . > .structure.snapshot
+	@diff -u $(STRUCTURE_SPEC) .structure.snapshot || (echo "❌ Drift detected. Run make diff-structure!" && exit 1)
+
+
+preflight-enforce:
+	@echo "🔒 Validating enforced structure..."
+	@bash $(VALIDATOR) $(STRUCTURE_SPEC)
+
+preflight-context:
+	@echo "🧠 Validating project context sanity..."
+	@bash $(CONTEXT_CHECK)
+

@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+trap 'echo "❌ Doctor failed at line $LINENO"; exit 1' ERR
+
 STRUCTURE_SPEC="${1:-system/structure.spec}"
 VALIDATOR="./system/validate_structure.sh"
 GARBAGE_DETECTOR="./tools/detect_garbage.sh"
@@ -16,13 +18,14 @@ if [ ! -x "$SNAPSHOT_GEN" ]; then
   echo "❌ Snapshot generator not found at $SNAPSHOT_GEN"
   exit 1
 else
-  "$SNAPSHOT_GEN" generate_structure_spec > .structure.snapshot
-  if diff -u "$STRUCTURE_SPEC" .structure.snapshot; then
-    echo "✅ No structure drift detected."
-  else
+  "$SNAPSHOT_GEN" generate_structure_spec . > .structure.snapshot
+  if ! diff -u "$STRUCTURE_SPEC" .structure.snapshot; then
     echo "❌ Structure drift detected."
     exit 1
+  else
+    echo "✅ No structure drift detected."
   fi
+
 fi
 
 # 2. Validate Structure Spec
@@ -59,4 +62,4 @@ echo "🧹 Running Garbage Test Suite:"
 make test-garbage-detector
 
 echo ""
-echo "✅ All checks passed. System is structurally healthy."
+echo "🏁 Doctor check completed successfully."

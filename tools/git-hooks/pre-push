@@ -10,10 +10,16 @@ cd "$REPO_ROOT"
 
 echo "🛡️  Running pre-push structural checks..."
 
+echo "🛡️  Running Preflight Checks..."
+make preflight || { echo "❌ Preflight checks failed — push aborted."; exit 1; }
+echo "✅ Preflight passed — proceeding with push."
+
 make check-structure-drift || { echo "❌ Drift detected — push blocked."; exit 1; }
 make enforce-structure || { echo "❌ Structure invalid — push blocked."; exit 1; }
 make test-structure || { echo "❌ Structure tests failed — push blocked."; exit 1; }
 make test-negative-structure || { echo "❌ Negative structure tests failed — push blocked."; exit 1; }
 make test-garbage || { echo "❌ Garbage detection failed — push blocked."; exit 1; }
+
+
 
 echo "✅ All checks passed. Push allowed."
