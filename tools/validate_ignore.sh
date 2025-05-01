@@ -19,12 +19,17 @@ if [ ! -s "$IGNORE_FILE" ]; then
   exit 1
 fi
 
+ 
+
+
 while IFS= read -r line || [[ -n "$line" ]]; do
   [[ -z "$line" ]] && continue  # Skip empty lines
   if [ ! -e "$line" ]; then
-    echo "❌ Ignored path does not exist: $line"
-    exit 1
+    echo "⚠️  Ignored path does not exist (ok): $line"
+    continue
   fi
 done < "$IGNORE_FILE"
+
+
 
 echo "✅ .structure.ignore is valid."

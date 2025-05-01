@@ -8,6 +8,8 @@
 REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$REPO_ROOT"
 
+
+
 echo "🛡️  Running pre-push structural checks..."
 
 echo "🛡️  Running Preflight Checks..."
