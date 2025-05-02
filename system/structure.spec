@@ -25,7 +25,6 @@ dir: ./system/make
 dir: ./test
 dir: ./tools
 dir: ./tools/git-hooks
-file: ./.DS_Store
 file: ./.gitignore
 file: ./.structure.ignore
 file: ./Makefile
@@ -38,6 +37,7 @@ file: ./config/runtime.cfg
 file: ./config/runtime_flags.sh
 file: ./main.sh
 file: ./modules/.DS_Store
+file: ./modules/prototype/.DS_Store
 file: ./modules/prototype/envManager.sh
 file: ./modules/prototype/fsm_git_handler.sh
 file: ./modules/prototype/prototypeManager.env
@@ -72,6 +72,7 @@ file: ./system/make/preflight_shared.mk
 file: ./system/make/structure.mk
 file: ./system/make/test.mk
 file: ./system/validate_structure.sh
+file: ./test/.DS_Store
 file: ./test/toggle_module_contracts.bats
 file: ./toggle.sh
 file: ./tools/.DS_Store
@@ -87,7 +88,6 @@ file: ./tools/gen_readme_updates.sh
 file: ./tools/generate_all_module_specs.sh
 file: ./tools/git-hooks/pre-push
 file: ./tools/install-hooks.sh
+file: ./tools/scan_duplicate_targets.sh
 file: ./tools/setup.sh
-file: ./tools/test_write.txt
-file: ./tools/untracked_debug.txt
 file: ./tools/validate_ignore.sh

@@ -12,7 +12,21 @@
 
 #     "Show me the dynamic include upgrade!"
 
+# Next update:
 
+# # 🧠 Logical aliases (semantic grouping)
+
+# query:
+# 	@echo "📚 Available Query Targets:"
+# 	@grep -h -A1 '^# === Queries ===' mk/*.mk | grep -v '^#' | sed 's/:.*//'
+
+# command:
+# 	@echo "🚀 Available Command Targets:"
+# 	@grep -h -A1 '^# === Commands ===' mk/*.mk | grep -v '^#' | sed 's/:.*//'
+
+
+
+# 👉 Make all Make targets atomic, idempotent, and visibly grouped.
 
 
 
@@ -27,24 +41,19 @@ AUTO_README_GEN=./tools/gen_readme.sh
 
 
 # Dynamically include all make partials
-MAKEFILES := $(wildcard system/make/*.mk)
-include $(MAKEFILES)
+#    MAKEFILES := $(wildcard ./system/make/*.mk)
+# #  $(info 🔍 Including: $(MAKEFILES))
+
+#   include $(MAKEFILES)
+
+ include ./system/make/preflight.mk
+ include ./system/make/structure.mk
+ include ./system/make/test.mk
 
 test-structure-generator:
 	@echo "🧪 Testing structure spec generation..."
 	@bats --show-output-of-passing-tests system-test/structure_generator/
-
-
-# Import Partials
-# include ./system/make/health.mk
-# include ./system/make/structure.mk
-# include ./system/make/test.mk
-# include ./system/make/modules.mk
-# include ./system/make/hooks.mk
-# include ./system/make/preflight.mk
-
-# regen-readme:
-# 	@bash tools/gen_readme.sh
+ 
 
 
 .DEFAULT_GOAL := health

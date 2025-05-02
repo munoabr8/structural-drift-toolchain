@@ -1,6 +1,7 @@
 # Auto-generated structure.spec
 
 dir: ./modules/prototype
+file: ./modules/prototype/.DS_Store
 file: ./modules/prototype/envManager.sh
 file: ./modules/prototype/fsm_git_handler.sh
 file: ./modules/prototype/prototypeManager.env

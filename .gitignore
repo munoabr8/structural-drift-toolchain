@@ -24,9 +24,12 @@ __pycache__/
 
 # Spec snapshots / diffs (generated)
 structure.spec.auto
-structure.snapshot
+.structure.snapshot
 structure.diff
 spec.diff.txt
+
+.missing_module_specs
+
 
 # Optional local config
 .env

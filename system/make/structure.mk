@@ -4,7 +4,7 @@ VALIDATOR=./system/validate_structure.sh
 CONTEXT_CHECK=./attn/context-status.sh
 SNAPSHOT_GEN=../debugtools/structureDebugging.sh
 
-.PHONY: aggregate-spec lock-structure doctor health validate-modules test-garbage-detector test-negative-structure precommit-check check-structure-drift snapshot-structure enforce-structure context-health snapshot-and-promote detect
+#.PHONY: aggregate-spec lock-structure doctor health validate-modules test-garbage-detector test-negative-structure precommit-check check-structure-drift snapshot-structure enforce-structure context-health snapshot-and-promote detect
    
 
 check-structure-drift:

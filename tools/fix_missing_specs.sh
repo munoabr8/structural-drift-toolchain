@@ -15,7 +15,7 @@ for mod in "$MODULES_DIR"/*; do
 
   if [ ! -f "$spec" ]; then
     echo "⚡ Generating missing spec for module: $mod"
-    #"$DEBUG_SCRIPT" generate_structure_spec "$path" > "$spec"
+    "$DEBUG_SCRIPT" generate_structure_spec "$path" > "$spec"
     git add "$spec"
     missing=1
   fi

@@ -13,6 +13,7 @@ setup() {
 
 teardown() {
   cd ..
+  echo "Removing tmp folder..."
   rm -rf tmp
 }
 

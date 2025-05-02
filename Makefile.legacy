@@ -5,7 +5,7 @@ VALIDATOR=./system/validate_structure.sh
 CONTEXT_CHECK=./attn/context-status.sh
 SNAPSHOT_GEN=../debugtools/structureDebugging.sh
 
-.PHONY: aggregate-spec lock-structure doctor health validate-modules test-garbage-detector test-negative-structure precommit-check check-structure-drift snapshot-structure enforce-structure context-health snapshot-and-promote detect
+#.PHONY: aggregate-spec lock-structure doctor health validate-modules test-garbage-detector test-negative-structure #precommit-check check-structure-drift snapshot-structure enforce-structure context-health snapshot-and-promote detect
    
 
 health:
@@ -14,8 +14,8 @@ health:
 	@make enforce-structure
 	@make context-health
 
-generate-module-specs:
-	@bash tools/generate_all_module_specs.sh
+#generate-module-specs:
+#	@bash tools/generate_all_module_specs.sh
 
 validate-modules:
 	@echo "🔍 Validating modules (excluding .structure.ignore)..."
@@ -46,8 +46,8 @@ test-all:
 	@make test-garbage-detector
 	@make test-negative-structure
 
-install-hooks:
-	@bash tools/install-hooks.sh
+#install-hooks:
+	#@bash tools/install-hooks.sh
 
 test-structure:
 	@echo "🧪 Running structure validation tests..."

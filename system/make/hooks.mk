@@ -2,5 +2,5 @@
 
 
 
-install-hooks:
-	@bash tools/install-hooks.sh
+# install-hooks:
+# 	@bash tools/install-hooks.sh
