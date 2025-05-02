@@ -49,6 +49,11 @@ AUTO_README_GEN=./tools/gen_readme.sh
  include ./system/make/preflight.mk
  include ./system/make/structure.mk
  include ./system/make/test.mk
+ include ./system/make/hooks.mk
+ include ./system/make/modules.mk
+ include ./system/make/test.mk
+ include ./system/make/health.mk
+ include ./system/make/garbage.mk
 
 test-structure-generator:
 	@echo "🧪 Testing structure spec generation..."
