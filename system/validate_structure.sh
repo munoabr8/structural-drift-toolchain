@@ -3,20 +3,13 @@ set -euo pipefail
 
 # === Hardened Structure Validator ===
 
-# ✅ Color-coded log functions
-log_success() {
-  echo -e "\033[1;32m✅ $1\033[0m"
-}
+# ── Exit-code constants ───────────────────────────────────────────
+E_OK=0        # success
+E_ERROR=1     # invariant or unknown drift
+E_USAGE=64    # incorrect usage
 
-log_error() {
-  echo -e "\033[1;31m❌ $1\033[0m"
-}
 
-log_info() {
-  echo -e "\033[1;34mℹ️  $1\033[0m"
-}
-
-show_usage() {
+usage() {
   echo -e "\033[1;33mUsage:\033[0m"
   echo "  ./validate_structure.sh <structure.spec>"
   echo
@@ -27,12 +20,15 @@ show_usage() {
   echo "    - file: ./path"
   echo "    - link: ./symlink -> ./target"
   echo
+  # Exit on misuse
+[[ "${1:-}" == "--help" || "${1:-}" == "-h" ]] && usage && exit $E_USAGE
 }
 
+ 
 SPEC_FILE="${1:-}"
 
 if [[ -z "$SPEC_FILE" || "$SPEC_FILE" == "--help" || "$SPEC_FILE" == "-h" ]]; then
-  show_usage
+  usage
   exit 0
 fi
 
@@ -98,3 +94,80 @@ fi
 done < "$SPEC_FILE"
 
 log_success "🎉 Structure validation passed."
+
+
+
+
+# --- load pattern regexes ---------------------------------------------
+declare -A PATTERN                     # PATTERN[invariant] etc.
+while IFS='=' read -r k v; do
+  case "$k" in invariant|volatile|variant) PATTERN[$k]=$v ;; esac
+done < <(grep -E '^(invariant|volatile|variant)=' "$POLICY_FILE")
+
+# --- load severity map -------------------------------------------------
+declare -A ACT                         # ACT[invariant_violation] etc.
+while IFS='=' read -r k v; do
+  case "$k" in
+    invariant_violation|volatile_change|variant_change) ACT[$k]=$v ;;
+  esac
+done < <(grep -E '^(invariant_violation|volatile_change|variant_change)=' \
+         "$POLICY_FILE")
+
+severity_ec() {           # maps error|warn|ignore → 1|2|0
+  case "$1" in error) echo 1 ;; warn) echo 2 ;; *) echo 0 ;; esac
+}
+
+
+classify_path() {
+  local path=$1
+  if   [[ $path =~ ${PATTERN[invariant]} ]]; then echo invariant
+  elif [[ $path =~ ${PATTERN[volatile]}  ]]; then echo volatile
+  elif [[ $path =~ ${PATTERN[variant]}   ]]; then echo variant
+  else                                        echo unknown
+  fi
+}
+
+
+EXIT=0
+while read -r change path; do
+  bucket=$(classify_path "$path")
+  case "$bucket" in
+    invariant)
+      echo "❌ invariant drift: $path"
+      EXIT=$(severity_ec "${ACT[invariant_violation]:-error}")
+      ;;
+    volatile)
+      # optionally echo debug; ignored by default
+      ;;
+    variant)
+      echo "⚠️  variant drift: $path"
+      (( ec=$(severity_ec "${ACT[variant_change]:-warn}") > EXIT )) && EXIT=$ec
+      ;;
+    *)
+      echo "🌀 unknown drift: $path"
+      # treat unknown however you like (here: escalate to error)
+      EXIT=1
+      ;;
+  esac
+done < <(diff -urN "$SNAP" "$SPEC" | awk '/^Only in/ {print "A",$3"/"$4} /^diff/ {print "M",$4}')
+
+exit "$EXIT"
+
+
+
+
+
+
+
+
+
+
+#Can the paths to different exit codes be stream-lined for easier reasoning?
+
+#If functions are generated, then I need to seperate between queries and commands.
+
+#
+
+#Needs to be adjusted so that it is easier to unit test.(Maximize testability)
+
+#Need a main function
