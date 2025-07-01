@@ -1,0 +1,394 @@
+#!/usr/bin/env bash
+ 
+
+# INVARIANTS — structure_validator.sh
+# ===================================
+
+# 1. Input Contract Invariant
+# ---------------------------
+# - The script must be invoked with a valid `structure.spec` file (unless using `--help`).
+# - `structure.spec` must exist and be a readable file.
+# - If `--help` or no argument is passed, usage is shown and exit is EXIT_OK (0).
+
+# 2. Line Type Recognition Invariant
+# ----------------------------------
+# - Each line in the spec must be recognized as:
+#   - `dir: path`
+#   - `file: path`
+#   - `link: src -> tgt`
+#   - or a valid raw relative path (fallback)
+# - Lines that are comments (`#`) or empty are skipped.
+
+# 3. Path Resolution Invariant
+# ----------------------------
+# - All paths are evaluated relative to the current working directory at runtime.
+
+# 4. Strict Existence Invariant
+# -----------------------------
+# - A `dir:` line must point to a directory (`-d`)
+# - A `file:` line must point to a file (`-f`)
+# - A `link:` line must:
+#   - point to a symlink (`-L`)
+#   - and match the expected target via `readlink`
+# - Untyped fallback paths must exist as a file, directory, or symlink
+# - If any validation fails, the script exits immediately.
+
+# 5. Exit Code Meaning Invariant
+# ------------------------------
+# - 0   → All validations passed (EXIT_OK)
+# - 64  → Help or usage displayed (EXIT_USAGE)
+# - 65  → structure.spec is missing (EXIT_MISSING_SPEC)
+# - 66  → Missing path (file or directory) (EXIT_MISSING_PATH)
+# - 67  → Invalid or incorrect symlink (EXIT_INVALID_SYMLINK)
+
+# 6. Log Separation Invariant
+# ---------------------------
+# - If `--quiet` is passed, logging is suppressed.
+# - Otherwise, human-readable, color-coded logs are printed.
+
+# 7. Fail Fast Invariant
+# ----------------------
+# - The script stops at the first validation failure.
+# - Only one failure is reported per run, immediately with correct exit code.
+
+
+#What does this script achieve?
+# --> Will read the specification file and validate the structure(format) of the
+# --> specification file. I think what this scripts' current focus is to ensure that 
+# --> the script(debuggingTools/structure-debug.sh generate_structure_spec .) that 
+# --> generated the structure specification file did its job correctly.
+#     --> So what I think this script( as well as variations ) percieved functionality is that
+#     --> it will take a spec file and validate the structure against the following rules:
+ 
+ 
+
+# Over-arching question: Is the capability of {validation of structure} == {enforcement of policy rules} 
+#                       or is this something else? 
+#                         --> The two capabilities are different. 
+
+# !!!! Point of confusion, who generates the .structure.snapshot file??
+
+#                    Capabilities of the system under testing: 
+                      # 1.) validation of structure
+                      # 2.) enforcement of policy rules
+# Will need to: identify what some edge cases may be,
+#                    and clarify the distinction between 
+#                    valiation of structure vs enforcement policy rules.
+# I feel like validation of structure has to do with with the actual reading and writing
+# of the system level elements?
+# Enforcement of policy rules is the capability to notify of structural drift. These
+# rules are set by the expectations that were put in place by the developer/user/agent(?)
+# In essence, the set of expecations are invariants, variants, and volatile categories 
+# that can be used to monitor for structural(maybe behavioral?) drift.
+
+
+
+# Why is this important?
+# --> This script appears to be acting as a kind of linter for the specification file.
+#     --QUESTION: DOES ONLY THE SPECIFICATION FILE NEED TO BE RUN THROUGH A LINTER OR CAN 
+#                 THE SNAPSHOT ALSO BE INCLUDED? 
+# --> If the specficiation file causes an exit code other then 0
+# --> then the next step(policy file reading & enforcement) cannot proceed. 
+
+
+
+# How will it do this?
+# --> The "linting behavior" will be accomplished by using modular functions.
+# --> Reading the policy rule file should be delegated to another script. 
+
+
+
+################################################################################
+################################################################################
+################################################################################
+
+# What do I want? I want to maintain these invariants(as examples): 
+# #- type: invariant
+#   path: ^module/
+#   condition: must_exist
+#   action: error
+
+# - type: invariant
+#   path: ^system/
+#   condition: must_exist
+#   action: error
+
+# - type: invariant
+#   path: ^config/
+#   condition: must_exist
+#   action: error
+
+# - type: invariant
+#   path: ^config/policy.rules.yaml
+#   condition: must_exist
+#   action: error 
+
+# That is saved in the file called policy.rules.yml file.
+ 
+# what is likely to happen: false positives, false negatives.
+# what should happen: clarity, alignment, action and intent become fused,with electricity so to speak.
+#                     more practically, you should be able to start focusing on signal. 
+#                     The notification is a signal.
+#                         --> How would I build the notification?
+#                                 -> Using a script?
+#                          -> Capabilities Needed:
+#                                 1.) Compare the cached data(spec and/or snapshots)
+#                                 2.) Apply enforcement rules
+#                                 3.) Propagate appropiate status code(this is the signal)                                 
+
+################################################################################
+################################################################################
+################################################################################
+################################################################################
+                   
+
+#set -euo pipefail
+
+#set -x
+
+# === Hardened Structure Validator ===
+
+readonly EXIT_OK=0
+readonly EXIT_USAGE=64
+readonly EXIT_MISSING_SPEC=65
+readonly EXIT_MISSING_PATH=66
+readonly EXIT_INVALID_SYMLINK=67
+
+
+ 
+source "$(dirname "${BASH_SOURCE[0]}")/source_or_fail.sh"
+
+source_or_fail "$(dirname "${BASH_SOURCE[0]}")/logger.sh"
+source_or_fail "$(dirname "${BASH_SOURCE[0]}")/logger_wrapper.sh"
+
+
+
+
+ 
+
+
+QUIET=false
+if [[ "${1:-}" == "--quiet" ]]; then
+  QUIET=true
+  shift
+fi
+
+# ✅ Color-coded log functions
+
+log_error()   { $QUIET || echo -e "\033[1;31m❌ $1\033[0m"; }
+log_info()    { $QUIET || echo -e "\033[1;34mℹ️  $1\033[0m"; }
+
+show_usage() {
+  echo -e "\033[1;33mUsage:\033[0m"
+  echo "  ./validate_structure.sh <structure.spec>"
+  echo
+  echo "Each line must be one of:"
+  echo "  - A valid relative file or dir path (e.g. ./attn/context-status.sh)"
+  echo "  - A line starting with: 'dir:', 'file:', or 'link:'"
+  echo "    - dir: ./path"
+  echo "    - file: ./path"
+  echo "    - link: ./symlink -> ./target"
+  echo
+}
+
+  SPEC_FILE="${1:-}"
+ 
+
+validate_line() {
+  local raw="$1"
+  local line
+
+  # Trim leading/trailing whitespace
+  # Extract the transformation of what will be fed into sed.
+  line="$(echo "$raw" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+
+  echo "🔎 Validating line: '$line'" >&2
+
+  #COMMENT_REGEX='^#.*$'
+  #EMPTY_LINE_CHECK='-z "$line"'
+
+  [[ "$line" =~ ^#.*$ || -z "$line" ]] && return $EXIT_OK
+
+  if [[ "$line" == dir:* ]]; then
+    local dir_path="${line#dir: }"
+    echo "📁 Checking if directory exists: '$dir_path'" >&2
+    if [ ! -d "$dir_path" ]; then
+      log_error "Missing directory: $dir_path"
+      return $EXIT_MISSING_PATH
+    fi
+    log_success "Directory OK: $dir_path"
+    return $EXIT_OK
+  fi
+
+  if [[ "$line" == file:* ]]; then
+    local file_path="${line#file: }"
+    echo "📄 Checking if file exists: '$file_path'" >&2
+    if [ ! -f "$file_path" ]; then
+      log_error "Missing file: $file_path"
+      return $EXIT_MISSING_PATH
+    fi
+    log "SUCCESS:" "File OK: $file_path"
+    return $EXIT_OK
+  fi
+
+  if [[ "$line" == link:* ]]; then
+    local link_def="${line#link: }"
+    local src tgt actual
+    src=$(awk '{print $1}' <<< "$link_def")
+    tgt=$(awk '{print $3}' <<< "$link_def")
+
+    echo "🔗 Checking if symlink '$src' points to '$tgt'" >&2
+
+    if [ ! -L "$src" ]; then
+      log_error "Missing symlink: $src"
+      return $EXIT_INVALID_SYMLINK
+    fi
+
+    actual="$(readlink "$src")"
+    if [ "$actual" != "$tgt" ]; then
+      log_error "Symlink $src points to $actual, expected $tgt"
+      return $EXIT_INVALID_SYMLINK
+    fi
+
+    log "SUCCESS:" "Symlink OK: $src -> $tgt"
+    return $EXIT_OK
+  fi
+
+  # Fallback: untyped path
+  local trimmed_line="$line"
+  echo "🪛 Fallback path: '$trimmed_line'" >&2
+  if [ -f "$trimmed_line" ]; then
+    log "SUCCESS:" "File OK: $trimmed_line"
+  elif [ -d "$trimmed_line" ]; then
+    log "SUCCESS:" "Directory OK: $trimmed_line"
+  elif [ -L "$trimmed_line" ]; then
+    log "SUCCESS:" "Symlink OK (untyped): $trimmed_line -> $(readlink "$trimmed_line")"
+  else
+    log_error "Missing or unknown path: $trimmed_line"
+    return $EXIT_MISSING_PATH
+  fi
+
+  return $EXIT_OK
+}
+
+validate_file_structure() {
+  local spec_file="$1"
+  local rc=$EXIT_OK
+
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    validate_line "$line"
+    rc=$?
+    if [ "$rc" -ne "$EXIT_OK" ]; then
+      break
+    fi
+  done < "$spec_file"
+
+  if [ "$rc" -eq "$EXIT_OK" ]; then
+log "SUCCESS" "Structure validation passed." "" "0"
+
+  fi
+
+  return "$rc"
+}
+
+parse_cli_args() {
+   echo " inside parsing function"
+}
+
+ # Will need to ensure that the policy file exists. 
+ # The policy.rule file is what I am validating against.
+
+ # Main function needs to be refactored so that the spec_file variable is not conflated
+ # with options. 
+
+
+ # TODO: break script so that it can read the specification file
+ # TODO: break up script so that it can read the policy file.
+ # TODO: make new script to enforce policy patterns. 
+main() {
+  if [[ -z "$SPEC_FILE" || "$SPEC_FILE" == "--help" || "$SPEC_FILE" == "-h" ]]; then
+    show_usage
+    exit $EXIT_OK
+  fi
+
+  if [[ ! -f "$SPEC_FILE" ]]; then
+    log_error "Spec file not found: $SPEC_FILE"
+    exit $EXIT_MISSING_SPEC
+  fi
+
+  log_info "Reading structure spec: $SPEC_FILE"
+
+  #parse_cli_args "$@"
+
+  validate_file_structure "$SPEC_FILE"
+  exit "$?"
+}
+
+
+#Entrypoint
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+  main "$@"
+fi
+
+
+########## Things to consider ####################
+ 
+
+# I need to seperate between queries and commands.
+ 
+########## TODO #############
+
+#### ACTION ########
+# Functions still need to be refactored. 
+
+##### DECISION #####
+# What should the name of the functions be called that will enable this script to 
+# read,parse, and enforce policy rule files.
+
+
+#### INCREASE OF GRANULARITY ######
+# Scenerios
+  # 1.) Defining what is in the policy files(intent and syntax)
+  # 2.) Assuming that there is a policy file that exists, how will it be read?
+  # 3.) Assuming that a policy file exists and has been read, how will it be parsed?
+  # 4.) Assuming that a policy file exists,has been read, parsed, how will the policy be enforced?
+
+
+
+#1) Defining policy.rules intent
+  # Given that a policy rule file exists,
+  # when a system is being monitored for structural drift,
+  # then a policy rule contains the logic that governs what patterns are being observed 
+  # and what actions are being executed.
+
+ #1.a) Given that system is being monitored for structural drift,
+ #     when policy.rule file is written or generated
+ #     then the system must be checked against the policy.
+
+
+#Future re-factoring
+# structure_check.sh
+# parse_args()  { … }
+# lint_syntax() { … }
+# verify_paths() { … }
+# report()      { … }
+# main()        { … }
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
