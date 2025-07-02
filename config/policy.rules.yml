@@ -1,0 +1,91 @@
+# What do I want this file to achieve?
+# --> Store patterns that can be read and are coupled w/ actions 
+# --> in the event that the patterns are violated.
+
+# --> V.2
+# --> This file will be responsbile for storing expectations about 
+# --> a projects file-system structure and actions to take if one 
+# --> of those expectations is violated(see WITI V.1 regarding explicit expectations). 
+
+
+# Why Is This Important?
+
+# --> V.1
+# --> If some script exists that can read this file, 
+# --> then it can observe:
+# --> (1) what should never change(invariant), 
+# --> (2) what is likely to change(variant), 
+# --> (3) and what you expect will(what you want to) change(volatile).
+# --> and generate an appropiate notification if false.
+
+# --> V.2
+# --> Given that there is some script that has the capability to read this file(policy.rule),
+# --> when it takes this file as input,
+# --> and observes a deviation from the expecations(see V.1 for explicit expectations)
+# --> then a notification is generated and propagated to the developer.
+
+
+
+# --> Given that these patterns are violated and observed, 
+# --> when that script reads this file, 
+# --> then {a | another} script will be reponsible for {triggering the violation|notification generation}. 
+
+# How are you going to implement this?
+# -->  bash script -> function
+# --> Given that a single script file is used,
+# --> when its purpose is to read, trigger violation,and generate notification,
+# --> then it will violate SRP.
+
+
+# Is the function that read this policy  file be considered a fitness function(as in the context of evolutionary architechture)
+
+
+#What I want to achieve: generate a function and script, that will be able to read this file. 
+# --> Take in a file,
+# --> parse/read file
+# 	--> Should the script: 
+# 	--> {Parse file entirely then notify about violations | Parse up to first invariant or variant violation}
+# --> Compare expecations against (current?) {snapshot|specification} file. 
+# --> Trigger notification
+
+#  Qualifiers -> expecations 
+ 
+
+- type: invariant
+  path: ^module/
+  condition: must_exist
+  action: error
+
+- type: invariant
+  path: ^system/
+  condition: must_exist
+  action: error
+
+- type: invariant
+  path: ^config/
+  condition: must_exist
+  action: error
+
+- type: invariant
+  path: ^config/policy.rules.yaml
+  condition: must_exist
+  action: error 
+
+
+
+
+
+
+  
+
+- type: variant
+  path: ^configs/.*\.yml$
+  condition: allowed
+  action: warn
+
+- type: volatile
+  path: ^logs/
+  condition: ignore
+  action: ignore
+
+
