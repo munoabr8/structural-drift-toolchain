@@ -18,18 +18,41 @@ setup() {
 
 
 
-source "$BATS_TEST_DIRNAME/../system_probe/source_or_fail.sh"
- cp "$BATS_TEST_DIRNAME/../tools_probe/pre-git-switch.sh" tools_probe/
+source "$BATS_TEST_DIRNAME/../system/source_or_fail.sh"
  
+
+ 
+ [[ -f tools/pre-git-switch.sh ]] || {
+
+  log "ERROR" "tools/pre-git-switch.sh not found" "" "2"
+
+    log "tools/pre-git-switch.sh not found" >&2
+    exit 1
+  }
+
+  cp "$BATS_TEST_DIRNAME/../tools/pre-git-switch.sh" tools_probe/
+
   #cp /tools_probe/pre-git-switch.sh tools_probe/
-  cp /system_probe/logger.sh system_probe/
+cp "$BATS_TEST_DIRNAME/../system/logger.sh" system_probe/
 
 source_or_fail "tools_probe/pre-git-switch.sh"
   
 
+
+# BACKLOG: Consider adding `safe_copy` utility with logging + verification
+# - Purpose: Increase setup reliability in test suites
+# - Risk: May require refactor across multiple scripts
+# - Status: Deprioritized to prevent strategic drift
  
   echo "echo foo" > foo.sh
 }
+
+
+ # cp "$BATS_TEST_DIRNAME/../tools/pre-git-switch.sh" tools/
+  #cp "$BATS_TEST_DIRNAME/../system/logger.sh" system/
+  #cp "$BATS_TEST_DIRNAME/../system/logger_wrapper.sh" system/
+  #cp "$BATS_TEST_DIRNAME/../system/source_or_fail.sh" system/
+
 
  
 
@@ -40,8 +63,38 @@ teardown() {
 
 
 
-@test "Creates snapshot for modified file" {
+# @test "Creates snapshot for modified file" {
+#   run bash tools/pre-git-switch.sh
+#   [ "$status" -eq 0 ]
+#   snapshot=$(find .git/dev_snapshots -name '*.tar.gz')
+#   [[ -f "$snapshot" ]]
+#   [[ "$(tar -tzf "$snapshot")" == *"foo.sh"* ]]
+# }
+
+@test "Creates snapshot for modified file333" {
+  echo "Modifying foo.sh"
+  echo "# modified" >> foo.sh
+
   run bash tools/pre-git-switch.sh
+  echo "Exit code: $status"
+  echo "Output: $output"
+
+  [ "$status" -eq 0 ]
+  snapshot=$(find .git/dev_snapshots -name '*.tar.gz')
+  [[ -f "$snapshot" ]]
+  [[ "$(tar -tzf "$snapshot")" == *"foo.sh"* ]]
+}
+
+@test "Creates snapshot for modified file" {
+  echo "Checking script exists: "
+  ls tools/pre-git-switch.sh
+
+  echo "# modified" >> foo.sh
+
+  run bash tools/pre-git-switch.sh
+  echo "Exit code: $status"
+  echo "Output: $output"
+
   [ "$status" -eq 0 ]
   snapshot=$(find .git/dev_snapshots -name '*.tar.gz')
   [[ -f "$snapshot" ]]
