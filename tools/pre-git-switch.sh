@@ -8,11 +8,23 @@
 
 pre_git_switch_main() {
 
-  set -euo pipefail
+   set -euo pipefail
 
-  source "$(dirname "${BASH_SOURCE[0]}")/../system/source_or_fail.sh"
-source_or_fail "$(dirname "${BASH_SOURCE[0]}")/../system/logger.sh"
-source_or_fail "$(dirname "${BASH_SOURCE[0]}")/../system/logger_wrapper.sh"
+  
+
+  echo "Script running from: $(pwd)"
+
+system_dir="${SYSTEM_DIR:-./system}"
+ if [[ -z "$system_dir" || ! -f "$system_dir/source_or_fail.sh" ]]; then
+  echo "❌ Missing required file: $system_dir/source_or_fail.sh"
+  exit 1
+fi
+
+source "$system_dir/source_or_fail.sh"
+
+
+source_or_fail "$system_dir/logger.sh"
+source_or_fail "$system_dir/logger_wrapper.sh"
 
 snapshot_dir=".git/dev_snapshots"
 mkdir -p "$snapshot_dir"

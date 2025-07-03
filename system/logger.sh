@@ -28,8 +28,12 @@
 # - Log file can grow without bound
 # - If used in tight loops, may add performance overhead
 # - Shell injection risk if log values contain untrusted content
+if command -v logger >/dev/null && [[ "$(type -t log_json)" == "file" ]]; then
+  echo "❌ 'log' already defined elsewhere, aborting" >&2
+  return 99
+fi
 
-log() {
+log_json() {
   # Invariant: Must have at least LEVEL and MESSAGE
   if [[ "$#" -lt 2 ]]; then
     echo "❌ ERROR: log() called with too few arguments. Got [$*]" >&2

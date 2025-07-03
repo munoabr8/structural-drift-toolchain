@@ -4,55 +4,43 @@
 # What is the likely invariants of the pre-git-switch script?
 # Where should a pre-git-switch be located?(Location?)
 
+ 
+
 setup() {
-  cd "$BATS_TMPDIR"
-  script_under_testing="$BATS_TEST_DIRNAME/tools/pre-git-switch.sh"
+ cd "$BATS_TMPDIR"
 
-  git init --quiet
+  # Strategic clarity: we do not test the real system script directly.
+  # This avoids side effects and ensures safe, reproducible testing.
+  cp "$BATS_TEST_DIRNAME/../tools/pre-git-switch.sh" pre-git-switch.sh
+  sandbox_script="$BATS_TMPDIR/pre-git-switch.sh"
 
-
-  mkdir -p tools_probe system_probe
-
-  [[ -d tools_probe ]] || { echo "❌ tools_probe/ directory missing in BATS_TMPDIR"; exit 1; }
-  [[ -d system_probe ]] || { echo "❌ system_probe/ directory missing in BATS_TMPDIR"; exit 1; }
-
-
-
-source "$BATS_TEST_DIRNAME/../system/source_or_fail.sh"
- 
-
- 
- [[ -f tools/pre-git-switch.sh ]] || {
-
-  log "ERROR" "tools/pre-git-switch.sh not found" "" "2"
-
-    log "tools/pre-git-switch.sh not found" >&2
+  [[ -f "$sandbox_script" ]] || {
+    echo "Script under test not found: $sandbox_script"
     exit 1
   }
 
-  cp "$BATS_TEST_DIRNAME/../tools/pre-git-switch.sh" tools_probe/
+  export SYSTEM_DIR="system"
 
-  #cp /tools_probe/pre-git-switch.sh tools_probe/
-cp "$BATS_TEST_DIRNAME/../system/logger.sh" system_probe/
+  mkdir -p tools system
 
-source_or_fail "tools_probe/pre-git-switch.sh"
-  
-
-
-# BACKLOG: Consider adding `safe_copy` utility with logging + verification
-# - Purpose: Increase setup reliability in test suites
-# - Risk: May require refactor across multiple scripts
-# - Status: Deprioritized to prevent strategic drift
- 
+  # Create the file before initializing Git and .gitignore
   echo "echo foo" > foo.sh
+
+  git init --quiet
+  git config --local core.excludesfile /dev/null
+  echo "*" > .gitignore
+  echo "!foo.sh" >> .gitignore
+
+   cp "$BATS_TEST_DIRNAME/../system/logger.sh" system/
+  cp "$BATS_TEST_DIRNAME/../system/logger_wrapper.sh" system/
+  cp "$BATS_TEST_DIRNAME/../system/source_or_fail.sh" system/
+
+  source system/source_or_fail.sh
+  source_or_fail system/logger.sh
+  source_or_fail system/logger_wrapper.sh
+  type -a log_error
+  source_or_fail pre-git-switch.sh
 }
-
-
- # cp "$BATS_TEST_DIRNAME/../tools/pre-git-switch.sh" tools/
-  #cp "$BATS_TEST_DIRNAME/../system/logger.sh" system/
-  #cp "$BATS_TEST_DIRNAME/../system/logger_wrapper.sh" system/
-  #cp "$BATS_TEST_DIRNAME/../system/source_or_fail.sh" system/
-
 
  
 
@@ -61,17 +49,36 @@ teardown() {
   rm -f foo.sh
 }
 
+@test "Fails when SYSTEM_DIR is set to a bad path (stimulated failure)" {
+  export SYSTEM_DIR="/nonexistent/directory"
+  run bash "$sandbox_script"
+
+  echo "STATUS: $status"
+  echo "STDOUT: $output"
+  echo "STDERR: $error"
+
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"Missing required file"* ]]
+}
 
 
-# @test "Creates snapshot for modified file" {
-#   run bash tools/pre-git-switch.sh
-#   [ "$status" -eq 0 ]
-#   snapshot=$(find .git/dev_snapshots -name '*.tar.gz')
-#   [[ -f "$snapshot" ]]
-#   [[ "$(tar -tzf "$snapshot")" == *"foo.sh"* ]]
-# }
+@test "Is actually in a sandbox directory" {
+  [[ "$PWD" == "$BATS_TMPDIR"* ]]
+}
 
-@test "Creates snapshot for modified file333" {
+
+@test "Creates snapshot for modified file--0" {
+
+  echo "# modified" >> foo.sh  # add this
+run bash tools/pre-git-switch.sh
+
+  [ "$status" -eq 0 ]
+  snapshot=$(find .git/dev_snapshots -name '*.tar.gz')
+  [[ -f "$snapshot" ]]
+  [[ "$(tar -tzf "$snapshot")" == *"foo.sh"* ]]
+}
+
+@test "Creates snapshot for modified file--1" {
   echo "Modifying foo.sh"
   echo "# modified" >> foo.sh
 
@@ -85,14 +92,17 @@ teardown() {
   [[ "$(tar -tzf "$snapshot")" == *"foo.sh"* ]]
 }
 
-@test "Creates snapshot for modified file" {
+@test "Creates snapshot for modified file--2" {
   echo "Checking script exists: "
+
+
   ls tools/pre-git-switch.sh
 
   echo "# modified" >> foo.sh
 
-  run bash tools/pre-git-switch.sh
-  echo "Exit code: $status"
+run bash tools_probe/pre-git-switch.sh
+
+   echo "Exit code: $status"
   echo "Output: $output"
 
   [ "$status" -eq 0 ]
@@ -101,9 +111,50 @@ teardown() {
   [[ "$(tar -tzf "$snapshot")" == *"foo.sh"* ]]
 }
 
-# @test "Skips snapshot when no changes exist" {
-#   git add foo.sh && git commit -m "init"
-#   run bash tools/pre-git-switch.sh
-#   [ "$status" -eq 0 ]
-#   [[ "$output" == *"No changes detected"* ]]
-# }
+@test "Multiple runs create multiple snapshot logs--3" {
+  echo "# change" >> foo.sh
+  run bash "$sandbox_script"
+  echo "$output"
+
+  sleep 1
+  echo "# another change" >> foo.sh
+  run bash "$sandbox_script"
+  echo "$output"
+
+  echo "Snapshot log:"
+  cat .git/dev_snapshots/snapshot_log.json || echo "Log file missing"
+
+  log_count=$(grep -c '"snapshot":' .git/dev_snapshots/snapshot_log.json)
+  [ "$log_count" -eq 2 ]
+}
+@test "Snapshot log is appended in JSON format--4" {
+  echo "# change" >> foo.sh
+  run bash "$sandbox_script"
+
+  echo "Exit code: $status"
+  echo "Output: $output"
+
+  [ "$status" -eq 0 ]
+
+  echo "Checking snapshot_log.json..."
+  ls -l .git/dev_snapshots
+  cat .git/dev_snapshots/snapshot_log.json || echo "Log not found"
+
+  [[ -f .git/dev_snapshots/snapshot_log.json ]]
+  grep -q '"snapshot":' .git/dev_snapshots/snapshot_log.json
+}
+
+
+@test "Skips snapshot when no changes exist--5" {
+  git status
+  git diff
+  git log --oneline
+
+  # Will break if you change this to script_under_testing
+  run bash "$sandbox_script"
+  echo "Exit code: $status"
+  echo "Output: $output"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"No changes detected"* ]]
+}
+ 
