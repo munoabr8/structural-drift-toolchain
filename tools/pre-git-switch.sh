@@ -11,16 +11,16 @@ pre_git_switch_main() {
    set -euo pipefail
 
   
+system_dir="${SYSTEM_DIR:-../system}"
+#echo "PWD: $(pwd)"
+#echo "Looking for: $system_dir/source_OR_fail.sh"
+#ls -l "$system_dir"
 
-  echo "Script running from: $(pwd)"
-
-system_dir="${SYSTEM_DIR:-./system}"
- if [[ -z "$system_dir" || ! -f "$system_dir/source_or_fail.sh" ]]; then
-  echo "❌ Missing required file: $system_dir/source_or_fail.sh"
+if [[ -z "$system_dir" || ! -f "$system_dir/source_OR_fail.sh" ]]; then
+  echo "❌ Missing required file: $system_dir/source_OR_fail.sh"
   exit 1
 fi
-
-source "$system_dir/source_or_fail.sh"
+source "$system_dir/source_OR_fail.sh"
 
 
 source_or_fail "$system_dir/logger.sh"
