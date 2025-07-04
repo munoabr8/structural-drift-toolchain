@@ -54,6 +54,10 @@ log_json() {
       ;;
   esac
 
+  if [[ "$REDUCED_GRANULARITY" == true && "$level" == "INFO" ]]; then
+  return 0
+fi
+
   local timestamp
   timestamp="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 
@@ -61,10 +65,12 @@ log_json() {
   log_line=$(printf '{"timestamp":"%s","level":"%s","message":"%s","error_code":"%s","exit_code":"%s"}\n' \
     "$timestamp" "$level" "$message" "$error_code" "$exit_code")
 
-  # Output to stderr and optionally to file
+  # Add a separating newline before the log
   if [[ -n "${LOG_OUTPUT_FILE:-}" ]]; then
-    echo "$log_line" | tee -a "$LOG_OUTPUT_FILE" >&2
+    printf "\n%s\n" "$log_line" | tee -a "$LOG_OUTPUT_FILE" >&2
   else
-    echo "$log_line" >&2
+    printf "\n%s\n" "$log_line" >&2
   fi
+
+
 }
