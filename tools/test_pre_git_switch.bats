@@ -38,7 +38,7 @@ setup() {
   source system/source_or_fail.sh
   source_or_fail system/logger.sh
   source_or_fail system/logger_wrapper.sh
-  type -a log_error
+  #type -a log_error
   source_or_fail pre-git-switch.sh
 }
 
@@ -68,15 +68,23 @@ teardown() {
 
 
 @test "Creates snapshot for modified file--0" {
-
+ 
   echo "# modified" >> foo.sh  # add this
 run bash tools/pre-git-switch.sh
+  echo "STATUS: $status"
+  echo "STDOUT: $output"
+  echo "STDERR: $error"
 
   [ "$status" -eq 0 ]
+
+
   snapshot=$(find .git/dev_snapshots -name '*.tar.gz')
   [[ -f "$snapshot" ]]
   [[ "$(tar -tzf "$snapshot")" == *"foo.sh"* ]]
 }
+
+
+
 
 @test "Creates snapshot for modified file--1" {
   echo "Modifying foo.sh"

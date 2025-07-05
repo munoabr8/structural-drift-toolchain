@@ -8,7 +8,7 @@ log_error() {
   exit "${3:-1}"  # Exit with provided error code or 1 by default
 }
 
-log_FATAL() {
+log_fatal() {
   log_json "FATAL" "$1" "$2" "$3"
   exit "${3:-1}"  # Exit with provided error code or 1 by default
 }

@@ -75,6 +75,9 @@ EOF
 
  
 load_dependencies() {
+
+
+
   local system_dir="${SYSTEM_DIR:-../system}"
 
   if [[ ! -f "$system_dir/source_OR_fail.sh" ]]; then
@@ -92,10 +95,12 @@ load_dependencies() {
 
 
  pre_git_switch() {
+
+  
  
   local repo_root
 repo_root=$(git rev-parse --show-toplevel) || {
-  log_json "ERROR" "Not inside a Git repository" "not_git_repo" 76
+  safe_log "ERROR" "Not inside a Git repository" "not_git_repo" 76
   exit 76
 }
 local snapshot_dir="$repo_root/.git/dev_snapshots"
@@ -103,15 +108,16 @@ local snapshot_dir="$repo_root/.git/dev_snapshots"
 # Invariant: snapshot_dir must physically exist before writing any snapshot-related files.
 
 if [[ ! -d "$snapshot_dir" ]]; then
-  log_json "INFO" "Creating snapshot directory" "$snapshot_dir"
+  safe_log "INFO" "Creating snapshot directory" "$snapshot_dir"
   mkdir -p "$snapshot_dir"
 fi
 
 
 if [[ -d "$snapshot_dir" ]]; then
-  log_json "INFO" "Snapshot directory location $(realpath "$snapshot_dir")"
+  safe_log "INFO" "Snapshot directory location $(realpath "$snapshot_dir")"
 else
-  log_json "ERROR" "Snapshot directory not found for realpath" "missing_snapshot_dir"
+  # Is this next line not correct? There is no missing_snapshot_dir every declared.
+  safe_log "ERROR" "Snapshot directory not found for realpath" "missing_snapshot_dir"
 fi
 
 
@@ -123,28 +129,28 @@ fi
   snapshot_file="$snapshot_dir/pre_switch_$timestamp.tar.gz"
   log_file="$snapshot_dir/snapshot_log.json"
 
-  log_json "INFO" "Creating pre-branch-switch snapshot $snapshot_file"
-  log_json "INFO" "Snapshot directory location $absolute_snapshot_dir"
+  safe_log "INFO" "Creating pre-branch-switch snapshot $snapshot_file"
+  safe_log "INFO" "Snapshot directory location $absolute_snapshot_dir"
 
 
 
 [[ -d "$snapshot_dir" ]] || {
-  log_json "ERROR" "Snapshot directory does not exist before writing file list" "$snapshot_dir" 76
+  safe_log "ERROR" "Snapshot directory does not exist before writing file list" "$snapshot_dir" 76
   exit 76
 }
   git ls-files -o -m --exclude-standard > "$snapshot_dir/tmp_file_list.txt"
 
   if [[ ! -s "$snapshot_dir/tmp_file_list.txt" ]]; then
-    log_json "INFO" "No changes detected, skipping snapshot."
+    safe_log "INFO" "No changes detected, skipping snapshot."
     return 0
   fi
 
   if tar -czf "$snapshot_file" -T "$snapshot_dir/tmp_file_list.txt"; then
-    log_json "INFO" "Snapshot created $snapshot_file"
+    safe_log "INFO" "Snapshot created $snapshot_file"
     printf '{"timestamp":"%s","snapshot":"%s"}\n' "$timestamp" "$snapshot_file" >> "$log_file"
-    log_json "INFO" "Snapshot logged in $log_file"
+    safe_log "INFO" "Snapshot logged in $log_file"
   else
-    log_json "ERROR" "Snapshot creation failed" "tar_error" 77
+    safe_log "ERROR" "Snapshot creation failed" "tar_error" 77
     return 77
   fi
 
@@ -152,6 +158,11 @@ fi
 }
 
 main() {
+
+
+  echo "DEBUG: Entered main" >&2
+echo "DEBUG: SYSTEM_DIR=$SYSTEM_DIR" >&2
+type -t log_error >&2 || echo "DEBUG: log_error not found" >&2
 
 # ========================
 # 🚦 Granularity Control
