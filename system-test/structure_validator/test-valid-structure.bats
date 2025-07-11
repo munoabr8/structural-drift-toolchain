@@ -14,7 +14,7 @@ teardown() {
   touch scripts/entry.sh
   echo "file: ./scripts/entry.sh" > structure.spec
 
-  run bash ../../system/validate_structure.sh ./structure.spec
+  run bash ../../system/structure_validator.sh ./structure.spec
 
   [ "$status" -eq 0 ]
   [[ "$output" =~ "✅ File OK: ./scripts/entry.sh" ]]

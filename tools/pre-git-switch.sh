@@ -160,9 +160,9 @@ fi
 main() {
 
 
-  echo "DEBUG: Entered main" >&2
-echo "DEBUG: SYSTEM_DIR=$SYSTEM_DIR" >&2
-type -t log_error >&2 || echo "DEBUG: log_error not found" >&2
+#   echo "DEBUG: Entered main" >&2
+# echo "DEBUG: SYSTEM_DIR=$SYSTEM_DIR" >&2
+# type -t log_error >&2 || echo "DEBUG: log_error not found" >&2
 
 # ========================
 # 🚦 Granularity Control

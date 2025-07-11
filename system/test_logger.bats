@@ -13,6 +13,8 @@ setup() {
   echo " Fail-fast module loading..." >&2
  
   
+
+  
 source ./source_or_fail.sh
 
 source_or_fail "$BATS_TEST_DIRNAME/logger.sh"

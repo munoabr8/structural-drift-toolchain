@@ -67,9 +67,7 @@ if command -v logger >/dev/null && [[ "$(type -t log_json)" == "file" ]]; then
   echo "❌ 'log_json' already defined elsewhere, aborting" >&2
   return 99
 fi
-
  
-
 safe_log() {
   log_json "$@" || {
     echo "🛑 Logging failed. Exiting at level '$1' with message: $2" >&2

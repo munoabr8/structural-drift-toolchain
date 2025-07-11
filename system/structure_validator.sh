@@ -154,18 +154,7 @@ readonly EXIT_MISSING_SPEC=65
 readonly EXIT_MISSING_PATH=66
 readonly EXIT_INVALID_SYMLINK=67
 
-
  
-source "$(dirname "${BASH_SOURCE[0]}")/source_or_fail.sh"
-
-source_or_fail "$(dirname "${BASH_SOURCE[0]}")/logger.sh"
-source_or_fail "$(dirname "${BASH_SOURCE[0]}")/logger_wrapper.sh"
-
-
-
-
- 
-
 
 QUIET=false
 if [[ "${1:-}" == "--quiet" ]]; then
@@ -173,11 +162,7 @@ if [[ "${1:-}" == "--quiet" ]]; then
   shift
 fi
 
-# ✅ Color-coded log functions
-
-log_error()   { $QUIET || echo -e "\033[1;31m❌ $1\033[0m"; }
-log_info()    { $QUIET || echo -e "\033[1;34mℹ️  $1\033[0m"; }
-
+  
 show_usage() {
   echo -e "\033[1;33mUsage:\033[0m"
   echo "  ./validate_structure.sh <structure.spec>"
@@ -213,10 +198,10 @@ validate_line() {
     local dir_path="${line#dir: }"
     echo "📁 Checking if directory exists: '$dir_path'" >&2
     if [ ! -d "$dir_path" ]; then
-      log_error "Missing directory: $dir_path"
+      safe_log "ERROR" "Missing directory: $dir_path"
       return $EXIT_MISSING_PATH
     fi
-    log_success "Directory OK: $dir_path"
+    safe_log "SUCCESS" "Directory OK: $dir_path"
     return $EXIT_OK
   fi
 
@@ -224,10 +209,10 @@ validate_line() {
     local file_path="${line#file: }"
     echo "📄 Checking if file exists: '$file_path'" >&2
     if [ ! -f "$file_path" ]; then
-      log_error "Missing file: $file_path"
+      safe_log "ERROR" "Missing file: $file_path"
       return $EXIT_MISSING_PATH
     fi
-    log "SUCCESS:" "File OK: $file_path"
+    safe_log "SUCCESS" "File OK: $file_path"
     return $EXIT_OK
   fi
 
@@ -240,17 +225,17 @@ validate_line() {
     echo "🔗 Checking if symlink '$src' points to '$tgt'" >&2
 
     if [ ! -L "$src" ]; then
-      log_error "Missing symlink: $src"
+      safe_log "Missing symlink: $src"
       return $EXIT_INVALID_SYMLINK
     fi
 
     actual="$(readlink "$src")"
     if [ "$actual" != "$tgt" ]; then
-      log_error "Symlink $src points to $actual, expected $tgt"
+      safe_log "Symlink $src points to $actual, expected $tgt"
       return $EXIT_INVALID_SYMLINK
     fi
 
-    log "SUCCESS:" "Symlink OK: $src -> $tgt"
+    safe_log "SUCCESS" "Symlink OK: $src -> $tgt"
     return $EXIT_OK
   fi
 
@@ -258,13 +243,13 @@ validate_line() {
   local trimmed_line="$line"
   echo "🪛 Fallback path: '$trimmed_line'" >&2
   if [ -f "$trimmed_line" ]; then
-    log "SUCCESS:" "File OK: $trimmed_line"
+    safe_log "SUCCESS" "File OK: $trimmed_line"
   elif [ -d "$trimmed_line" ]; then
-    log "SUCCESS:" "Directory OK: $trimmed_line"
+    safe_log "SUCCESS" "Directory OK: $trimmed_line"
   elif [ -L "$trimmed_line" ]; then
-    log "SUCCESS:" "Symlink OK (untyped): $trimmed_line -> $(readlink "$trimmed_line")"
+    safe_log "SUCCESS" "Symlink OK (untyped): $trimmed_line -> $(readlink "$trimmed_line")"
   else
-    log_error "Missing or unknown path: $trimmed_line"
+    safe_log "Missing or unknown path: $trimmed_line"
     return $EXIT_MISSING_PATH
   fi
 
@@ -284,12 +269,30 @@ validate_file_structure() {
   done < "$spec_file"
 
   if [ "$rc" -eq "$EXIT_OK" ]; then
-log "SUCCESS" "Structure validation passed." "" "0"
+safe_log "SUCCESS" "Structure validation passed." "" "0"
 
   fi
 
   return "$rc"
 }
+
+load_dependencies() {
+
+  local system_dir="${SYSTEM_DIR:-../system}"
+
+  if [[ ! -f "$system_dir/source_OR_fail.sh" ]]; then
+    echo "❌ Missing required file: $system_dir/source_OR_fail.sh"
+    exit 1
+  fi
+  source "$system_dir/source_OR_fail.sh"
+
+  source_or_fail "$system_dir/logger.sh"
+  source_or_fail "$system_dir/logger_wrapper.sh"
+
+
+ 
+ }
+
 
 parse_cli_args() {
    echo " inside parsing function"
@@ -311,12 +314,15 @@ main() {
     exit $EXIT_OK
   fi
 
+
+  load_dependencies
+
   if [[ ! -f "$SPEC_FILE" ]]; then
-    log_error "Spec file not found: $SPEC_FILE"
+    safe_log "ERROR" "Spec file not found: $SPEC_FILE"
     exit $EXIT_MISSING_SPEC
   fi
 
-  log_info "Reading structure spec: $SPEC_FILE"
+  safe_log "INFO" "Reading structure spec: $SPEC_FILE"
 
   #parse_cli_args "$@"
 

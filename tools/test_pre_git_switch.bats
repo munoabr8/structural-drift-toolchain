@@ -12,6 +12,9 @@ setup() {
   # Strategic clarity: we do not test the real system script directly.
   # This avoids side effects and ensures safe, reproducible testing.
   cp "$BATS_TEST_DIRNAME/../tools/pre-git-switch.sh" pre-git-switch.sh
+
+  # Should I use a sandbox script(instead of the actual one) for all scripts that I unit test?
+
   sandbox_script="$BATS_TMPDIR/pre-git-switch.sh"
 
   [[ -f "$sandbox_script" ]] || {
@@ -31,14 +34,13 @@ setup() {
   echo "*" > .gitignore
   echo "!foo.sh" >> .gitignore
 
-   cp "$BATS_TEST_DIRNAME/../system/logger.sh" system/
+  cp "$BATS_TEST_DIRNAME/../system/logger.sh" system/
   cp "$BATS_TEST_DIRNAME/../system/logger_wrapper.sh" system/
   cp "$BATS_TEST_DIRNAME/../system/source_or_fail.sh" system/
 
   source system/source_or_fail.sh
   source_or_fail system/logger.sh
   source_or_fail system/logger_wrapper.sh
-  #type -a log_error
   source_or_fail pre-git-switch.sh
 }
 
@@ -70,7 +72,9 @@ teardown() {
 @test "Creates snapshot for modified file--0" {
  
   echo "# modified" >> foo.sh  # add this
-run bash tools/pre-git-switch.sh
+
+  run bash "$sandbox_script"
+
   echo "STATUS: $status"
   echo "STDOUT: $output"
   echo "STDERR: $error"
@@ -90,7 +94,9 @@ run bash tools/pre-git-switch.sh
   echo "Modifying foo.sh"
   echo "# modified" >> foo.sh
 
-  run bash tools/pre-git-switch.sh
+
+  run bash "$sandbox_script"
+
   echo "Exit code: $status"
   echo "Output: $output"
 
@@ -104,11 +110,13 @@ run bash tools/pre-git-switch.sh
   echo "Checking script exists: "
 
 
-  ls tools/pre-git-switch.sh
+  ls "$sandbox_script"
 
+
+ 
   echo "# modified" >> foo.sh
 
-run bash tools_probe/pre-git-switch.sh
+  run bash "$sandbox_script"
 
    echo "Exit code: $status"
   echo "Output: $output"
