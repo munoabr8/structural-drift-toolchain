@@ -54,6 +54,8 @@ AUTO_README_GEN=./tools/gen_readme.sh
  include ./system/make/test.mk
  include ./system/make/health.mk
  include ./system/make/garbage.mk
+ include ./system/make/help.mk
+
 
 test-structure-generator:
 	@echo "🧪 Testing structure spec generation..."
@@ -61,6 +63,6 @@ test-structure-generator:
  
 
 
-.DEFAULT_GOAL := health
+.DEFAULT_GOAL := help
 
 
