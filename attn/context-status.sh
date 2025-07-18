@@ -111,6 +111,10 @@ check_runtime_cfg
 check_directory_paths
 print_final_summary
 
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+  main "$@"
+fi
+
 # ─── TODOs ────────────────────────────────────────────────
 # - Add --json output
 # - Add --strict validation mode

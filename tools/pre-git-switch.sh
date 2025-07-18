@@ -74,10 +74,8 @@ EOF
 }
 
  
-load_dependencies() {
-
-
-
+source_utilities() {
+ 
   local system_dir="${SYSTEM_DIR:-../system}"
 
   if [[ ! -f "$system_dir/source_OR_fail.sh" ]]; then
@@ -88,8 +86,6 @@ load_dependencies() {
 
   source_or_fail "$system_dir/logger.sh"
   source_or_fail "$system_dir/logger_wrapper.sh"
-
-
  
  }
 
@@ -192,7 +188,7 @@ fi
       exit 0
       ;;
     "")
-      load_dependencies
+      source_utilities
       pre_git_switch
       ;;
     *)

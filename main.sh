@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
 umask 022
-set -euo pipefail
+ set -euo pipefail
 
 # === Config Paths ===
 STRUCTURE_SPEC="./system/structure.spec"
-VALIDATOR="./system/validate_structure.sh"
+VALIDATOR="./system/structure_validator.sh"
 CONTEXT_CHECK="./attn/context-status.sh"
 
 # === Load Central Config (deferred) ===

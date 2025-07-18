@@ -243,13 +243,13 @@ validate_line() {
   local trimmed_line="$line"
   echo "🪛 Fallback path: '$trimmed_line'" >&2
   if [ -f "$trimmed_line" ]; then
-    safe_log "SUCCESS" "File OK: $trimmed_line"
+    safe_log "SUCCESS" "File OK: $trimmed_line" "" ""
   elif [ -d "$trimmed_line" ]; then
     safe_log "SUCCESS" "Directory OK: $trimmed_line"
   elif [ -L "$trimmed_line" ]; then
     safe_log "SUCCESS" "Symlink OK (untyped): $trimmed_line -> $(readlink "$trimmed_line")"
   else
-    safe_log "Missing or unknown path: $trimmed_line"
+    safe_log "ERROR" "Missing or unknown path: $trimmed_line"
     return $EXIT_MISSING_PATH
   fi
 
@@ -276,12 +276,12 @@ safe_log "SUCCESS" "Structure validation passed." "" "0"
   return "$rc"
 }
 
-load_dependencies() {
+source_utilities() {
 
-  local system_dir="${SYSTEM_DIR:-../system}"
+  local system_dir="${SYSTEM_DIR:-./system}"
 
   if [[ ! -f "$system_dir/source_OR_fail.sh" ]]; then
-    echo "❌ Missing required file: $system_dir/source_OR_fail.sh"
+    echo "Missing required file: $system_dir/source_OR_fail.sh"
     exit 1
   fi
   source "$system_dir/source_OR_fail.sh"
@@ -315,7 +315,7 @@ main() {
   fi
 
 
-  load_dependencies
+  source_utilities
 
   if [[ ! -f "$SPEC_FILE" ]]; then
     safe_log "ERROR" "Spec file not found: $SPEC_FILE"
