@@ -9,7 +9,7 @@ setup() {
  resolve_project_root
 setup_environment_paths
  
- load_dependencies
+ source_utilities
 
  
   local original_script_path="$PROJECT_ROOT/main.rf.sh"
@@ -41,7 +41,11 @@ setup_environment_paths
   
   }
 
-
+# Project root is the top level directory. 
+# The top level directory includes a .git(version control is required)
+# Changing directories will be subject to change.
+# 
+#
   resolve_project_root() {
   local source_path="${BATS_TEST_FILENAME:-${BASH_SOURCE[0]}}"
   cd "$(dirname "$source_path")/.." && pwd
@@ -54,11 +58,16 @@ setup_environment_paths() {
 
 
 
-
-load_dependencies(){
+# Pre-conditions: 
+# --> SYSTEM_DIR is set.
+# --> source_OR_fail.sh must be a valid file(correct permissions)
+# --> source_OR_fail.sh must contain a source_or_fail function.
+# --> logger.sh must be a valid file,
+# --> logger_wrapper.sh must be a valid file.
+source_utilities(){
 
   if [[ ! -f "$SYSTEM_DIR/source_OR_fail.sh" ]]; then
-    echo "❌ Missing required file: source_OR_fail.sh"
+    echo "Missing required file: source_OR_fail.sh"
     exit 1
   fi
 

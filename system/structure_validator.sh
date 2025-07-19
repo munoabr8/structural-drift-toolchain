@@ -187,7 +187,7 @@ validate_line() {
   # Extract the transformation of what will be fed into sed.
   line="$(echo "$raw" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
 
-  echo "🔎 Validating line: '$line'" >&2
+  safe_log "INFO" "Validating line: '$line'" >&2
 
   #COMMENT_REGEX='^#.*$'
   #EMPTY_LINE_CHECK='-z "$line"'
@@ -196,7 +196,7 @@ validate_line() {
 
   if [[ "$line" == dir:* ]]; then
     local dir_path="${line#dir: }"
-    echo "📁 Checking if directory exists: '$dir_path'" >&2
+    safe_log "INFO" "Checking if directory exists: '$dir_path'" >&2
     if [ ! -d "$dir_path" ]; then
       safe_log "ERROR" "Missing directory: $dir_path"
       return $EXIT_MISSING_PATH
@@ -207,7 +207,7 @@ validate_line() {
 
   if [[ "$line" == file:* ]]; then
     local file_path="${line#file: }"
-    echo "📄 Checking if file exists: '$file_path'" >&2
+    safe_log "INFO" "Checking if file exists: '$file_path'" >&2
     if [ ! -f "$file_path" ]; then
       safe_log "ERROR" "Missing file: $file_path"
       return $EXIT_MISSING_PATH
@@ -330,8 +330,7 @@ main() {
     exit $EXIT_OK
   fi
 
-  echo "Hello"
-  source_utilities
+   source_utilities
 
   if [[ ! -f "$SPEC_FILE" ]]; then
     safe_log "ERROR" "Spec file not found: $SPEC_FILE"

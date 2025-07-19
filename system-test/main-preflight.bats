@@ -194,7 +194,7 @@ export COMMAND="start"
 
  
 export COMMAND="start"
-  run run_preflight
+  run run_preflight "$COMMAND"
   [ "$status" -eq 0 ]
 
   # optional interaction assertions
@@ -204,12 +204,12 @@ export COMMAND="start"
 
 
 @test "run_preflight" {
-  make_mock VALIDATOR     0   # validator passes
-  make_mock CONTEXT_CHECK 0   # context check fails
+  make_mock VALIDATOR     0    
+  make_mock CONTEXT_CHECK 0    
 
  
 export COMMAND="help"
-  run run_preflight
+  run run_preflight  
   [ "$status" -eq 0 ]
 
   # optional interaction assertions

@@ -49,40 +49,42 @@ RUNTIME_TOGGLE_FLAGS="${RUNTIME_TOGGLE_FLAGS:-./config/runtime_flags.sh}"
  
  
 # === Pre-flight Checks (can later move to preflight.sh) ===
+ 
 run_preflight() {
-  local COMMAND= "$1"
 
-  if [[ "$COMMAND" != "check" && "$COMMAND" != "help" ]]; then
-    #echo "🚦 Running preflight checks..."
-    
-    if ! "$VALIDATOR" "$STRUCTURE_SPEC"; then
-       echo "Structure invalid. Aborting."
-      exit 1
-    fi
+# Assumes caller has already decided this command requires preflight.
+  # Optional: accept cmd just for logging.
+  local cmd="${1:-start}"
+  safe_log "INFO" "Preflight begin: $cmd"
 
-    if ! "$CONTEXT_CHECK"; then
-       echo "Context invalid. Aborting."
-      exit 1  
-    fi
-  fi
+  "$VALIDATOR" "$STRUCTURE_SPEC" || { echo "Structure invalid." >&2; return 1; }
+  "$CONTEXT_CHECK"               || { echo "Context invalid."   >&2; return 1; }
+
+  safe_log "INFO" "Preflight passed: $cmd"
+  return 0
 }
+
+
  
 
-
- load_dependencies(){
+# Refactor location of these scripts to actually be in a 
+# utility directory.
+ source_utilities(){
  
+  local system_dir="${SYSTEM_DIR:-./system}"
 
-  if [[ ! -f "$SYSTEM_DIR/source_OR_fail.sh" ]]; then
+    
+  if [[ ! -f "$system_dir/source_OR_fail.sh" ]]; then
     echo "Missing required file: source_OR_fail.sh"
     exit 1
   fi
 
-  source "$SYSTEM_DIR/source_OR_fail.sh"
+  source "$system_dir/source_OR_fail.sh"
 
-  source_or_fail "$SYSTEM_DIR/logger.sh"
-  source_or_fail "$SYSTEM_DIR/logger_wrapper.sh"
+  source_or_fail "$system_dir/logger.sh"
+  source_or_fail "$system_dir/logger_wrapper.sh"
 
-  source_or_fail "$SYSTEM_DIR/structure_validator.sh"
+  source_or_fail "$system_dir/structure_validator.sh"
  
  
  }
@@ -100,7 +102,10 @@ run_preflight() {
  }
 
 
-main() {                     # ← call this instead of relying on $COMMAND
+main() {                      
+
+  source_utilities
+
   local cmd="${1:-}"; shift || true
   case "$cmd" in
     start)
