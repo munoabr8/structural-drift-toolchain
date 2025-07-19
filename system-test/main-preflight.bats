@@ -177,7 +177,7 @@ export COMMAND="start"
   make_mock CONTEXT_CHECK 1   # context check fails
 
  
-export COMMAND="start"
+#export COMMAND="start"
 
   run run_preflight
   [ "$status" -eq 1 ]
@@ -193,8 +193,8 @@ export COMMAND="start"
   make_mock CONTEXT_CHECK 0   # context check fails
 
  
-export COMMAND="start"
-  run run_preflight "$COMMAND"
+#export COMMAND="start"
+  run run_preflight  
   [ "$status" -eq 0 ]
 
   # optional interaction assertions
@@ -208,9 +208,9 @@ export COMMAND="start"
   make_mock CONTEXT_CHECK 0    
 
  
-export COMMAND="help"
-  run run_preflight  
-  [ "$status" -eq 0 ]
+ #local COMMAND="help"
+  run run_preflight   
+  [ "$status" -eq 0 ] 
 
   # optional interaction assertions
   grep -q "VALIDATOR ./system/structure.spec" "$BATS_TMPDIR/calls"
