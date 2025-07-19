@@ -28,13 +28,26 @@
 
 # 👉 Make all Make targets atomic, idempotent, and visibly grouped.
 
-override SNAPSHOT_GEN := ./tools/structure/structure_snapshot_gen.sh
+# These override lines are currently required because there is some other file
+# that is setting the incorrect path!!!
+
+# The issue is not: makefile.legacy
+
+# Need to check:
+# Legacy/old: 
+# 	../debugtools/structureDebugging.sh 
+# 	(in system/make/preflight.mk, preflight_shared.mk,
+# 	 health.mk, Makefile.legacy
+
+
+ #override SNAPSHOT_GEN := ./tools/structure/structure_snapshot_gen.sh
+#override VALIDATOR := ./system/structure_validator.sh
 
 # Global Variables
 STRUCTURE_SPEC=./system/structure.spec
-VALIDATOR=./system/validate_structure.sh
+#VALIDATOR=./system/validate_structure.sh
 CONTEXT_CHECK=./attn/context-status.sh
-SNAPSHOT_GEN=./tools/structure/structure_snapshot_gen.sh
+#SNAPSHOT_GEN=./tools/structure/structure_snapshot_gen.sh
 DOCTOR=./tools/doctor.sh
 AUTO_README_GEN=./tools/gen_readme.sh
 

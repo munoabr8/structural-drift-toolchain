@@ -4,9 +4,9 @@ STRUCTURE_SPEC=./system/structure.spec
 
 CONTEXT_CHECK=./attn/context-status.sh
 
-VALIDATOR=./system/validate_structure.sh
+VALIDATOR_RF=./system/validate_structure.sh
 
-SNAPSHOT_GEN=../debugtools/structureDebugging.sh
+SNAPSHOT_GEN_RF=../debugtools/structureDebugging.sh
 
 DOCTOR=./tools/doctor.sh
 

@@ -7,6 +7,7 @@ SNAPSHOT_GEN=./tools/structure/structure_snapshot_gen.sh
 #.PHONY: aggregate-spec lock-structure doctor health validate-modules test-garbage-detector test-negative-structure precommit-check check-structure-drift snapshot-structure enforce-structure context-health snapshot-and-promote detect
    
 
+
 check-structure-drift:
 	@echo "🚨 Enforcing structure integrity..."
 	@test -f $(SNAPSHOT_GEN) || (echo "❌ Missing: $(SNAPSHOT_GEN)" && exit 1)

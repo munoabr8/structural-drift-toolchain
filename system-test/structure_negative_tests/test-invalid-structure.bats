@@ -13,9 +13,9 @@ teardown() {
 @test "Fails validation with missing file" {
   echo "file: ./missing.sh" > structure.spec
 
-  run bash ../../system/validate_structure.sh ./structure.spec
+  run bash ../../system/structure_validator.sh ./structure.spec
 
 
   [ "$status" -ne 0 ]
-  [[ "$output" =~ "❌ Missing file: ./missing.sh" ]]
+  [[ "$output" =~ "Missing file: ./missing.sh" ]]
 }

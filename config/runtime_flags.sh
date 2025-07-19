@@ -7,7 +7,7 @@
 umask 022
 set -euo pipefail
 
-CONFIG_FILE="./runtime.cfg"
+CONFIG_FILE="./config/runtime.cfg"
 
 # ─── Invariant Check ─────────────────────────────────────────────
 [[ -f "$CONFIG_FILE" ]] || { echo "❌ Config file not found at $CONFIG_FILE"; exit 99; }

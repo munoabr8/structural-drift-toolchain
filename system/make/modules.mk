@@ -1,4 +1,4 @@
-VALIDATOR=./system/validate_structure.sh
+VALIDATOR_RF=./system/validate_structure.sh
 MODULE_SPEC_GEN=tools/generate_all_module_specs.sh
 STRUCT_AGG=tools/aggregate_structure.sh
 GARBAGE_DETECT=./tools/detect_garbage.sh

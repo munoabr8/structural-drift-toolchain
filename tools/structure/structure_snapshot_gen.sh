@@ -1,5 +1,16 @@
 #!/usr/bin/env bash
 
+# ./tools/structure/structure_snapshot_gen.sh
+
+
+# Please generate expectations/invariants/constraints.
+
+# Will need to refactor the sourcing of utilities.
+
+#
+
+
+
 
 
  set -euo pipefail
@@ -7,6 +18,10 @@
 
  #set -x  # Trace every command
 
+# Need to reduce granularity of output.
+# Refactor in order to seperate query and commands
+# Refactor utilities to source_utilities function.
+# Begin unit testing.
 
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -104,18 +119,16 @@ fi
 }
 
 
-main(){
+  main(){
 
-safe_log "INFO" "Main function" "" "0"
+ 
 
-
-generate_structure_spec .
-
-
-safe_log "INFO" "Completed function" "" "0"
+   generate_structure_spec .
 
 
-}
+ 
+
+  }
 
 
 

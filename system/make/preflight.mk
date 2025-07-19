@@ -1,9 +1,9 @@
 # === Config ===
 
 STRUCTURE_SPEC=./system/structure.spec
-VALIDATOR=./system/validate_structure.sh
+VALIDATOR_RF=./system/validate_structure.sh
 CONTEXT_CHECK=./attn/context-status.sh
-SNAPSHOT_GEN=../debugtools/structureDebugging.sh
+SNAPSHOT_GEN_RF=../debugtools/structureDebugging.sh
 
 
 include system/make/preflight_shared.mk
