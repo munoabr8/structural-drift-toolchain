@@ -66,7 +66,6 @@ load_dependencies(){
 
   source_or_fail "$SYSTEM_DIR/logger.sh"
   source_or_fail "$SYSTEM_DIR/logger_wrapper.sh"
-
  
 
  }

@@ -142,9 +142,9 @@
 ################################################################################
                    
 
-#set -euo pipefail
+ set -euo pipefail
 
-#set -x
+ #set -x
 
 # === Hardened Structure Validator ===
 
@@ -276,7 +276,23 @@ safe_log "SUCCESS" "Structure validation passed." "" "0"
   return "$rc"
 }
 
+ 
+
+resolve_project_root() {
+  local src="${BASH_SOURCE[0]}"
+  printf '%s\n' "$(cd "$(dirname "$src")/.." && pwd)" || return 1
+}
+
+setup_environment_paths() {
+  PROJECT_ROOT="${PROJECT_ROOT:-$(resolve_project_root)}" || return $?
+  SYSTEM_DIR="${SYSTEM_DIR:-$PROJECT_ROOT/system}"
+  export PROJECT_ROOT SYSTEM_DIR
+}
+
 source_utilities() {
+
+resolve_project_root
+setup_environment_paths
 
   local system_dir="${SYSTEM_DIR:-./system}"
 
@@ -314,7 +330,7 @@ main() {
     exit $EXIT_OK
   fi
 
-
+  echo "Hello"
   source_utilities
 
   if [[ ! -f "$SPEC_FILE" ]]; then

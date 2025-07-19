@@ -1,8 +1,8 @@
 
 STRUCTURE_SPEC=./system/structure.spec
-VALIDATOR=./system/validate_structure.sh
+VALIDATOR=./system/structure_validator.sh
 CONTEXT_CHECK=./attn/context-status.sh
-SNAPSHOT_GEN=../debugtools/structureDebugging.sh
+SNAPSHOT_GEN=./tools/structure/structure_snapshot_gen.sh
 
 #.PHONY: aggregate-spec lock-structure doctor health validate-modules test-garbage-detector test-negative-structure precommit-check check-structure-drift snapshot-structure enforce-structure context-health snapshot-and-promote detect
    
@@ -13,9 +13,6 @@ check-structure-drift:
 
 	@bash $(SNAPSHOT_GEN) generate_structure_spec . > .structure.snapshot || echo "⚠️ Snapshot generation non-critical failure (check manually)"
 	@diff -u $(STRUCTURE_SPEC) .structure.snapshot || echo "❗ Structure drift detected — please snapshot-and-promote if intended."
-
-
- 	# @rm -f .structure.snapshot
 
 
 # diff-structure manual drift review
@@ -43,11 +40,11 @@ snapshot-structure:
 	@test -f $(SNAPSHOT_GEN) || (echo "❌ Missing: $(SNAPSHOT_GEN)" && exit 1)
 	@echo "📸 Generating current structure snapshot..."
 	@bash $(SNAPSHOT_GEN) generate_structure_spec . > .structure.snapshot; \
-# 	EXIT_CODE=$$?; \
-# 	echo "🔁 Return code from generate_structure_spec: $$EXIT_CODE"; \
+ 	EXIT_CODE=$$?; \
+ 	echo "🔁 Return code from generate_structure_spec: $$EXIT_CODE";  \
 # 	exit $$EXIT_CODE
 
-
+	 
 
 
 snapshot-and-promote:

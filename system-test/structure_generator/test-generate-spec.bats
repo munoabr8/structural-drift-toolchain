@@ -2,17 +2,7 @@
 
 
 SCRIPT_PATH="../../debugtools/structureDebugging.sh"
-
-# What invariant violation is generating the output:
-#  ✗ Debug Info
-#    (in test file system-test/structure_generator/test-generate-spec.bats, line 26)
-#      `[ "$status" -eq 0 ]' failed with status 2
-   
-#    /Users/abrahammunoz/git/bin_pro/prototypeProject/system-test/structure_generator/test-generate-spec.bats: line 26: [: : integer expression expected
-#    Removing tmp folder...
-
-# 1 test, 1 failure
-
+ 
 
 
 setup() {
@@ -28,10 +18,7 @@ type log_json | grep -q 'function' || {
   echo "❌ log function not defined. Exiting." >&2
   exit 99
 }
-
  
-  #source "../../system/source_OR_fail.sh"  # or whatever file defines `log`
-
   mkdir -p tmp/test_module/subdir
   touch tmp/test_module/file1.sh
   touch tmp/test_module/subdir/file2.txt

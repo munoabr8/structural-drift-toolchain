@@ -166,8 +166,7 @@ teardown() {
   git diff
   git log --oneline
 
-  # Will break if you change this to script_under_testing
-  run bash "$sandbox_script"
+   run bash "$sandbox_script"
   echo "Exit code: $status"
   echo "Output: $output"
   [ "$status" -eq 0 ]

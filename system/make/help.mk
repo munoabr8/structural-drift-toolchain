@@ -7,12 +7,20 @@
 
 # How can this be done?
 	# -> Will be done with this mk file(help.mk) and bash script(make-help.sh).
+		# --> The make-help.sh will be responsible for parsing other make files.
+		# --> It will parse the comments so that targets that are available to 
+		# --> devs are displayed. Idea being that they will have an idea of what
+		# --> targets are available to them for use.
+		# --> 1.) Read other make files.
+		# --> 2.) 
 
 
 # THIS FILE NEEDS TO BE RE_FACTORED.
 
 # This is filled automatically by GNU/BSD make as files are read
 MAKE_PARTIALS := $(filter %.mk,$(MAKEFILE_LIST))
+
+
 
 # —- Target --------------------------------------------------------------
 .PHONY: help

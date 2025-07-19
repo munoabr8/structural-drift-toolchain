@@ -28,13 +28,13 @@
 
 # 👉 Make all Make targets atomic, idempotent, and visibly grouped.
 
-
+override SNAPSHOT_GEN := ./tools/structure/structure_snapshot_gen.sh
 
 # Global Variables
 STRUCTURE_SPEC=./system/structure.spec
 VALIDATOR=./system/validate_structure.sh
 CONTEXT_CHECK=./attn/context-status.sh
-SNAPSHOT_GEN=../debugtools/structureDebugging.sh
+SNAPSHOT_GEN=./tools/structure/structure_snapshot_gen.sh
 DOCTOR=./tools/doctor.sh
 AUTO_README_GEN=./tools/gen_readme.sh
 
