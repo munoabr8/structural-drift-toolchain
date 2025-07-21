@@ -1,5 +1,5 @@
 
-STRUCTURE_SPEC=./system/structure.spec
+STRUCTURE_SPEC=./structure.spec
 VALIDATOR=./system/structure_validator.sh
 CONTEXT_CHECK=./attn/context-status.sh
 SNAPSHOT_GEN=./tools/structure/structure_snapshot_gen.sh

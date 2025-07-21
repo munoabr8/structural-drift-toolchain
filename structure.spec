@@ -17,11 +17,16 @@ dir: ./system-test/helpers/
 dir: ./system-test/structure_generator/
 dir: ./system-test/structure_ignore/
 dir: ./system-test/structure_negative_tests/
+dir: ./system-test/structure_negative_tests/tmp/
 dir: ./system-test/structure_validator/
 dir: ./system-test/structure_validator/tmp/
+dir: ./system/exit-codes/
 dir: ./system/make/
 dir: ./system/tmp/
 dir: ./test/
+dir: ./tmp/
+dir: ./tmp/testcase/
+dir: ./tmp/testcase/logs/
 dir: ./tools/
 dir: ./tools/git-hooks/
 dir: ./tools/providers/
@@ -78,8 +83,10 @@ file: ./system-test/structure_negative_tests/test-invalid-structure.bats
 file: ./system-test/structure_validator/.DS_Store
 file: ./system-test/structure_validator/test-raw-path.bats
 file: ./system-test/structure_validator/test-valid-structure.bats
+file: ./system-test/structure_validator_queries.bats
 file: ./system-test/test-main.bats
 file: ./system/.DS_Store
+file: ./system/exit-codes/exit_codes_validator.sh
 file: ./system/logger.sh
 file: ./system/logger_wrapper.sh
 file: ./system/make/.DS_Store
@@ -93,6 +100,7 @@ file: ./system/make/preflight_shared.mk
 file: ./system/make/structure.mk
 file: ./system/make/test.mk
 file: ./system/source_OR_fail.sh
+file: ./system/structure_validator.rf.sh
 file: ./system/structure_validator.sh
 file: ./system/test_logger.bats
 file: ./system/test_logger_min.sh

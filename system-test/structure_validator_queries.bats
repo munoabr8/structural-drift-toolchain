@@ -1,5 +1,6 @@
 #!/usr/bin/env bats
-  
+
+# system-test/structure_validator_queries.sh
  
 setup() {
 
@@ -9,13 +10,15 @@ setup() {
  resolve_project_root
 setup_environment_paths
  
- source_utilities
+  
 
+ 
  
   local original_script_path="$PROJECT_ROOT/system/structure_validator.rf.sh"
 
-    sandbox_script="$BATS_TMPDIR/system/structure_validator.rf.sh"
- 
+    sandbox_script="$BATS_TMPDIR/system/structure_validator.sh"
+  export sandbox_script
+
 
 
   cp "$original_script_path" "$sandbox_script" || {
@@ -31,7 +34,7 @@ setup_environment_paths
     exit 1
   }
 
-
+source_utilities
  
   mkdir -p tmp/testcase/logs
   touch tmp/testcase/logs/logfile.log
@@ -60,6 +63,9 @@ source_utilities(){
   source_or_fail "$SYSTEM_DIR/logger.sh"
   source_or_fail "$SYSTEM_DIR/logger_wrapper.sh"
 
+ 
+   source_or_fail "$sandbox_script" 
+
 
  }
 
@@ -86,4 +92,34 @@ setup_environment_paths() {
   echo "SCRIPT: $sandbox_script"
   [ -n "$sandbox_script" ]  # This will fail if it's unset
 }
+
+
+@test "Given absolute(?) location of structure.spec location, when script gets executed, then script should exit with code 0" {
+  echo "SCRIPT: $sandbox_script"
+
+  run logic_under_test nonexistent.spec
+
+  [ "$status" -eq 1 ]
+
+
+
+}
+
+
+@test "existing spec → returns 0 and logs usage info" {
+  # make a dummy file
+   touch structure.spec
+  run logic_under_test structure.spec
+
+  [ "$status" -eq 0 ]
+  
+  rm structure.spec
+}
+
+
+
+
+
+
+
 

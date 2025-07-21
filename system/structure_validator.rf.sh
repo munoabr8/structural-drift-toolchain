@@ -375,6 +375,44 @@ parse_CLI_args() {
   done
 }
 
+enter_spec_directory() {
+  local spec_file=$1
+  local spec_path spec_dir
+
+  # resolve absolute path
+  spec_path=$(realpath "$spec_file" 2>/dev/null || echo "$spec_file")
+
+  # cd into its directory
+  spec_dir=$(dirname "$spec_path")
+  safe_log "INFO" "Changing into spec directory: $spec_dir" "" "$EXIT_OK"
+  pushd "$spec_dir" > /dev/null
+}
+
+exit_spec_directory() {
+  popd > /dev/null
+}
+
+ 
+
+locate_spec_file() {
+  local requested="$1"
+  # 1) if it exists as given, use it
+  [[ -f $requested ]] && { echo "$requested"; return; }
+
+  # 2) otherwise, start from this script’s parent and walk up
+  local dir
+  dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." >/dev/null && pwd)
+  while [[ $dir != / ]]; do
+    if [[ -f $dir/$requested ]]; then
+      echo "$dir/$requested"
+      return
+    fi
+    dir=$(dirname "$dir")
+  done
+
+  # 3) not found
+  return 1
+}
 
   
  # Will need to ensure that the policy file exists. 
@@ -406,49 +444,41 @@ main() {
   source_utilities
 
 
-  local readonly SPEC_FILE="${1:-}"
-
-
- # 2️ capture & parse into one structure
   declare -A CLI_STATE
   parse_CLI_args CLI_STATE "$@"
 
-  # 3️ handle help
-  echo "Testomg ---->>>>>>>.."
+  # 2️⃣ Pull out raw inputs
+  local mode="${CLI_STATE[MODE]}"
+  local spec_input  spec_file
+  spec_input="${CLI_STATE[SPEC]}"
 
- echo ">>> MODE=${CLI_STATE[MODE]}, SPEC_FILE=${CLI_STATE[SPEC]}, POLICY=${CLI_STATE[POLICY]}"
-  if [[ ${CLI_STATE[MODE]} == help ]]; then
+
+  if [[ "$mode" == help ]]; then
     show_usage
     exit $EXIT_OK
   fi
 
-  echo "Testomg --------------<<<<<<<<<<."
-
- readonly SPEC_FILE=${CLI_STATE[SPEC]}
-
-  if [[ -z "$SPEC_FILE" || "$SPEC_FILE" == "--help" || "$SPEC_FILE" == "-h" ]]; then
+  # 4️⃣ Ensure the user actually gave a spec
+  if [[ -z "$spec_input" ]]; then
     show_usage
-    exit $EXIT_OK
-  fi
-
-    
-
-  if [[ ! -f "$SPEC_FILE" ]]; then
-
-    safe_log "ERROR" "Spec file not found: $SPEC_FILE" "" "$EXIT_MISSING_SPEC"
     exit $EXIT_MISSING_SPEC
   fi
 
-  safe_log "INFO" "Reading structure spec: $SPEC_FILE"
 
-  # Possible function flow:
-  # parse_cli_args "$@"
-  # dispatch_command
-  #   --> validate
-  #   --> enforce
 
-  validate_file_structure "$SPEC_FILE"
-  exit "$?"
+ if ! spec_file="$(locate_spec_file "$spec_input")"; then
+    safe_log "ERROR" "Spec file not found: $spec_input" "" "$EXIT_MISSING_SPEC"
+    exit $EXIT_MISSING_SPEC
+  fi
+ 
+ 
+  safe_log "INFO" "Reading structure spec: $spec_file" "" "$EXIT_OK"
+
+  enter_spec_directory "$spec_file"
+  validate_file_structure "$(basename "$spec_file")"
+  exit_spec_directory
+
+  exit $?
 }
 
 

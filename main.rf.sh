@@ -39,7 +39,7 @@ umask 022
  
 # === Config Paths ===
 
-STRUCTURE_SPEC="./system/structure.spec"
+STRUCTURE_SPEC="./structure.spec"
 
 VALIDATOR="${VALIDATOR:-./system/structure_validator.rf.sh}"
 

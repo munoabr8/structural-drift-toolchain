@@ -42,10 +42,10 @@ type log_json | grep -q 'function' || {
 safe_log "INFO" "Ending session, staged for probe_structure refactor. Will need to move the function generate_structure_spec to system/tools/observe_module/probe_structure.sh. \n Also will need to be split up." "" "0"
  
 
- alphaWave_refactor(){
+ # alphaWave_refactor(){
 
 
- }
+ # }
  
 generate_structure_spec() {
 safe_log "INFO" "Entered structure snap function" "" "0"

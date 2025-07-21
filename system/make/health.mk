@@ -1,6 +1,6 @@
 # === Config ===
 
-STRUCTURE_SPEC=./system/structure.spec
+#STRUCTURE_SPEC=./system/structure.spec
 
 CONTEXT_CHECK=./attn/context-status.sh
 
