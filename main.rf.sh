@@ -38,6 +38,7 @@ umask 022
 
  
 # === Config Paths ===
+
 STRUCTURE_SPEC="./system/structure.spec"
 
 VALIDATOR="${VALIDATOR:-./system/structure_validator.rf.sh}"
@@ -57,7 +58,8 @@ run_preflight() {
   local cmd="${1:-start}"
   safe_log "INFO" "Preflight begin: $cmd"
 
-  "$VALIDATOR" "$STRUCTURE_SPEC" || { echo "Structure invalid." >&2; return 1; }
+
+  "$VALIDATOR" validate "$STRUCTURE_SPEC" || { echo "Structure invalid." >&2; return 1; }
   "$CONTEXT_CHECK"               || { echo "Context invalid."   >&2; return 1; }
 
   safe_log "INFO" "Preflight passed: $cmd"

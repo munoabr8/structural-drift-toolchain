@@ -34,13 +34,7 @@
 # - Untyped fallback paths must exist as a file, directory, or symlink
 # - If any validation fails, the script exits immediately.
 
-# 5. Exit Code Meaning Invariant
-# ------------------------------
-# - 0   → All validations passed (EXIT_OK)
-# - 64  → Help or usage displayed (EXIT_USAGE)
-# - 65  → structure.spec is missing (EXIT_MISSING_SPEC)
-# - 66  → Missing path (file or directory) (EXIT_MISSING_PATH)
-# - 67  → Invalid or incorrect symlink (EXIT_INVALID_SYMLINK)
+ 
 
 # 6. Log Separation Invariant
 # ---------------------------
@@ -67,8 +61,7 @@
 #                       or is this something else? 
 #                         --> The two capabilities are different. 
 
-# !!!! Point of confusion, who generates the .structure.snapshot file??
-
+ 
 #                    Capabilities of the system under testing: 
                       # 1.) validation of structure
                       # 2.) enforcement of policy rules
@@ -90,8 +83,7 @@
 #                 THE SNAPSHOT ALSO BE INCLUDED? 
 # --> If the specficiation file causes an exit code other then 0
 # --> then the next step(policy file reading & enforcement) cannot proceed. 
-
-
+ 
 
 # How will it do this?
 # --> The "linting behavior" will be accomplished by using modular functions.
@@ -147,8 +139,7 @@
 
  #set -x
 
-# === Hardened Structure Validator ===
- 
+  
 
 QUIET=false
 if [[ "${1:-}" == "--quiet" ]]; then
@@ -158,8 +149,8 @@ fi
 
   
 show_usage() {
-  echo -e "\033[1;33mUsage:\033[0m"
-  echo "  ./validate_structure.sh <structure.spec>"
+  echo "Usage: $(basename "$0") [validate|enforce|help] [options] <structure.spec>"
+
   echo
   echo "Each line must be one of:"
   echo "  - A valid relative file or dir path (e.g. ./attn/context-status.sh)"
@@ -170,8 +161,7 @@ show_usage() {
   echo
 }
 
-  SPEC_FILE="${1:-}"
- 
+  
 
 validate_line() {
   local raw="$1"
@@ -199,8 +189,7 @@ validate_line() {
     return $EXIT_OK
   fi
 
-#   log "ERROR" "Operation failed" "disk_full" "77"
-
+ 
   if [[ "$line" == file:* ]]; then
     local file_path="${line#file: }"
     safe_log "INFO" "Checking if file exists: '$file_path'" >&2
@@ -221,13 +210,13 @@ validate_line() {
     echo "🔗 Checking if symlink '$src' points to '$tgt'" >&2
 
     if [ ! -L "$src" ]; then
-      safe_log "Missing symlink: $src"
+      safe_log "ERROR" "Missing symlink: $src" "" "$EXIT_INVALID_SYMLINK"
       return $EXIT_INVALID_SYMLINK
     fi
 
     actual="$(readlink "$src")"
     if [ "$actual" != "$tgt" ]; then
-      safe_log "Symlink $src points to $actual, expected $tgt"
+      safe_log "ERROR" "Symlink $src points to $actual, expected $tgt" "" "$EXIT_INVALID_SYMLINK"
       return $EXIT_INVALID_SYMLINK
     fi
 
@@ -277,6 +266,7 @@ safe_log "SUCCESS" "Structure validation passed." "" "0"
 
 resolve_project_root() {
   local src="${BASH_SOURCE[0]}"
+  #
   printf '%s\n' "$(cd "$(dirname "$src")/.." && pwd)" || return 1
 }
 
@@ -330,6 +320,60 @@ enforce_policy() {
 }
 
 
+# Usage: parse_CLI_args <state‑array‑name> -- <all the CLI args>
+parse_CLI_args() {
+  local -n S=$1  # nameref to your state array
+  shift
+  
+  # defaults
+  S=(
+    [MODE]=help
+    [SPEC]=
+    [POLICY]=
+    [QUIET]=false
+    [VERBOSE]=false
+  )
+  
+  # walk the rest of args
+  while (( $# )); do
+    case "$1" in
+      validate|enforce|help)
+        S[MODE]=$1
+        ;;
+      -p|--policy)
+        S[POLICY]=$2
+        shift
+        ;;
+      -q|--quiet)
+        S[QUIET]=true
+        ;;
+      -v|--verbose)
+        S[VERBOSE]=true
+        ;;
+      -h|--help)
+        S[MODE]=help
+        ;;
+      --) 
+        shift
+        break
+        ;;
+      -*)
+        echo "Unknown option: $1" >&2
+        exit $EXIT_USAGE
+        ;;
+      *)
+        # first non‑option is the spec
+        if [[ -z ${S[SPEC]} ]]; then
+          S[SPEC]=$1
+        else
+          echo "Unexpected argument: $1" >&2
+          exit $EXIT_USAGE
+        fi
+        ;;
+    esac
+    shift
+  done
+}
 
 
   
@@ -343,9 +387,44 @@ enforce_policy() {
  # TODO: break script so that it can read the specification file
  # TODO: break up script so that it can read the policy file.
  # TODO: make new script to enforce policy patterns. 
+
+ # How will this script typically be called?(CLI vs sourced in another script)
+#
+
+# You can safely drop that -- marker for 99% of use‑cases—your parser will simply treat the very first token after CLI_STATE as the subcommand (e.g. “validate”) and then pick up the spec (and policy) filenames in turn. The only time you’d really need the -- is if you wanted to pass a filename that begins with a dash (e.g. -foo.spec), since otherwise any -… token will be treated as an option.
+
+# So, in short:
+
+#     Removing -- will not break your normal flows (validate structure.spec or enforce -p policy.rules structure.spec).
+
+#     You’ll lose only the ability to disambiguate “real” positional args that themselves start with -.
+
+# If you never have spec or policy names that begin with hyphens, feel free to call:
+#parse_CLI_args CLI_STATE -- "$@"
 main() {
 
   source_utilities
+
+
+  local readonly SPEC_FILE="${1:-}"
+
+
+ # 2️ capture & parse into one structure
+  declare -A CLI_STATE
+  parse_CLI_args CLI_STATE "$@"
+
+  # 3️ handle help
+  echo "Testomg ---->>>>>>>.."
+
+ echo ">>> MODE=${CLI_STATE[MODE]}, SPEC_FILE=${CLI_STATE[SPEC]}, POLICY=${CLI_STATE[POLICY]}"
+  if [[ ${CLI_STATE[MODE]} == help ]]; then
+    show_usage
+    exit $EXIT_OK
+  fi
+
+  echo "Testomg --------------<<<<<<<<<<."
+
+ readonly SPEC_FILE=${CLI_STATE[SPEC]}
 
   if [[ -z "$SPEC_FILE" || "$SPEC_FILE" == "--help" || "$SPEC_FILE" == "-h" ]]; then
     show_usage
@@ -362,7 +441,11 @@ main() {
 
   safe_log "INFO" "Reading structure spec: $SPEC_FILE"
 
-  #parse_cli_args "$@"
+  # Possible function flow:
+  # parse_cli_args "$@"
+  # dispatch_command
+  #   --> validate
+  #   --> enforce
 
   validate_file_structure "$SPEC_FILE"
   exit "$?"
