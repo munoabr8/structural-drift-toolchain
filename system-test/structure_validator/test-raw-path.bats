@@ -145,4 +145,11 @@ check_context_integrity() {
   #[[ "$output" == *"Missing required file"* ]]
 }
 
+
+@test "Check if sandbox_script is really available" {
+  echo "SCRIPT: $sandbox_script"
+  [ -n "$sandbox_script" ]  # This will fail if it's unset
+}
+
+
  

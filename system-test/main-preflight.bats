@@ -177,8 +177,7 @@ export COMMAND="start"
   make_mock CONTEXT_CHECK 1   # context check fails
 
  
-#export COMMAND="start"
-
+ 
   run run_preflight
   [ "$status" -eq 1 ]
 

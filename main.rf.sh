@@ -40,7 +40,7 @@ umask 022
 # === Config Paths ===
 STRUCTURE_SPEC="./system/structure.spec"
 
-VALIDATOR="${VALIDATOR:-./system/structure_validator.sh}"
+VALIDATOR="${VALIDATOR:-./system/structure_validator.rf.sh}"
 
 CONTEXT_CHECK="${CONTEXT_CHECK:-./attn/context-status.sh}"
 

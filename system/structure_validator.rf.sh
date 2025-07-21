@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
  
+ #./system/structure_validator.rf.sh
 
 # INVARIANTS — structure_validator.sh
 # ===================================
@@ -147,13 +148,6 @@
  #set -x
 
 # === Hardened Structure Validator ===
-
-readonly EXIT_OK=0
-readonly EXIT_USAGE=64
-readonly EXIT_MISSING_SPEC=65
-readonly EXIT_MISSING_PATH=66
-readonly EXIT_INVALID_SYMLINK=67
-
  
 
 QUIET=false
@@ -198,18 +192,20 @@ validate_line() {
     local dir_path="${line#dir: }"
     safe_log "INFO" "Checking if directory exists: '$dir_path'" >&2
     if [ ! -d "$dir_path" ]; then
-      safe_log "ERROR" "Missing directory: $dir_path"
+      safe_log "ERROR" "Missing directory: $dir_path" "" "$EXIT_MISSING_PATH"
       return $EXIT_MISSING_PATH
     fi
     safe_log "SUCCESS" "Directory OK: $dir_path"
     return $EXIT_OK
   fi
 
+#   log "ERROR" "Operation failed" "disk_full" "77"
+
   if [[ "$line" == file:* ]]; then
     local file_path="${line#file: }"
     safe_log "INFO" "Checking if file exists: '$file_path'" >&2
     if [ ! -f "$file_path" ]; then
-      safe_log "ERROR" "Missing file: $file_path"
+      safe_log "ERROR" "Missing file: $file_path" "" "$EXIT_MISSING_PATH"
       return $EXIT_MISSING_PATH
     fi
     safe_log "SUCCESS" "File OK: $file_path"
@@ -239,6 +235,7 @@ validate_line() {
     return $EXIT_OK
   fi
 
+ 
   # Fallback: untyped path
   local trimmed_line="$line"
   echo "🪛 Fallback path: '$trimmed_line'" >&2
@@ -249,7 +246,7 @@ validate_line() {
   elif [ -L "$trimmed_line" ]; then
     safe_log "SUCCESS" "Symlink OK (untyped): $trimmed_line -> $(readlink "$trimmed_line")"
   else
-    safe_log "ERROR" "Missing or unknown path: $trimmed_line"
+    safe_log "ERROR" "Missing or unknown path: $trimmed_line" "" "$EXIT_MISSING_PATH"
     return $EXIT_MISSING_PATH
   fi
 
@@ -305,15 +302,37 @@ setup_environment_paths
   source_or_fail "$system_dir/logger.sh"
   source_or_fail "$system_dir/logger_wrapper.sh"
 
+  source_or_fail "$system_dir/exit-codes/exit_codes_validator.sh"
+
 
  
  }
 
 
-parse_cli_args() {
-   echo " inside parsing function"
+
+#––– Preconditions & checks (QUERY) –––––––––––––––––––––––––––––––––––––––––––––––––
+check_file_exists() {
+  local path="$1" label="$2" code="$3"
+  [[ -f $path ]] || exit "$code"
 }
 
+#––– Core logic (QUERY) –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+validate_structure() {
+  local spec="$1"
+  validate_file_structure "$spec"
+  return $?
+}
+
+enforce_policy() {
+  local spec="$1" policy="$2"
+  enforce_policy_rules "$spec" "$policy"
+  return $?
+}
+
+
+
+
+  
  # Will need to ensure that the policy file exists. 
  # The policy.rule file is what I am validating against.
 
@@ -325,15 +344,19 @@ parse_cli_args() {
  # TODO: break up script so that it can read the policy file.
  # TODO: make new script to enforce policy patterns. 
 main() {
+
+  source_utilities
+
   if [[ -z "$SPEC_FILE" || "$SPEC_FILE" == "--help" || "$SPEC_FILE" == "-h" ]]; then
     show_usage
     exit $EXIT_OK
   fi
 
-   source_utilities
+    
 
   if [[ ! -f "$SPEC_FILE" ]]; then
-    safe_log "ERROR" "Spec file not found: $SPEC_FILE"
+
+    safe_log "ERROR" "Spec file not found: $SPEC_FILE" "" "$EXIT_MISSING_SPEC"
     exit $EXIT_MISSING_SPEC
   fi
 
@@ -388,6 +411,7 @@ fi
 
 
  
+
 
 
  
