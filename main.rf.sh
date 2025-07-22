@@ -86,7 +86,7 @@ run_preflight() {
   source_or_fail "$system_dir/logger.sh"
   source_or_fail "$system_dir/logger_wrapper.sh"
 
-  source_or_fail "$system_dir/structure_validator.sh"
+  source_or_fail "$system_dir/structure_validator.rf.sh"
  
  
  }
