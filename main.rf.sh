@@ -51,6 +51,7 @@ RUNTIME_TOGGLE_FLAGS="${RUNTIME_TOGGLE_FLAGS:-./config/runtime_flags.sh}"
  
 # === Pre-flight Checks (can later move to preflight.sh) ===
  
+ # Do I even need this function here at all?
 run_preflight() {
 
 # Assumes caller has already decided this command requires preflight.
@@ -59,7 +60,7 @@ run_preflight() {
   safe_log "INFO" "Preflight begin: $cmd"
 
 
-  "$VALIDATOR" validate "$STRUCTURE_SPEC" || { echo "Structure invalid." >&2; return 1; }
+  "$VALIDATOR"  validate "$STRUCTURE_SPEC" || { echo "Structure invalid." >&2; return 1; }
   "$CONTEXT_CHECK"               || { echo "Context invalid."   >&2; return 1; }
 
   safe_log "INFO" "Preflight passed: $cmd"
@@ -109,6 +110,7 @@ main() {
   source_utilities
 
   local cmd="${1:-}"; shift || true
+  #The cases does not care what the command is. It will pass it 
   case "$cmd" in
     start)
       run_preflight "$cmd"

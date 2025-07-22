@@ -149,7 +149,7 @@ fi
 
   
 show_usage() {
-  echo "Usage: $(basename "$0") [validate|enforce|help] [options] <structure.spec>"
+  echo "/system/structure_validator.rf.sh [validate|enforce|help] [options] <structure.spec>"
 
   echo
   echo "Each line must be one of:"
@@ -438,7 +438,7 @@ locate_spec_file() {
 #     You’ll lose only the ability to disambiguate “real” positional args that themselves start with -.
 
 # If you never have spec or policy names that begin with hyphens, feel free to call:
-#parse_CLI_args CLI_STATE -- "$@"
+#parse_CLI_args CLI_STATE "$@"
 main() {
 
   source_utilities

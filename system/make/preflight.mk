@@ -1,7 +1,7 @@
 # === Config ===
 
 #STRUCTURE_SPEC=./system/structure.spec
-VALIDATOR_RF=./system/validate_structure.sh
+VALIDATOR_RF=./system/structure_validator.rf.sh
 CONTEXT_CHECK=./attn/context-status.sh
 SNAPSHOT_GEN_RF=../debugtools/structureDebugging.sh
 
