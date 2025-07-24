@@ -52,24 +52,24 @@
  
 
 - type: invariant
-  path: ^module/
+  path: modules
   condition: must_exist
   action: error
 
 - type: invariant
-  path: ^system/
+  path: system
   condition: must_exist
   action: error
 
-- type: invariant
-  path: ^config/
-  condition: must_exist
-  action: error
+# - type: invariant
+#   path: config
+#   condition: must_exist
+#   action: error
 
-- type: invariant
-  path: ^config/policy.rules.yaml
-  condition: must_exist
-  action: error 
+# - type: invariant
+#   path: config/policy.rules.yaml
+#   condition: must_exist
+#   action: error 
 
 
 
@@ -78,14 +78,14 @@
 
   
 
-- type: variant
-  path: ^configs/.*\.yml$
-  condition: allowed
-  action: warn
+# - type: variant
+#   path: ^configs/.*\.yml$
+#   condition: allowed
+#   action: warn
 
-- type: volatile
-  path: ^logs/
-  condition: ignore
-  action: ignore
+# - type: volatile
+#   path: ^logs/
+#   condition: ignore
+#   action: ignore
 
 

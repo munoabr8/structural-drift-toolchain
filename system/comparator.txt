@@ -1,0 +1,86 @@
+
+
+# File comparator:
+# compare the genenerated snapshot to a specification file. 
+# 
+
+# Core Behavior:
+# compare a specification file with a snapshot. 
+
+# Possible script name: file comparator
+
+
+# Expectations:
+# What I want: 
+
+# Flexible assumptions(subject to change):
+	# The script will be executed through a make target.
+	# 
+
+# Create a function that can load both types of files(snapshot and spec file)
+	# This can this be done via CLI?
+	# Goal: make it easy for the developer to compare the files.
+# Create compare function.
+	# How is this done?
+		Brain-storming:
+		# Hold one file constant then walk the other file line by line(comparing as you go)?
+
+
+# Point of confusion:
+Given that I have the following make target:
+
+When I execute:
+	# diff-structure manual drift review
+diff-structure:
+	@echo "🔍 Diffing current structure against system/structure.spec..."
+	@test -f $(SNAPSHOT_GEN) || (echo "❌ Missing: $(SNAPSHOT_GEN)" && exit 1)
+	@bash $(SNAPSHOT_GEN) generate_structure_spec . > .structure.snapshot
+	@diff -u $(STRUCTURE_SPEC) .structure.snapshot || echo "⚠️  Drift detected — review above diff."
+
+
+Then what the difference between that target and  File comparator I am wanting to create?
+
+
+
+Relying solely on your diff-structure target carries a few trade‑offs—most of them around flexibility, reliability, and scalability. Here’s what to watch out for if you stick with it long‑term:
+
+    Limited Parameterization
+
+        You’re locked into generating .structure.snapshot in the CWD and comparing against whatever $(STRUCTURE_SPEC) is set to in your Makefile.
+
+        You can’t easily point it at different snapshots or spec files, or run it from another directory, without editing the target.
+
+    No Noise‑Filtering
+
+        A raw diff -u will show every change, including transient files (e.g. editor swap files, OS metadata) that you might want to ignore.
+
+        You can’t pass in --ignore-matching-lines or regex filters without wrapping diff in extra flags or scripts.
+
+    Unstructured Output
+
+        You only get a unified diff and a “⚠️ Drift detected” banner.
+
+        There’s no summary (e.g. “12 entries added, 5 removed”), no JSON for machine‑consumption, and no HTML/email report for stakeholders.
+
+    Masked Exit Codes
+
+        Because your Makefile ends with … || echo "⚠️ Drift detected", the exit code will be 0 even when drift exists.
+
+        That means CI pipelines won’t fail, tests won’t catch drift automatically, and downstream scripts can’t react (e.g. send alerts or block a merge).
+
+    Harder CI/CD Integration
+
+        Without distinct exit codes or a flag set, you can’t gate merges or deployments on “no drift.”
+
+        You’d need to wrap make diff-structure in another script to detect drift from stdout.
+
+    Maintainability & Reuse
+
+        If you ever need the same logic elsewhere (different repo, different team), you’ll end up copy‑pasting this Make target or building ad‑hoc wrappers.
+
+        A standalone comparator script centralizes the logic, making it easier to document, test, and version independently.
+
+
+
+
+

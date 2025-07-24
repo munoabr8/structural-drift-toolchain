@@ -32,11 +32,7 @@
 # that is setting the incorrect path!!!
 
  
-# Need to check:
-# Legacy/old: 
-# 	../debugtools/structureDebugging.sh 
-# 	(in system/make/preflight.mk, preflight_shared.mk,
-# 	 health.mk, Makefile.legacy
+ 
  
 # Global Variables
  

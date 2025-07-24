@@ -22,11 +22,7 @@ dir: ./system-test/structure_validator/
 dir: ./system-test/structure_validator/tmp/
 dir: ./system/exit-codes/
 dir: ./system/make/
-dir: ./system/tmp/
 dir: ./test/
-dir: ./tmp/
-dir: ./tmp/testcase/
-dir: ./tmp/testcase/logs/
 dir: ./tools/
 dir: ./tools/git-hooks/
 dir: ./tools/providers/
@@ -38,7 +34,6 @@ file: ./.github/.DS_Store
 file: ./.gitignore
 file: ./.structure.ignore
 file: ./Makefile
-file: ./Makefile.legacy
 file: ./README.generated.md
 file: ./README.md
 file: ./attn/context-status.sh
@@ -86,6 +81,7 @@ file: ./system-test/structure_validator/test-valid-structure.bats
 file: ./system-test/structure_validator_queries.bats
 file: ./system-test/test-main.bats
 file: ./system/.DS_Store
+file: ./system/comparator.txt
 file: ./system/exit-codes/exit_codes_validator.sh
 file: ./system/logger.sh
 file: ./system/logger_wrapper.sh
@@ -100,6 +96,7 @@ file: ./system/make/preflight_shared.mk
 file: ./system/make/structure.mk
 file: ./system/make/test.mk
 file: ./system/source_OR_fail.sh
+file: ./system/structure_spec_validator.sh
 file: ./system/structure_validator.rf.sh
 file: ./system/structure_validator.sh
 file: ./system/test_logger.bats
@@ -116,6 +113,7 @@ file: ./tools/bats-guard.sh
 file: ./tools/check_git_trash.sh
 file: ./tools/detect_garbage.sh
 file: ./tools/doctor.sh
+file: ./tools/enforce_policy.rf.sh
 file: ./tools/enforce_policy.sh
 file: ./tools/fix_missing_specs.sh
 file: ./tools/garbage_debug_output.txt

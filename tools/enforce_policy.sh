@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+
+# ./tools/enforce_policy.sh
+
+
 POLICY_FILE="../config/policy.rules.yml"
 SNAPSHOT=$(find . -type f -o -type d | sort)
 
@@ -65,15 +69,35 @@ print_results() {
 }
 
 ### ────────── Main Entrypoint ────────── ###
-main() {
+
+# What is the input required for this
+# main() {
+#   rule_count=$(yq e '. | length' "$POLICY_FILE")
+#   for ((i=0; i<rule_count; i++)); do
+#     dispatch_rule "$i"
+#   done
+
+#   print_results
+#   return ${#ERRORS[@]}
+# }
+
+execute() {
+  ERRORS=()
+  echo "DEBUG: inside execute(), ERRORS=${#ERRORS[@]}" >&2
   rule_count=$(yq e '. | length' "$POLICY_FILE")
+  echo "DEBUG: rule_count=$rule_count" >&2
   for ((i=0; i<rule_count; i++)); do
     dispatch_rule "$i"
   done
 
   print_results
-  exit ${#ERRORS[@]}
+  return ${#ERRORS[@]}
 }
 
-main "$@"
+
+
+# if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+#   main "$@"
+# fi
+
 

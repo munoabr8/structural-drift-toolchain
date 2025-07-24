@@ -162,7 +162,7 @@ setup_environment_paths
 
   source_or_fail "$system_dir/exit-codes/exit_codes_validator.sh"
 
-
+     
  
  }
 
@@ -181,13 +181,21 @@ validate_structure() {
   return $?
 }
 
-enforce_policy() {
-  local spec="$1" policy="$2"
-  enforce_policy_rules "$spec" "$policy"
-  return $?
+enforce_policy2() {
+  #et -x
+  safe_log "INFO" "----- enforcing policy -----" "" 0
+  source_or_fail "../tools/enforce_policy.rf.sh"
+
+  # Call execute directly
+  execute
+  local rc=$?
+
+  # this should now definitely print
+  echo "DEBUG(wrapper): rc is $rc" >&2
+
+  safe_log "INFO" "policy execute returned $rc" "" "$rc"
+  return $rc
 }
-
-
 # Usage: parse_CLI_args <state‑array‑name> <all the CLI args>
 parse_CLI_args() {
   local -n S=$1  # nameref to your state array
@@ -319,8 +327,12 @@ locate_spec_file() {
   enter_spec_directory "$spec_file"
   validate_file_structure "$(basename "$spec_file")"
   exit_spec_directory
-
+  #declare -f enforce_policy2 >&2
+  #set -x
+  enforce_policy2
+  echo "FINAL STATUS: $?"
   exit $?
+ 
 }
 
 
