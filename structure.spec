@@ -23,6 +23,9 @@ dir: ./system-test/structure_validator/tmp/
 dir: ./system/exit-codes/
 dir: ./system/make/
 dir: ./test/
+dir: ./tmp/
+dir: ./tmp/testcase/
+dir: ./tmp/testcase/logs/
 dir: ./tools/
 dir: ./tools/git-hooks/
 dir: ./tools/providers/
@@ -63,6 +66,7 @@ file: ./modules/unit_testing/fsm/transition_testing.bats.sh
 file: ./modules/unit_testing/handler.sh
 file: ./modules/unit_testing/module.state
 file: ./system-test/.DS_Store
+file: ./system-test/enforce_policy.bats
 file: ./system-test/features/drift_monitoring.feature
 file: ./system-test/garbage_detector/test-ignore-valid.bats
 file: ./system-test/garbage_detector/test-untracked-garbage.bats
@@ -113,7 +117,6 @@ file: ./tools/bats-guard.sh
 file: ./tools/check_git_trash.sh
 file: ./tools/detect_garbage.sh
 file: ./tools/doctor.sh
-file: ./tools/enforce_policy.rf.sh
 file: ./tools/enforce_policy.sh
 file: ./tools/fix_missing_specs.sh
 file: ./tools/garbage_debug_output.txt
@@ -129,5 +132,6 @@ file: ./tools/providers/terraform/.DS_Store
 file: ./tools/scan_duplicate_targets.sh
 file: ./tools/setup.sh
 file: ./tools/structure/structure_snapshot_gen.sh
+file: ./tools/structure_compare.sh
 file: ./tools/test_pre_git_switch.bats
 file: ./tools/validate_ignore.sh

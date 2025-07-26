@@ -1,0 +1,31 @@
+Here’s a lean Bats suite that hits the critical branches of your enforcer:
+
+Must-cover cases
+
+    Happy path → no violations ⇒ EXIT_OK.
+
+    Violations (action: error) ⇒ EXIT_POLICY_VIOLATIONS.
+
+    Warnings only (action: warn) ⇒ EXIT_OK, but WARN lines printed.
+
+    Unknown condition ⇒ EXIT_UNKNOWN_CONDITION (or whatever you chose).
+
+    Policy file missing ⇒ EXIT_POLICY_FILE_NOT_FOUND.
+
+    yq missing ⇒ EXIT_DEP_YQ_MISSING.
+
+    Runs from any CWD (path resolver works).
+
+    Snapshot missing → generated (no crash).
+
+    Regex anchoring (e.g., ^modules(/|$) matches dir, not substring).
+
+    Exit code file not sourced (fail fast).
+
+Suggested testability tweaks (tiny)
+
+    Allow overriding the policy path via POLICY_FILE env var or --policy <file>.
+
+    Print an explicit success message so tests can assert on it (OK: N rules satisfied.).
+
+    Export the exit codes so Bats can assert them by name (optional, but handy).

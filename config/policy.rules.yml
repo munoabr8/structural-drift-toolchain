@@ -13,9 +13,9 @@
 # --> V.1
 # --> If some script exists that can read this file, 
 # --> then it can observe:
-# --> (1) what should never change(invariant), 
+# --> (1) what you want to never change(invariant), 
 # --> (2) what is likely to change(variant), 
-# --> (3) and what you expect will(what you want to) change(volatile).
+# --> (3) and what should change(volatile).
 # --> and generate an appropiate notification if false.
 
 # --> V.2
@@ -48,8 +48,7 @@
 # --> Compare expecations against (current?) {snapshot|specification} file. 
 # --> Trigger notification
 
-#  Qualifiers -> expecations 
- 
+  
 
 - type: invariant
   path: modules
@@ -61,31 +60,40 @@
   condition: must_exist
   action: error
 
-# - type: invariant
-#   path: config
-#   condition: must_exist
-#   action: error
+- type: invariant
+  path: config
+  condition: must_exist
+  action: error
 
-# - type: invariant
-#   path: config/policy.rules.yaml
-#   condition: must_exist
-#   action: error 
+- type: invariant
+  path: config/policy.rules.yml
+  condition: must_exist
+  action: error 
 
+- type: invariant
+  path: tools
+  condition: must_exist
+  action: error 
 
+- type: invariant
+  path: README.md
+  condition: must_exist
+  action: error 
 
+- type: invariant
+  path: main.sh 
+  condition: must_exist
+  action: error 
 
-
-
+- type: invariant
+  path: Makefile 
+  condition: must_exist
+  action: error 
   
-
-# - type: variant
-#   path: ^configs/.*\.yml$
-#   condition: allowed
-#   action: warn
-
-# - type: volatile
-#   path: ^logs/
-#   condition: ignore
-#   action: ignore
+ 
+- type: volatile
+  path: ^logs/
+  condition: ignore
+  action: ignore
 
 

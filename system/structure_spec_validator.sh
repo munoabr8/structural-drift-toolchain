@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
  
- #./system/structure_validator.rf.sh
+ #./system/structure_spec_validator.sh
              
 
  set -euo pipefail
@@ -196,6 +196,10 @@ enforce_policy2() {
   safe_log "INFO" "policy execute returned $rc" "" "$rc"
   return $rc
 }
+
+
+
+
 # Usage: parse_CLI_args <state‑array‑name> <all the CLI args>
 parse_CLI_args() {
   local -n S=$1  # nameref to your state array
@@ -327,6 +331,8 @@ locate_spec_file() {
   enter_spec_directory "$spec_file"
   validate_file_structure "$(basename "$spec_file")"
   exit_spec_directory
+
+  echo "-------------<<<<<<<<<<>>>>>>>>>>>>>"
   #declare -f enforce_policy2 >&2
   #set -x
   enforce_policy2

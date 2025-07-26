@@ -13,8 +13,7 @@
 
 
  set -euo pipefail
-#HISTTIMEFORMAT="${HISTTIMEFORMAT:-}"
-
+ 
  #set -x  # Trace every command
 
 # Need to reduce granularity of output.
