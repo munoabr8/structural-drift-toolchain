@@ -24,8 +24,6 @@ dir: ./system/exit-codes/
 dir: ./system/make/
 dir: ./test/
 dir: ./tmp/
-dir: ./tmp/testcase/
-dir: ./tmp/testcase/logs/
 dir: ./tools/
 dir: ./tools/git-hooks/
 dir: ./tools/providers/
@@ -39,8 +37,11 @@ file: ./.structure.ignore
 file: ./Makefile
 file: ./README.generated.md
 file: ./README.md
+file: ./attn/.DS_Store
+file: ./attn/context-status.rf.sh
 file: ./attn/context-status.sh
 file: ./config/.DS_Store
+file: ./config/enforcer_tests.txt
 file: ./config/policy.rule
 file: ./config/policy.rule.bk
 file: ./config/policy.rules
@@ -65,6 +66,7 @@ file: ./modules/unit_testing/fsm/fsm_input_tests.sh
 file: ./modules/unit_testing/fsm/transition_testing.bats.sh
 file: ./modules/unit_testing/handler.sh
 file: ./modules/unit_testing/module.state
+file: ./smoke.sh
 file: ./system-test/.DS_Store
 file: ./system-test/enforce_policy.bats
 file: ./system-test/features/drift_monitoring.feature
@@ -77,6 +79,7 @@ file: ./system-test/structure_generator/test-generate-spec.bats
 file: ./system-test/structure_ignore/.DS_Store
 file: ./system-test/structure_ignore/.structure.ignore
 file: ./system-test/structure_ignore/test-validate-ignore.bats
+file: ./system-test/structure_negative_tests/.DS_Store
 file: ./system-test/structure_negative_tests/test-broken-symlink.bats
 file: ./system-test/structure_negative_tests/test-invalid-structure.bats
 file: ./system-test/structure_validator/.DS_Store
@@ -118,6 +121,7 @@ file: ./tools/check_git_trash.sh
 file: ./tools/detect_garbage.sh
 file: ./tools/doctor.sh
 file: ./tools/enforce_policy.sh
+file: ./tools/exit_codes_enforcer.sh
 file: ./tools/fix_missing_specs.sh
 file: ./tools/garbage_debug_output.txt
 file: ./tools/gen_readme.sh
