@@ -45,82 +45,6 @@ safe_log "INFO" "Ending session, staged for probe_structure refactor. Will need 
 
  # }
  
-# generate_structure_snapshot() {
-# safe_log "INFO" "Entered structure snapshot function" "" "0"
-
-
-#   local root="${1:-}"
-
-#   echo "🔍 generate_structure_spec ARGS: $root" >&2
-
-#   if [[ -z "$root" || ! -d "$root" ]]; then
-#     echo "❌ Invalid or missing root: '$root'" >&2
-#     return 1
-#   fi
-
-#   if [[ ! -r "$root" ]]; then
-#     echo "❌ Cannot read module directory: $root" >&2
-#     return 1
-#   fi
-
-#   echo "# Auto-generated structure.spec"
-#   echo ""
-#   echo "🧪 Running structure scan in: $root" >&2
-
-#   echo "📁 Scanning directories..." >&2
-#   # if ! find "$root" -type d ! -name 'structure.spec' | grep -vE '\.git' | sort | sed 's|^|dir: |' | sed 's|$$|/|'; then
-#   #   echo "❌ Failed during directory scan" >&2
-#   #   return 1
-#   # fi
-#     if ! find "$root" -type d ! -name 'structure.spec' | grep -vE '\.git' | sort | sed 's|^|dir: |' | sed 's|$|/|'; then
-#     echo "❌ Failed during directory scan" >&2
-#     return 1
-#   fi
-
-
-
-
-#   echo "🔍 Scanning files in: $root" >&2
-#   if ! find "$root" -type f \
-#     ! -name 'structure.spec' \
-#     ! -name '.structure.snapshot' \
-#     ! -name '*.log' \
-#     ! -name '*.tmp' \
-#     ! -path "$root/tmp/*" \
-#     ! -path "$root/.git/*" \
-#     2>/dev/null | sort | sed 's|^|file: |'; then
-#     echo "❌ Failed during file scan for module: $root" >&2
-#     return 1
-#   fi
-
-# echo "🔗 Scanning symlinks..." >&2
-
-# tmp_symlink_flag="$(mktemp)"
-# echo "0" > "$tmp_symlink_flag"
-
-# while IFS= read -r link; do
-#   if target="$(readlink "$link" 2>/dev/null)"; then
-#     echo "link: $link -> $target"
-#   else
-#     echo "❌ readlink failed for: $link" >&2
-#     echo "1" > "$tmp_symlink_flag"
-#   fi
-# done < <(find "$root" -type l ! -name 'structure.spec' | grep -vE '\.git' | sort)
-
-# if [[ "$(cat "$tmp_symlink_flag")" == "1" ]]; then
-#   echo "❌ Failed during symlink scan" >&2
-#   rm -f "$tmp_symlink_flag"
-#   return 1
-# else
-#   echo "✅ Symlink scan completed successfully" >&2
-#   rm -f "$tmp_symlink_flag"
-# fi
-
-
-
-#   return 0
-# }
-
 
 generate_structure_snapshot() {
   safe_log "INFO" "Entered structure snapshot function" "" "0"
@@ -128,7 +52,7 @@ generate_structure_snapshot() {
   local root="${1:-}"
 
   local file_list=""
-  
+
   if [[ -z "$root" || ! -d "$root" ]]; then
     echo "❌ Invalid or missing root: '$root'" >&2
     return 1
@@ -206,13 +130,9 @@ fi
 }
 
 main() {
-  local cmd="${1:-}"
-  # Treat either subcommand name as a no‑op and shift to the real argument
-  if [[ "$cmd" == "generate_structure_spec" || "$cmd" == "generate_structure_snapshot" ]]; then
-    shift
-    cmd="${1:-.}"
-  fi
-  generate_structure_snapshot "${cmd:-.}"
+ 
+ 
+  generate_structure_snapshot .
 }
 
 

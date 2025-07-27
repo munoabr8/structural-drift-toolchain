@@ -44,7 +44,7 @@ enforce-structure:
 snapshot-structure:
 	@test -f $(SNAPSHOT_GEN) || (echo "❌ Missing: $(SNAPSHOT_GEN)" && exit 1)
 	@echo "📸 Generating current structure snapshot..."
-	@bash $(SNAPSHOT_GEN) generate_structure_snapshot  > .structure.snapshot; \
+	@bash $(SNAPSHOT_GEN) generate_structure_snapshot . > .structure.snapshot; \
  	EXIT_CODE=$$?; \
  	echo "🔁 Return code from generate_structure_snapshot: $$EXIT_CODE";  \
  
