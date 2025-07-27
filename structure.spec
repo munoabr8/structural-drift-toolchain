@@ -127,6 +127,7 @@ file: ./tools/garbage_debug_output.txt
 file: ./tools/gen_readme.sh
 file: ./tools/gen_readme_updates.sh
 file: ./tools/generate_all_module_specs.sh
+file: ./tools/git-hooks/pre-commit
 file: ./tools/git-hooks/pre-push
 file: ./tools/install-hooks.sh
 file: ./tools/pre-git-switch.sh
