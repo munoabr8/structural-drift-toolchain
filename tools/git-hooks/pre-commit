@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 # tools/git-hooks/pre-commit
 #
 # This hook runs before each commit to ensure the repository
