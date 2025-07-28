@@ -94,6 +94,7 @@ fi
         ! -name '.structure.snapshot' \
         ! -name '*.log' \
         ! -name '*.tmp' \
+        ! -name '.DS_Store' \
         ! -path "$root/tmp/*" \
         ! -path "$root/.git/*" \
         2>/dev/null \
