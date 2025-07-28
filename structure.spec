@@ -23,6 +23,7 @@ dir: ./system-test/structure_validator/tmp/
 dir: ./system/exit-codes/
 dir: ./system/make/
 dir: ./test/
+dir: ./tmp/
 dir: ./tools/
 dir: ./tools/git-hooks/
 dir: ./tools/providers/
