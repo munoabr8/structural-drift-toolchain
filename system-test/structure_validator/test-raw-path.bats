@@ -35,10 +35,9 @@ setup_environment_paths
  load_dependencies
 
  
-  mkdir -p tmp/testcase/logs
-  touch tmp/testcase/logs/logfile.log
-  cd tmp/testcase
- 
+  mkdir -p "$BATS_TEST_TMPDIR/logs"
+  touch "$BATS_TEST_TMPDIR/logs/logfile.log"
+  cd "$BATS_TEST_TMPDIR"
  
   
   }
