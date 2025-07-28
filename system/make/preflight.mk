@@ -9,7 +9,7 @@ SNAPSHOT_GEN_RF=../debugtools/structureDebugging.sh
 include system/make/preflight_shared.mk
 # === Preflight ===
 
-
+.PHONY: regen-readme
  
 test-ignore:
 	@echo "🧪 Running .structure.ignore validation tests..."
@@ -19,7 +19,7 @@ check-trash:
 	@bash tools/check_git_trash.sh
 
 regen-readme:
-	@bash tools/gen_readme.sh
+	@bash tools/gen_readme.rf.sh
 
 
 regen-and-fix:
