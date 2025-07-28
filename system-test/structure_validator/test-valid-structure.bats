@@ -1,77 +1,53 @@
 #!/usr/bin/env bats
 
+# --- per-test setup (runs in same process as each test) ---
 setup() {
+  # Work in an isolated dir
+  cd "$BATS_TEST_TMPDIR"
 
-  resolve_project_root
-  setup_environment_paths
+  # Resolve repo root from this test file's location
+  local self="${BATS_TEST_FILENAME:-${BASH_SOURCE[0]}}"
+  PROJECT_ROOT="$(cd "$(dirname "$self")/../.." && pwd)"
+  SYSTEM_DIR="$PROJECT_ROOT/system"
+  SUT_SOURCE="$SYSTEM_DIR/structure_validator.sh"
 
-  load_dependencies
+  # Export what the SUT expects
+  export PROJECT_ROOT SYSTEM_DIR
 
- 
- original_script_path="$SYSTEM_DIR/structure_validator.sh"
-  sandbox_script="$BATS_TMPDIR/structure_validator.sh"
-
-  cp "$original_script_path" "$sandbox_script" || {
-    echo "❌ Failed to copy structure_validator.sh from: $original_script_path"
-    exit 1
-  }
- 
-  [[ -f "$sandbox_script" ]] || {
-    echo "Script under test not found: $sandbox_script"
-
-        echo "$PWD"
-
-    exit 1
-  }
-  
-  mkdir -p tmp/testcase/scripts
-  cd tmp/testcase
-}
-
-teardown() {
-  cd ../..
-  rm -rf tmp/testcase
-}
-
-
-
-  resolve_project_root() {
-  local source_path="${BATS_TEST_FILENAME:-${BASH_SOURCE[0]}}"
-  cd "$(dirname "$source_path")/../.." && pwd
-}
-
-setup_environment_paths() {
-  export PROJECT_ROOT="${PROJECT_ROOT:-$(resolve_project_root)}"
-  export SYSTEM_DIR="${SYSTEM_DIR:-$PROJECT_ROOT/system}"
-}
-
-
- load_dependencies(){
-
- 
-
-  if [[ ! -f "$SYSTEM_DIR/source_OR_fail.sh" ]]; then
-    echo "❌ Missing required file: source_OR_fail.sh"
-    exit 1
+  # Sanity checks (fail early with useful context)
+  if [[ ! -f "$SUT_SOURCE" ]]; then
+    echo "❌ SUT not found."
+    echo "   PROJECT_ROOT=$PROJECT_ROOT"
+    echo "   SYSTEM_DIR=$SYSTEM_DIR"
+    echo "   SUT_SOURCE=$SUT_SOURCE"
+    echo "   ls SYSTEM_DIR:"
+    ls -la "$SYSTEM_DIR" || true
+    return 1
   fi
 
-  source "$SYSTEM_DIR/source_OR_fail.sh"
+  # Stage a sandbox copy of the SUT
+  sandbox_script="$BATS_TEST_TMPDIR/structure_validator.sh"
+  cp "$SUT_SOURCE" "$sandbox_script" || { echo "❌ Copy failed"; return 1; }
+  chmod +x "$sandbox_script"
 
-  source_or_fail "$SYSTEM_DIR/logger.sh"
-  source_or_fail "$SYSTEM_DIR/logger_wrapper.sh"
+  # Optional: verify runtime deps exist; the SUT will source them
+  [[ -f "$SYSTEM_DIR/source_OR_fail.sh" ]] || { echo "❌ Missing source_OR_fail.sh"; return 1; }
+  [[ -f "$SYSTEM_DIR/logger.sh"         ]] || { echo "❌ Missing logger.sh";       return 1; }
+  [[ -f "$SYSTEM_DIR/logger_wrapper.sh" ]] || { echo "❌ Missing logger_wrapper.sh"; return 1; }
+}
 
-  source_or_fail "$SYSTEM_DIR/structure_validator.sh"
- 
- 
- }
+teardown() { :; }  # Let Bats clean $BATS_TEST_TMPDIR
 
-
+# Helpers
+write_spec() { printf '%s\n' "$@" > structure.spec; }
+run_sut()    { run bash "$sandbox_script" ./structure.spec; }
 
 @test "Valid structure with one file passes validation" {
+  mkdir -p scripts
   touch scripts/entry.sh
-  echo "file: ./scripts/entry.sh" > structure.spec
+  write_spec "file: ./scripts/entry.sh"
 
-  run bash ../../system/structure_validator.sh ./structure.spec
+  run_sut
 
   [ "$status" -eq 0 ]
   [[ "$output" =~ "File OK: ./scripts/entry.sh" ]]

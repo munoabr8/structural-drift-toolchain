@@ -6,7 +6,7 @@ TEST_GARBAGE=system-test/garbage_detector
 
 
 
-test-all: test-structure test-garbage #test-garbage-detector test-negative-structure
+test-all: test-structure  test-garbage  test-negative-structure
 
 
 
