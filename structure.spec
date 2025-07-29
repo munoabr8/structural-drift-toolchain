@@ -108,7 +108,6 @@ file: ./tools/doctor.sh
 file: ./tools/enforce_policy.sh
 file: ./tools/exit_codes_enforcer.sh
 file: ./tools/fix_missing_specs.sh
-file: ./tools/garbage_debug_output.txt
 file: ./tools/gen_readme.rf.sh
 file: ./tools/gen_readme.sh
 file: ./tools/gen_readme_updates.sh

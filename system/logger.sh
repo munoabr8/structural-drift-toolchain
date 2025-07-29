@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# system/logger.sh
+# ./system/logger.sh
 # JSON-based logger with optional file output and structured logging
 
 # ========================

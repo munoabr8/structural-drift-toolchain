@@ -3,7 +3,7 @@
 #STRUCTURE_SPEC=./system/structure.spec
 VALIDATOR_RF=./system/structure_validator.rf.sh
 CONTEXT_CHECK=./attn/context-status.sh
-SNAPSHOT_GEN_RF=../debugtools/structureDebugging.sh
+SNAPSHOT_GEN_RF=./tools/structure/structure_snapshot_gen.sh
 
 
 include system/make/preflight_shared.mk

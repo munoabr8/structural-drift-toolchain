@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+#./main.rf.sh
 
 umask 022
  set -euo pipefail
