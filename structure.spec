@@ -108,6 +108,7 @@ file: ./tools/doctor.sh
 file: ./tools/enforce_policy.sh
 file: ./tools/exit_codes_enforcer.sh
 file: ./tools/fix_missing_specs.sh
+file: ./tools/gen_readme.rf.rf.sh
 file: ./tools/gen_readme.rf.sh
 file: ./tools/gen_readme.sh
 file: ./tools/gen_readme_updates.sh
@@ -120,5 +121,6 @@ file: ./tools/scan_duplicate_targets.sh
 file: ./tools/setup.sh
 file: ./tools/structure/structure_snapshot_gen.sh
 file: ./tools/structure_compare.sh
+file: ./tools/test_coverage_summary_real.bats
 file: ./tools/test_pre_git_switch.bats
 file: ./tools/validate_ignore.sh
