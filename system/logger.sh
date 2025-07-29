@@ -88,6 +88,7 @@ log_json() {
   local error_code="${3:-""}"
   local exit_code="${4:-""}"
 
+ 
   # Invariant: Level must be from accepted set
   case "$level" in
     INFO|ERROR|FATAL|SUCCESS) ;;
@@ -96,6 +97,12 @@ log_json() {
       return 98
       ;;
   esac
+
+   # If quiet mode, only allow ERROR or FATAL through
+  if [[ "${QUIET:-false}" == "true" && "$level" != "ERROR" && "$level" != "FATAL" ]]; then
+    return 0
+   fi
+ 
 
 REDUCED_GRANULARITY="${REDUCED_GRANULARITY:-false}"
 

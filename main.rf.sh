@@ -59,8 +59,9 @@ run_preflight() {
   local cmd="${1:-start}"
   safe_log "INFO" "Preflight begin: $cmd"
 
+"$VALIDATOR" --quiet validate "$STRUCTURE_SPEC" || { echo "Structure invalid." >&2; return 1; }
 
-  "$VALIDATOR"  validate "$STRUCTURE_SPEC" || { echo "Structure invalid." >&2; return 1; }
+ # "$VALIDATOR" "--quiet" validate "$STRUCTURE_SPEC" || { echo "Structure invalid." >&2; return 1; }
   "$CONTEXT_CHECK"               || { echo "Context invalid."   >&2; return 1; }
 
   safe_log "INFO" "Preflight passed: $cmd"

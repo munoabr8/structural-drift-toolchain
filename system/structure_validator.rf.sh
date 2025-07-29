@@ -141,9 +141,10 @@
 
   
 
-QUIET=false
+ 
+
 if [[ "${1:-}" == "--quiet" ]]; then
-  QUIET=true
+  export QUIET=true
   shift
 fi
 
