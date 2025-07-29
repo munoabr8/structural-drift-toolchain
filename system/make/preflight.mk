@@ -19,7 +19,7 @@ check-trash:
 	@bash tools/check_git_trash.sh
 
 regen-readme:
-	@bash tools/gen_readme.rf.sh
+	@bash tools/gen_readme.rf.rf.sh
 
 
 regen-and-fix:

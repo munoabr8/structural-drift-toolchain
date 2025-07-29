@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-j
+ 
 
 setup() {
   mkdir -p tmp/validate_ignore_test/foo

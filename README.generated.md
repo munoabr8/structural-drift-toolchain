@@ -21,12 +21,6 @@ This system uses strict structure validation, module boundaries, and automation 
 
 ---
 
-## 📊 Test Coverage Summary
-
-- Total BATS Tests: 0
-
----
-
 ## ⚠️ Modules Missing structure.spec
 
 _All modules have specs._
@@ -39,3 +33,9 @@ _All modules have specs._
 - Temporary artifacts like `.structure.snapshot` must not be committed.
 - Structure drift is flagged by CI and requires manual review.
 - Garbage detection prevents unknown or unauthorized files.
+
+---
+
+## Test Coverage Summary
+
+- Total BATS Tests: 84
