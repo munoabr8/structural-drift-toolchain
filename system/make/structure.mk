@@ -1,6 +1,8 @@
+#./system/make/structure.mk
+
 
 STRUCTURE_SPEC=./structure.spec
-VALIDATOR=./system/structure_validator.sh
+VALIDATOR=./system/structure_validator.rf.sh
 CONTEXT_CHECK=./attn/context-status.sh
 SNAPSHOT_GEN=./tools/structure/structure_snapshot_gen.sh
 
