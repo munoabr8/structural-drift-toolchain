@@ -38,9 +38,6 @@ file: ./README.md
 file: ./attn/context-status.rf.sh
 file: ./attn/context-status.sh
 file: ./config/enforcer_tests.txt
-file: ./config/policy.rule
-file: ./config/policy.rule.bk
-file: ./config/policy.rules
 file: ./config/policy.rules.yml
 file: ./config/runtime.cfg
 file: ./config/runtime_flags.sh
