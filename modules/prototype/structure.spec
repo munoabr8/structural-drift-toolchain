@@ -39,9 +39,6 @@ file: ./README.md
 file: ./attn/context-status.rf.sh
 file: ./attn/context-status.sh
 file: ./config/enforcer_tests.txt
-file: ./config/policy.rule
-file: ./config/policy.rule.bk
-file: ./config/policy.rules
 file: ./config/policy.rules.yml
 file: ./config/runtime.cfg
 file: ./config/runtime_flags.sh
@@ -109,6 +106,7 @@ file: ./tools/doctor.sh
 file: ./tools/enforce_policy.sh
 file: ./tools/exit_codes_enforcer.sh
 file: ./tools/fix_missing_specs.sh
+file: ./tools/gen_readme.rf.rf.sh
 file: ./tools/gen_readme.rf.sh
 file: ./tools/gen_readme.sh
 file: ./tools/gen_readme_updates.sh
@@ -121,5 +119,6 @@ file: ./tools/scan_duplicate_targets.sh
 file: ./tools/setup.sh
 file: ./tools/structure/structure_snapshot_gen.sh
 file: ./tools/structure_compare.sh
+file: ./tools/test_coverage_summary_real.bats
 file: ./tools/test_pre_git_switch.bats
 file: ./tools/validate_ignore.sh

@@ -73,9 +73,11 @@ source_utilities(){
  }
 
  
-  resolve_project_root() {
-  local source_path="${BATS_TEST_FILENAME:-${BASH_SOURCE[0]}}"
-  cd "$(dirname "$source_path")/../" && pwd
+ 
+
+resolve_project_root() {
+  local from="${1:-${BATS_TEST_FILENAME:-${BASH_SOURCE[0]}}}"
+  ( cd "$(dirname "$from")/../" && pwd -P ) || return 1
 }
 
 setup_environment_paths() {
