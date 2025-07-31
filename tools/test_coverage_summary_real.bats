@@ -44,6 +44,7 @@ local original_script_path="$PROJECT_ROOT/tools/gen_readme.rf.rf.sh"
     
   }
 
+ 
 @test "sandbox_script is available & evaluate_condition is defined" {
   [ -n "$sandbox_script" ]
   type -t generate_test_summary >/dev/null
