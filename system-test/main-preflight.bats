@@ -12,7 +12,7 @@ setup_environment_paths
   
 
  
-  local original_script_path="$PROJECT_ROOT/main.rf.sh"
+  local original_script_path="$PROJECT_ROOT/main.sh"
 
     sandbox_script="$BATS_TMPDIR/main.sh"
  export sandbox_script

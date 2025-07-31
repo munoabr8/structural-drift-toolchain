@@ -7,7 +7,6 @@ dir: ./modules/
 dir: ./modules/prototype/
 dir: ./modules/unit_testing/
 dir: ./modules/unit_testing/environment/
-dir: ./modules/unit_testing/experimentation/
 dir: ./modules/unit_testing/fsm/
 dir: ./system/
 dir: ./system-test/
@@ -41,7 +40,6 @@ file: ./config/enforcer_tests.txt
 file: ./config/policy.rules.yml
 file: ./config/runtime.cfg
 file: ./config/runtime_flags.sh
-file: ./main.rf.sh
 file: ./main.sh
 file: ./modules/prototype/envManager.sh
 file: ./modules/prototype/fsm_git_handler.sh
