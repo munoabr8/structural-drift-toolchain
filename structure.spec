@@ -73,6 +73,7 @@ file: ./system-test/structure_validator/test-raw-path.bats
 file: ./system-test/structure_validator/test-valid-structure.bats
 file: ./system-test/structure_validator_queries.bats
 file: ./system-test/test-main.bats
+file: ./system-test/testing-setup.sh
 file: ./system/comparator.txt
 file: ./system/exit-codes/exit_codes_validator.sh
 file: ./system/logger.sh
@@ -120,4 +121,5 @@ file: ./tools/structure/structure_snapshot_gen.sh
 file: ./tools/structure_compare.sh
 file: ./tools/test_coverage_summary_real.bats
 file: ./tools/test_pre_git_switch.bats
+file: ./tools/utili-sourcing.sh
 file: ./tools/validate_ignore.sh
