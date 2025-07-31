@@ -1,7 +1,22 @@
 #!/usr/bin/env bash
 # ./tools/pre-merge-check.sh
 
-TARGET_BRANCH="${1:-main}"
+# Get current branch
+CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+
+# Smart default: if current branch is not main, assume main is target
+DEFAULT_TARGET_BRANCH="main"
+[[ "$CURRENT_BRANCH" == "$DEFAULT_TARGET_BRANCH" ]] && DEFAULT_TARGET_BRANCH="dev"
+
+# Use provided arg or fallback to inferred target
+TARGET_BRANCH="${1:-$DEFAULT_TARGET_BRANCH}"
+
+
+if [[ "$CURRENT_BRANCH" == "$TARGET_BRANCH" ]]; then
+  echo "⚠️ You're trying to merge a branch into itself. Check your arguments."
+  exit 1
+fi
+
 
 REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$REPO_ROOT"
