@@ -1,3 +1,7 @@
+# ./config/policy.rules.yml
+
+
+
 # What do I want this file to achieve?
 # --> Store patterns that can be read and are coupled w/ actions 
 # --> in the event that the patterns are violated.
@@ -84,6 +88,22 @@
   path: main.sh 
   condition: must_exist
   action: error 
+
+- type: invariant
+  path: main.sh 
+  condition: must_exist
+  action: error 
+
+- type: invariant
+  path: tools/structure/structure_snapshot_gen.sh  
+  condition: must_exist
+  action: error   
+
+- type: invariant
+  path: tools/enforce_policy.sh
+  condition: must_exist
+  action: error  
+   
 
 - type: invariant
   path: Makefile 

@@ -1,11 +1,21 @@
 #!/usr/bin/env bash
+#./tools/gen_readme.sh
+
+
 set -euo pipefail
 
-# --- Config ---
-OUTPUT="./README.generated.md"
-MODULES_DIR="./modules"
-MAKEFILE="./Makefile"
 
+# --- Config ---
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+OUTPUT="$ROOT_DIR/README.generated.md"
+MODULES_DIR="$ROOT_DIR/modules"
+MAKEFILE="$ROOT_DIR/Makefile"
+
+[[ -d "$(dirname "$OUTPUT")" ]] || mkdir -p "$(dirname "$OUTPUT")"
+[[ -r "$MAKEFILE" ]] || echo "⚠️  $MAKEFILE not readable; commands section will be empty"
+[[ -d "$MODULES_DIR" ]] || echo "⚠️  $MODULES_DIR not found; modules section will be empty"
 
 
 # --- Generate ---

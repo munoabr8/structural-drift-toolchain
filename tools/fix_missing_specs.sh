@@ -2,7 +2,7 @@
 set -euo pipefail
 
 MODULES_DIR="./modules"
-DEBUG_SCRIPT="../debugtools/structureDebugging.sh"
+DEBUG_SCRIPT="./tools/structure/structure_snapshot_gen.sh"
 
 echo "🔧 Scanning for missing structure.spec files..."
 missing=0

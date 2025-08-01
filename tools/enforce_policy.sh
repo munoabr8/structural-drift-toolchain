@@ -34,7 +34,7 @@ POLICY_FILE="${POLICY_FILE:-$PROJECT_ROOT/config/policy.rules.yml}"
  
 source_utilities() {
 
-resolve_project_root
+#resolve_project_root
 setup_environment_paths
 
 echo "DEBUG PROJECT_ROOT=$PROJECT_ROOT"

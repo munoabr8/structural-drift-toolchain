@@ -3,13 +3,13 @@
 #STRUCTURE_SPEC=./system/structure.spec
 VALIDATOR_RF=./system/structure_validator.rf.sh
 CONTEXT_CHECK=./attn/context-status.sh
-SNAPSHOT_GEN_RF=../debugtools/structureDebugging.sh
+SNAPSHOT_GEN_RF=./tools/structure/structure_snapshot_gen.sh
 
 
 include system/make/preflight_shared.mk
 # === Preflight ===
 
-
+.PHONY: regen-readme
  
 test-ignore:
 	@echo "🧪 Running .structure.ignore validation tests..."
@@ -19,7 +19,7 @@ check-trash:
 	@bash tools/check_git_trash.sh
 
 regen-readme:
-	@bash tools/gen_readme.sh
+	@bash tools/gen_readme.rf.rf.sh
 
 
 regen-and-fix:

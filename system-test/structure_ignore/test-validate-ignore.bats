@@ -1,5 +1,7 @@
 #!/usr/bin/env bats
 
+ 
+
 setup() {
   mkdir -p tmp/validate_ignore_test/foo
   mkdir -p tmp/validate_ignore_test/bar

@@ -3,7 +3,7 @@
 # ===============================
 
 # OS/Editor Junk
-.DS_Store
+*.DS_Store
 *.swp
 *.bak
 *~
@@ -38,3 +38,10 @@ spec.diff.txt
 env.sh
 runtime.cfg.local
 
+
+# macOS Finder
+.DS_Store
+
+.DS_Store
+
+.DS_Store
