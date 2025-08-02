@@ -2,7 +2,9 @@
 
 dir: ./
 dir: ./attn/
+dir: ./bin/
 dir: ./config/
+dir: ./lib/
 dir: ./modules/
 dir: ./modules/prototype/
 dir: ./modules/unit_testing/
@@ -46,6 +48,9 @@ file: ./config/enforcer_tests.txt
 file: ./config/policy.rules.yml
 file: ./config/runtime.cfg
 file: ./config/runtime_flags.sh
+file: ./lib/logger.sh
+file: ./lib/logger_wrapper.sh
+file: ./lib/source_OR_fail.sh
 file: ./main.sh
 file: ./modules/prototype/envManager.sh
 file: ./modules/prototype/fsm_git_handler.sh
@@ -80,8 +85,6 @@ file: ./system-test/test-main.bats
 file: ./system-test/testing-setup.sh
 file: ./system/comparator.txt
 file: ./system/exit-codes/exit_codes_validator.sh
-file: ./system/logger.sh
-file: ./system/logger_wrapper.sh
 file: ./system/make/garbage.mk
 file: ./system/make/health.mk
 file: ./system/make/help.mk
@@ -91,7 +94,6 @@ file: ./system/make/preflight.mk
 file: ./system/make/preflight_shared.mk
 file: ./system/make/structure.mk
 file: ./system/make/test.mk
-file: ./system/source_OR_fail.sh
 file: ./system/structure_spec_validator.sh
 file: ./system/structure_validator.rf.sh
 file: ./system/structure_validator.sh

@@ -76,20 +76,20 @@ run_preflight() {
 # utility directory.
  source_utilities(){
  
-  local system_dir="${SYSTEM_DIR:-./system}"
+  local lib_dir="${lib_dir:-./system}"
 
     
-  if [[ ! -f "$system_dir/source_OR_fail.sh" ]]; then
+  if [[ ! -f "$lib_dir/source_OR_fail.sh" ]]; then
     echo "Missing required file: source_OR_fail.sh"
     exit 1
   fi
 
-  source "$system_dir/source_OR_fail.sh"
+  source "$lib_dir/source_OR_fail.sh"
 
-  source_or_fail "$system_dir/logger.sh"
-  source_or_fail "$system_dir/logger_wrapper.sh"
+  source_or_fail "$lib_dir/logger.sh"
+  source_or_fail "$lib_dir/logger_wrapper.sh"
 
-  source_or_fail "$system_dir/structure_validator.rf.sh"
+  source_or_fail "$lib_dir/structure_validator.rf.sh"
  
  
  }
