@@ -9,6 +9,7 @@ dir: ./modules/unit_testing/
 dir: ./modules/unit_testing/environment/
 dir: ./modules/unit_testing/experimentation/
 dir: ./modules/unit_testing/fsm/
+dir: ./root-test/
 dir: ./system/
 dir: ./system-test/
 dir: ./system-test/features/
@@ -29,9 +30,12 @@ dir: ./tools/git-hooks/
 dir: ./tools/providers/
 dir: ./tools/providers/localfs/
 dir: ./tools/providers/terraform/
+dir: ./tools/release/
 dir: ./tools/structure/
+file: ./.github/pull_request_template.md
 file: ./.gitignore
 file: ./.structure.ignore
+file: ./CHANGELOG.md
 file: ./Makefile
 file: ./README.generated.md
 file: ./README.md
@@ -115,6 +119,7 @@ file: ./tools/git-hooks/pre-merge-check.sh
 file: ./tools/git-hooks/pre-push
 file: ./tools/install-hooks.sh
 file: ./tools/pre-git-switch.sh
+file: ./tools/release/gen_notes.sh
 file: ./tools/scan_duplicate_targets.sh
 file: ./tools/setup.sh
 file: ./tools/structure/structure_snapshot_gen.sh
