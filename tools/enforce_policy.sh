@@ -25,7 +25,7 @@ PROJECT_ROOT="${PROJECT_ROOT:-$(resolve_project_root)}" || return $?
 
   SYSTEM_DIR="${SYSTEM_DIR:-$PROJECT_ROOT/system}"
   TOOLS_DIR="${TOOLS_DIR:-$PROJECT_ROOT/tools}"
-
+ export LIB_DIR="${LIB_DIR:-$PROJECT_ROOT/lib}"
 POLICY_FILE="${POLICY_FILE:-$PROJECT_ROOT/config/policy.rules.yml}"
 
   export PROJECT_ROOT SYSTEM_DIR TOOLS_DIR POLICY_FILE
@@ -42,16 +42,16 @@ echo "DEBUG SYSTEM_DIR=$SYSTEM_DIR"
  
   local system_dir="${SYSTEM_DIR:-./system}"
   local tools_dir="${TOOLS_DIR:-./tools}"
+  
 
-
-  if [[ ! -f "$system_dir/source_OR_fail.sh" ]]; then
-    echo "Missing required file: $system_dir/source_OR_fail.sh"
+  if [[ ! -f "$LIB_DIR/source_OR_fail.sh" ]]; then
+    echo "Missing required file: $LIB_DIR/source_OR_fail.sh"
     exit 1
   fi
-  source "$system_dir/source_OR_fail.sh"
+  source "$LIB_DIR/source_OR_fail.sh"
 
-  source_or_fail "$system_dir/logger.sh"
-  source_or_fail "$system_dir/logger_wrapper.sh"
+  source_or_fail "$LIB_DIR/logger.sh"
+  source_or_fail "$LIB_DIR/logger_wrapper.sh"
 
   source_or_fail "$PROJECT_ROOT/tools/exit_codes_enforcer.sh"
 
