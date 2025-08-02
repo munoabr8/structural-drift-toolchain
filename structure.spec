@@ -36,6 +36,7 @@ file: ./.github/pull_request_template.md
 file: ./.gitignore
 file: ./.structure.ignore
 file: ./CHANGELOG.md
+file: ./Focus.txt
 file: ./Makefile
 file: ./README.generated.md
 file: ./README.md
