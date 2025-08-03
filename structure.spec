@@ -27,6 +27,8 @@ dir: ./system-test/structure_validator/tmp/
 dir: ./system/exit-codes/
 dir: ./system/make/
 dir: ./test/
+dir: ./test/bin-tests/
+dir: ./test/lib-tests/
 dir: ./tools/
 dir: ./tools/git-hooks/
 dir: ./tools/providers/
@@ -44,6 +46,7 @@ file: ./README.generated.md
 file: ./README.md
 file: ./attn/context-status.rf.sh
 file: ./attn/context-status.sh
+file: ./bin/main.sh
 file: ./config/enforcer_tests.txt
 file: ./config/policy.rules.yml
 file: ./config/runtime.cfg
@@ -51,7 +54,6 @@ file: ./config/runtime_flags.sh
 file: ./lib/logger.sh
 file: ./lib/logger_wrapper.sh
 file: ./lib/source_OR_fail.sh
-file: ./main.sh
 file: ./modules/prototype/envManager.sh
 file: ./modules/prototype/fsm_git_handler.sh
 file: ./modules/prototype/prototypeManager.env
@@ -70,9 +72,6 @@ file: ./system-test/enforce_policy.bats
 file: ./system-test/features/drift_monitoring.feature
 file: ./system-test/garbage_detector/test-ignore-valid.bats
 file: ./system-test/garbage_detector/test-untracked-garbage.bats
-file: ./system-test/main-context-check-mock.bats
-file: ./system-test/main-preflight.bats
-file: ./system-test/main-structure-validator-mock.bats
 file: ./system-test/structure_generator/test-generate-spec.bats
 file: ./system-test/structure_ignore/.structure.ignore
 file: ./system-test/structure_ignore/test-validate-ignore.bats
@@ -81,7 +80,6 @@ file: ./system-test/structure_negative_tests/test-invalid-structure.bats
 file: ./system-test/structure_validator/test-raw-path.bats
 file: ./system-test/structure_validator/test-valid-structure.bats
 file: ./system-test/structure_validator_queries.bats
-file: ./system-test/test-main.bats
 file: ./system-test/testing-setup.sh
 file: ./system/comparator.txt
 file: ./system/exit-codes/exit_codes_validator.sh
@@ -97,10 +95,14 @@ file: ./system/make/test.mk
 file: ./system/structure_spec_validator.sh
 file: ./system/structure_validator.rf.sh
 file: ./system/structure_validator.sh
-file: ./system/test_logger.bats
-file: ./system/test_logger_min.sh
 file: ./system/validate_structure.sh
-file: ./test/test_source_safe.bats
+file: ./test/bin-tests/main-context-check-mock.bats
+file: ./test/bin-tests/main-preflight.bats
+file: ./test/bin-tests/main-structure-validator-mock.bats
+file: ./test/bin-tests/test-main.bats
+file: ./test/lib-tests/test_logger.bats
+file: ./test/lib-tests/test_logger_min.sh
+file: ./test/lib-tests/test_source_safe.bats
 file: ./test/toggle_module_contracts.bats
 file: ./toggle.sh
 file: ./tools/README.generated.md
