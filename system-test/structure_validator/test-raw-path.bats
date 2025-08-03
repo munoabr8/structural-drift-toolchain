@@ -51,6 +51,8 @@ setup_environment_paths
 setup_environment_paths() {
   export PROJECT_ROOT="${PROJECT_ROOT:-$(resolve_project_root)}"
   export SYSTEM_DIR="${SYSTEM_DIR:-$PROJECT_ROOT/system}"
+    export LIB_DIR="${LIB_DIR:-$PROJECT_ROOT/lib}"
+
 }
 
  
@@ -67,15 +69,15 @@ setup_environment_paths() {
 
   
 
-  if [[ ! -f "$SYSTEM_DIR/source_OR_fail.sh" ]]; then
+  if [[ ! -f "$LIB_DIR/source_OR_fail.sh" ]]; then
     echo "❌ Missing required file: source_OR_fail.sh"
     exit 1
   fi
 
-  source "$SYSTEM_DIR/source_OR_fail.sh"
+  source "$LIB_DIR/source_OR_fail.sh"
 
-  source_or_fail "$SYSTEM_DIR/logger.sh"
-  source_or_fail "$SYSTEM_DIR/logger_wrapper.sh"
+  source_or_fail "$LIB_DIR/logger.sh"
+  source_or_fail "$LIB_DIR/logger_wrapper.sh"
 
   source_or_fail "$SYSTEM_DIR/structure_validator.sh"
  

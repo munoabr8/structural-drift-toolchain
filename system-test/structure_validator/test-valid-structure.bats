@@ -9,6 +9,7 @@ setup() {
   local self="${BATS_TEST_FILENAME:-${BASH_SOURCE[0]}}"
   PROJECT_ROOT="$(cd "$(dirname "$self")/../.." && pwd)"
   SYSTEM_DIR="$PROJECT_ROOT/system"
+  LIB_DIR="$PROJECT_ROOT/lib"
   SUT_SOURCE="$SYSTEM_DIR/structure_validator.sh"
 
   # Export what the SUT expects
@@ -31,9 +32,9 @@ setup() {
   chmod +x "$sandbox_script"
 
   # Optional: verify runtime deps exist; the SUT will source them
-  [[ -f "$SYSTEM_DIR/source_OR_fail.sh" ]] || { echo "❌ Missing source_OR_fail.sh"; return 1; }
-  [[ -f "$SYSTEM_DIR/logger.sh"         ]] || { echo "❌ Missing logger.sh";       return 1; }
-  [[ -f "$SYSTEM_DIR/logger_wrapper.sh" ]] || { echo "❌ Missing logger_wrapper.sh"; return 1; }
+  [[ -f "$LIB_DIR/source_OR_fail.sh" ]] || { echo "❌ Missing source_OR_fail.sh"; return 1; }
+  [[ -f "$LIB_DIR/logger.sh"         ]] || { echo "❌ Missing logger.sh";       return 1; }
+  [[ -f "$LIB_DIR/logger_wrapper.sh" ]] || { echo "❌ Missing logger_wrapper.sh"; return 1; }
 }
 
 teardown() { :; }  # Let Bats clean $BATS_TEST_TMPDIR
