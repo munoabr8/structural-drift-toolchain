@@ -36,6 +36,7 @@ dir: ./tools/providers/localfs/
 dir: ./tools/providers/terraform/
 dir: ./tools/release/
 dir: ./tools/structure/
+dir: ./util/
 file: ./.github/pull_request_template.md
 file: ./.gitignore
 file: ./.structure.ignore
@@ -51,9 +52,7 @@ file: ./config/enforcer_tests.txt
 file: ./config/policy.rules.yml
 file: ./config/runtime.cfg
 file: ./config/runtime_flags.sh
-file: ./lib/logger.sh
-file: ./lib/logger_wrapper.sh
-file: ./lib/source_OR_fail.sh
+file: ./lib/env_init.sh
 file: ./modules/prototype/envManager.sh
 file: ./modules/prototype/fsm_git_handler.sh
 file: ./modules/prototype/prototypeManager.env
@@ -133,3 +132,8 @@ file: ./tools/test_coverage_summary_real.bats
 file: ./tools/test_pre_git_switch.bats
 file: ./tools/utili-sourcing.sh
 file: ./tools/validate_ignore.sh
+file: ./util/core.rf.sh
+file: ./util/core.sh
+file: ./util/logger.sh
+file: ./util/logger_wrapper.sh
+file: ./util/source_or_fail.sh

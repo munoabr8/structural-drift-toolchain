@@ -16,6 +16,12 @@
 	 local   source_path="${BATS_TEST_FILENAME:-${BASH_SOURCE[0]}}"
 	 readonly source_path
   	cd "$(dirname "$source_path")/../" && pwd
+
+  readonly root="$(git rev-parse --show-toplevel)"
+ 
+  source "$root/lib/env_init.sh"
+  env_init --path --quiet
+    
 }
 
 setup_environment_paths() {
