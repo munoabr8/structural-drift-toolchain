@@ -62,8 +62,7 @@ run_preflight() {
 
 "$VALIDATOR" --quiet validate "$STRUCTURE_SPEC" || { echo "Structure invalid." >&2; return 1; }
 
- # "$VALIDATOR" "--quiet" validate "$STRUCTURE_SPEC" || { echo "Structure invalid." >&2; return 1; }
-  "$CONTEXT_CHECK"               || { echo "Context invalid."   >&2; return 1; }
+ "$CONTEXT_CHECK"               || { echo "Context invalid."   >&2; return 1; }
 
   safe_log "INFO" "Preflight passed: $cmd"
   return 0
@@ -76,21 +75,28 @@ run_preflight() {
 # utility directory.
  source_utilities(){
  
-  local lib_dir="${lib_dir:-../lib}"
+ source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)/../util/core.rf.sh"
 
-    
-  if [[ ! -f "$lib_dir/source_OR_fail.sh" ]]; then
+  
+  
+  source "$ROOT_BOOT/lib/env_init.sh" || { echo "cannot load env_init"; exit 65; }
+  env_init --path --quiet
+
+env
+
+  if [[ ! -f "$UTIL_DIR/source_OR_fail.sh" ]]; then
     echo "Missing required file: source_OR_fail.sh"
     exit 1
   fi
 
-  source "$lib_dir/source_OR_fail.sh"
+  source "$UTIL_DIR/source_OR_fail.sh"
 
-  source_or_fail "$lib_dir/logger.sh"
-  source_or_fail "$lib_dir/logger_wrapper.sh"
+  source_or_fail "$UTIL_DIR/logger.sh"
+  source_or_fail "$UTIL_DIR/logger_wrapper.sh"
 
-  source_or_fail "../system/structure_validator.rf.sh"
- 
+  source_or_fail "$SYSTEM_DIR/structure_validator.rf.sh"
+
+
  
  }
 
@@ -110,6 +116,8 @@ run_preflight() {
 main() {                      
 
   source_utilities
+
+
 
   local cmd="${1:-}"; shift || true
   #The cases does not care what the command is. It will pass it 

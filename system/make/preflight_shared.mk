@@ -1,5 +1,5 @@
-STRUCTURE_SPEC=./system/structure.spec
-VALIDATOR_RF=./system/validate_structure.sh
+STRUCTURE_SPEC=./structure.spec
+VALIDATOR_RF=./system/structure_validator.rf.sh
 CONTEXT_CHECK=./attn/context-status.sh
 SNAPSHOT_GEN_RF=../debugtools/structureDebugging.sh
 
@@ -17,7 +17,7 @@ preflight-drift:
 
 preflight-enforce:
 	@echo "🔒 Validating enforced structure..."
-	@bash $(VALIDATOR) $(STRUCTURE_SPEC)
+	@bash $(VALIDATOR) validate $(STRUCTURE_SPEC)
 
 preflight-context:
 	@echo "🧠 Validating project context sanity..."

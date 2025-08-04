@@ -25,11 +25,11 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
  
-source "$SCRIPT_DIR/../../lib/source_or_fail.sh"
+source "./util/source_or_fail.sh"
 
 
-source_or_fail "$SCRIPT_DIR/../../lib/logger.sh"
-source_or_fail "$SCRIPT_DIR/../../lib/logger_wrapper.sh"
+source_or_fail "./util/logger.sh"
+source_or_fail "./util/logger_wrapper.sh"
 
 
 type log_json | grep -q 'function' || {
