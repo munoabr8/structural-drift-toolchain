@@ -286,7 +286,9 @@ resolve_project_root() {
 setup_environment_paths() {
   PROJECT_ROOT="${PROJECT_ROOT:-$(resolve_project_root)}" || return $?
   SYSTEM_DIR="${SYSTEM_DIR:-$PROJECT_ROOT/system}"
-  export PROJECT_ROOT SYSTEM_DIR
+  LIB_DIR="$PROJECT_ROOT/lib"
+
+  export PROJECT_ROOT SYSTEM_DIR LIB_DIR
 }
 
 source_utilities() {
@@ -294,16 +296,16 @@ source_utilities() {
 resolve_project_root
 setup_environment_paths
 
-  local system_dir="${SYSTEM_DIR:-./system}"
+  local lib_dir="${LIB_DIR:-./system}"
 
-  if [[ ! -f "$system_dir/source_OR_fail.sh" ]]; then
+  if [[ ! -f "$lib_dir/source_OR_fail.sh" ]]; then
     echo "Missing required file: $system_dir/source_OR_fail.sh"
     exit 1
   fi
-  source "$system_dir/source_OR_fail.sh"
+  source "$lib_dir/source_OR_fail.sh"
 
-  source_or_fail "$system_dir/logger.sh"
-  source_or_fail "$system_dir/logger_wrapper.sh"
+  source_or_fail "$lib_dir/logger.sh"
+  source_or_fail "$lib_dir/logger_wrapper.sh"
 
 
  

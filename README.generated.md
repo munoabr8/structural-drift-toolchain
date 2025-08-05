@@ -38,4 +38,4 @@ _All modules have specs._
 
 ## Test Coverage Summary
 
-- Total BATS Tests: 84
+- Total BATS Tests: 48
