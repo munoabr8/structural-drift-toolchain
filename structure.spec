@@ -9,9 +9,7 @@ dir: ./modules/
 dir: ./modules/prototype/
 dir: ./modules/unit_testing/
 dir: ./modules/unit_testing/environment/
-dir: ./modules/unit_testing/experimentation/
 dir: ./modules/unit_testing/fsm/
-dir: ./root-test/
 dir: ./system/
 dir: ./system-test/
 dir: ./system-test/features/
