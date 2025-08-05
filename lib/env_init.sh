@@ -138,6 +138,9 @@ env_show() {
   _env_log "LIB_DIR=${LIB_DIR:-}"
   _env_log "SYSTEM_DIR=${SYSTEM_DIR:-}"
   _env_log "LOG_DIR=${LOG_DIR:-}"
+
+  _env_log "TOOLS_DIR=${TOOLS_DIR:-}"
+
   _env_log "PATH contains BIN_DIR? $([[ ":$PATH:" == *":${BIN_DIR:-}:"* ]] && echo yes || echo no)"
 }
 
@@ -173,11 +176,14 @@ env_init() {
   PROJECT_ROOT="${PROJECT_ROOT:-$(_env_detect_project_root)}"
   BIN_DIR="${BIN_DIR:-$PROJECT_ROOT/bin}"
   LIB_DIR="${LIB_DIR:-$PROJECT_ROOT/lib}"
+
+  TOOLS_DIR="${TOOLS_DIR:-$PROJECT_ROOT/tools}" #This may need to deleted.
   SYSTEM_DIR="${SYSTEM_DIR:-$PROJECT_ROOT/system}"
   LOG_DIR="${LOG_DIR:-$PROJECT_ROOT/.logs}"
   UTIL_DIR="${UTIL_DIR:-$PROJECT_ROOT/util}";  
 
-  export PROJECT_ROOT BIN_DIR LIB_DIR SYSTEM_DIR LOG_DIR UTIL_DIR
+
+  export PROJECT_ROOT BIN_DIR LIB_DIR SYSTEM_DIR LOG_DIR UTIL_DIR TOOLS_DIR
 
   # 2) Optional dotenv
   [[ -n "$dotenv" ]] && _env_load_dotenv "$dotenv" || true
