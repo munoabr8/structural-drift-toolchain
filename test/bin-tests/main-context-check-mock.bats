@@ -13,11 +13,7 @@ setup_environment_paths
  source_utilities
 
  
-<<<<<<< HEAD:system-test/main-context-check-mock.bats
-  local original_script_path="$PROJECT_ROOT/main.sh"
-=======
   local original_script_path="$PROJECT_ROOT/bin/main.sh"
->>>>>>> dev:test/bin-tests/main-context-check-mock.bats
 
     sandbox_script="$BATS_TMPDIR/main.sh"
  
