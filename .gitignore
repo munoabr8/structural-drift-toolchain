@@ -45,3 +45,4 @@ runtime.cfg.local
 .DS_Store
 
 .DS_Store
+RELEASE_NOTES-*.md

@@ -264,7 +264,9 @@ safe_log "SUCCESS" "Structure validation passed." "" "0"
 }
 
  
-
+# Can refactor these two functions so that scripts can simply source
+# ./util/core.sh and get the same functionality?
+# I would need to access to the soucre_OR_fail function.
 resolve_project_root() {
   local src="${BASH_SOURCE[0]}"
   #
@@ -273,8 +275,10 @@ resolve_project_root() {
 
 setup_environment_paths() {
   PROJECT_ROOT="${PROJECT_ROOT:-$(resolve_project_root)}" || return $?
+  UTIL_DIR="${UTIL_DIR:-$PROJECT_ROOT/util}"
+
   SYSTEM_DIR="${SYSTEM_DIR:-$PROJECT_ROOT/system}"
-  export PROJECT_ROOT SYSTEM_DIR
+  export PROJECT_ROOT SYSTEM_DIR UTIL_DIR
 }
 
 source_utilities() {
@@ -282,18 +286,17 @@ source_utilities() {
 resolve_project_root
 setup_environment_paths
 
-  local system_dir="${SYSTEM_DIR:-./system}"
-
-  if [[ ! -f "$system_dir/source_OR_fail.sh" ]]; then
-    echo "Missing required file: $system_dir/source_OR_fail.sh"
+ 
+  if [[ ! -f "$UTIL_DIR/source_OR_fail.sh" ]]; then
+    echo "Missing required file: $lib_dir/source_OR_fail.sh"
     exit 1
   fi
-  source "$system_dir/source_OR_fail.sh"
+  source "$UTIL_DIR/source_OR_fail.sh"
 
-  source_or_fail "$system_dir/logger.sh"
-  source_or_fail "$system_dir/logger_wrapper.sh"
+  source_or_fail "$UTIL_DIR/logger.sh"
+  source_or_fail "$UTIL_DIR/logger_wrapper.sh"
 
-  source_or_fail "$system_dir/exit-codes/exit_codes_validator.sh"
+  source_or_fail "$SYSTEM_DIR/exit-codes/exit_codes_validator.sh"
 
 
  
@@ -443,7 +446,7 @@ locate_spec_file() {
 main() {
 
   source_utilities
-
+  echo "----->"
 
   declare -A CLI_STATE
   parse_CLI_args CLI_STATE "$@"
