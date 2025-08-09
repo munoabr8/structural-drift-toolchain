@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+
+
 source_or_fail() {
   local file="$1"
   if [[ ! -f "$file" ]]; then

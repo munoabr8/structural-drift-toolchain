@@ -50,6 +50,7 @@ file: ./config/enforcer_tests.txt
 file: ./config/policy.rules.yml
 file: ./config/runtime.cfg
 file: ./config/runtime_flags.sh
+file: ./lib/command_contracts.sh
 file: ./lib/env_init.sh
 file: ./modules/prototype/envManager.sh
 file: ./modules/prototype/fsm_git_handler.sh
@@ -96,6 +97,8 @@ file: ./system/validate_structure.sh
 file: ./test/bin-tests/main-context-check-mock.bats
 file: ./test/bin-tests/main-preflight.bats
 file: ./test/bin-tests/main-structure-validator-mock.bats
+file: ./test/bin-tests/smoke_test.sh
+file: ./test/bin-tests/test-core__derive_root.bats
 file: ./test/bin-tests/test-main.bats
 file: ./test/lib-tests/test_logger.bats
 file: ./test/lib-tests/test_logger_min.sh
