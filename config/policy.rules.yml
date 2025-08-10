@@ -55,9 +55,24 @@
   
 
 - type: invariant
-  path: modules
+  path: bin
   condition: must_exist
   action: error
+
+- type: invariant
+  path: lib
+  condition: must_exist
+  action: error
+
+- type: invariant
+  path: ./lib/policy
+  condition: must_exist
+  action: error      
+
+- type: invariant
+  path: util
+  condition: must_exist
+  action: error   
 
 - type: invariant
   path: system
@@ -84,10 +99,7 @@
   condition: must_exist
   action: error 
 
-- type: invariant
-  path: main.sh 
-  condition: must_exist
-  action: error 
+ 
 
 - type: invariant
   path: main.sh 

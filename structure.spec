@@ -5,6 +5,7 @@ dir: ./attn/
 dir: ./bin/
 dir: ./config/
 dir: ./lib/
+dir: ./lib/policy/
 dir: ./modules/
 dir: ./modules/prototype/
 dir: ./modules/unit_testing/
@@ -52,6 +53,11 @@ file: ./config/runtime.cfg
 file: ./config/runtime_flags.sh
 file: ./lib/command_contracts.sh
 file: ./lib/env_init.sh
+file: ./lib/policy/enforce_policy_p3.sh
+file: ./lib/policy/policy_query_p1.sh
+file: ./lib/policy/policy_query_tests.bats
+file: ./lib/policy/smoke_test_policy.query.sh
+file: ./lib/policy/transform_policy_p2.sh
 file: ./modules/prototype/envManager.sh
 file: ./modules/prototype/fsm_git_handler.sh
 file: ./modules/prototype/prototypeManager.env
