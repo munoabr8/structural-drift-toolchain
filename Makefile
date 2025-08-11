@@ -60,10 +60,27 @@ AUTO_README_GEN=./tools/gen_readme.sh
  include ./system/make/help.mk
 
 
-test-structure-generator:
-	@echo "🧪 Testing structure spec generation..."
-	@bats --show-output-of-passing-tests system-test/structure_generator/
- 
+#test-structure-generator:
+	#@echo "🧪 Testing structure spec generation..."
+	#@bats --show-output-of-passing-tests system-test/structure_generator/
+
+execute-main-help:
+	@bash ./bin/main.sh help
+
+
+execute-main-integrity:
+	@bash ./bin/main.sh self-test
+
+execute-main-context:
+	@bash ./bin/main.sh context		
+
+execute-main-init:
+	@bash ./bin/main.sh init
+
+execute-main-start:
+	@bash ./bin/main.sh start
+
+
 
 
 .DEFAULT_GOAL := help

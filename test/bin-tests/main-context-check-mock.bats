@@ -2,24 +2,49 @@
 
 #./test/lib-tests/main-context-check-mocks.bats
  
+
+
+
+  
+sandbox_script=""
+
 setup() {
-
-  [[ "${DEBUG:-}" == "true" ]] && set -x
-
-
- #resolve_project_root
-setup_environment_paths
- 
- source_utilities
-
- 
-  local original_script_path="$PROJECT_ROOT/bin/main.sh"
-
-    sandbox_script="$BATS_TMPDIR/main.sh"
  
 
+  PROJECT_ROOT="$(git rev-parse --show-toplevel)"
 
-  cp "$original_script_path" "$sandbox_script" || {
+  
+  source "$PROJECT_ROOT/lib/env_init.sh"
+  env_init --path --quiet
+  env_assert
+  
+  setup_sandbox
+
+  source_utilities
+ 
+  mkdir -p "$BATS_TEST_TMPDIR/logs"
+  touch "$BATS_TEST_TMPDIR/logs/logfile.log"
+  cd "$BATS_TEST_TMPDIR"
+ 
+ 
+  
+  }
+
+
+   setup_sandbox(){
+
+
+  local original_script_path="$BIN_DIR/main.sh"
+
+
+sandbox_dir="$BATS_TEST_TMPDIR/sandbox"
+  mkdir -p "$sandbox_dir"
+
+
+  readonly sandbox_script="$sandbox_dir/main.sh"
+
+
+ cp "$original_script_path" "$sandbox_script" || {
     echo "❌ Failed to copy main.sh from: $original_script_path"
     exit 1
   }
@@ -33,75 +58,45 @@ setup_environment_paths
   }
 
 
+}
  
-   mkdir -p "$BATS_TEST_TMPDIR/logs"
-  touch "$BATS_TEST_TMPDIR/logs/logfile.log"
-  cd "$BATS_TEST_TMPDIR"
- 
- 
+
   
-  }
-
-# Project root is the top level directory. 
-# The top level directory includes a .git(version control is required)
-# Changing directories will be subject to change.
-# 
-#
- 
-resolve_project_root() {
-  local from="${1:-${BATS_TEST_FILENAME:-${BASH_SOURCE[0]}}}"
-  ( cd "$(dirname "$from")/../.." && pwd -P ) || return 1
-}
-
-setup_environment_paths() {
-  export PROJECT_ROOT="${PROJECT_ROOT:-$(resolve_project_root)}"
-  export SYSTEM_DIR="${SYSTEM_DIR:-$PROJECT_ROOT/system}"
-
-  export LIB_DIR="${LIB_DIR:-$PROJECT_ROOT/lib}"
-}
-
-
-
-# Pre-conditions: 
-# --> SYSTEM_DIR is set.
-# --> source_OR_fail.sh must be a valid file(correct permissions)
-# --> source_OR_fail.sh must contain a source_or_fail function.
-# --> logger.sh must be a valid file,
-# --> logger_wrapper.sh must be a valid file.
 source_utilities(){
 
-  if [[ ! -f "$LIB_DIR/source_OR_fail.sh" ]]; then
+  if [[ ! -f "$UTIL_DIR/source_OR_fail.sh" ]]; then
     echo "Missing required file: source_OR_fail.sh"
     exit 1
   fi
 
-  source "$LIB_DIR/source_OR_fail.sh"
+  source "$UTIL_DIR/source_OR_fail.sh"
 
-  source_or_fail "$LIB_DIR/logger.sh"
-  source_or_fail "$LIB_DIR/logger_wrapper.sh"
+  source_or_fail "$UTIL_DIR/logger.sh"
+  source_or_fail "$UTIL_DIR/logger_wrapper.sh"
 
+ 
+ 
 
  }
  
-  check_context_integrity() {
-
-  if [[ "${DEBUG:-}" != "true" ]]; then return; fi
-  echo "🧭 Context Integrity Check"
-  echo "📂 Current Working Directory: $(pwd)"
-  echo "📄 Script: $0"
-  echo "📁 Directory Contents:"
-  ls -1a
-  echo "📦 PROJEC_DIR: ${PROJECT_ROOT:-<not set>}"
-  echo "📦 SYSTEM_DIR: ${SYSTEM_DIR:-<not set>}"
-  echo "🐚 Shell: ${SHELL:-<not set>}"
-  echo
-}
 
 
 @test "Check if sandbox_script is really available" {
   echo "SCRIPT: $sandbox_script"
   [ -n "$sandbox_script" ]  # This will fail if it's unset
 }
+
+
+ 
+ 
+ @test "env initialized" {
+  [[ -n "$PROJECT_ROOT" && -d "$BIN_DIR" ]] || skip "env_init not sourced"
+}
+
+
+
+
+ 
 
 
  
@@ -137,36 +132,38 @@ EOF
  mock_context_check_success
 
 
-  run "$sandbox_script" check
+  run "$sandbox_script" context
 
+  echo "$output"
   [ "$status" -eq 0 ]
   #[[ "$output" == *"Context OK"* ]]  # or whatever context-status prints
 }
 
 
 
-@test "check command fails when context-status script fails" {
+@test "context command fails when context-status script fails" {
 
  
  mock_context_check_failure
 
 
-  run "$sandbox_script" check
-
+  run "$sandbox_script" context
+echo "DEBUG: status=$status"
+echo "DEBUG: output=$output"
   [ "$status" -eq 1 ]
   #[[ "$output" == *"Context FAILED"* ]]  # or whatever context-status prints
 }
 
 
-@test "run_preflight skipped for 'help' command" {
-  mock_context_check_failure  # Should not be invoked
-   COMMAND="help"
+# @test "run_preflight skipped for 'help' command" {
+#   mock_context_check_failure  # Should not be invoked
+#    COMMAND="help"
 
-  run "$sandbox_script" "$COMMAND"
+#   run "$sandbox_script" help
 
-  [ "$status" -eq 0 ]
-  #[[ "$output" == *"Usage"* ]]
-}
+#   [ "$status" -eq 1 ]
+#   #[[ "$output" == *"Usage"* ]]
+# }
 
 
 

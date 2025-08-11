@@ -1,26 +1,43 @@
 #!/usr/bin/env bats
   
- 
+sandbox_script=""
+
 setup() {
+ 
 
-  [[ "${DEBUG:-}" == "true" ]] && set -x
+  PROJECT_ROOT="$(git rev-parse --show-toplevel)"
 
+  
+  source "$PROJECT_ROOT/lib/env_init.sh"
+  env_init --path --quiet
+  env_assert
+  
+  setup_sandbox
 
- #resolve_project_root
-setup_environment_paths
+  source_utilities
+ 
+  mkdir -p "$BATS_TEST_TMPDIR/logs"
+  touch "$BATS_TEST_TMPDIR/logs/logfile.log"
+  cd "$BATS_TEST_TMPDIR"
+ 
  
   
+  }
 
- 
-  local original_script_path="$PROJECT_ROOT/main.sh"
-
-    sandbox_script="$BATS_TMPDIR/main.sh"
- export sandbox_script
+    setup_sandbox(){
 
 
+  local original_script_path="$BIN_DIR/main.sh"
 
 
-  cp "$original_script_path" "$sandbox_script" || {
+sandbox_dir="$BATS_TEST_TMPDIR/sandbox"
+  mkdir -p "$sandbox_dir"
+
+
+  readonly sandbox_script="$sandbox_dir/main.sh"
+
+
+ cp "$original_script_path" "$sandbox_script" || {
     echo "❌ Failed to copy main.sh from: $original_script_path"
     exit 1
   }
@@ -33,54 +50,38 @@ setup_environment_paths
     exit 1
   }
 
-load_dependencies
 
-  mkdir -p "$BATS_TEST_TMPDIR/logs"
-  touch "$BATS_TEST_TMPDIR/logs/logfile.log"
-  cd "$BATS_TEST_TMPDIR"
- 
- 
-  
-  }
+}
 
+source_utilities(){
 
-# Pre-conditions: 
-# --> SYSTEM_DIR is set.
-# --> source_OR_fail.sh must be a valid file(correct permissions)
-# --> source_OR_fail.sh must contain a source_or_fail function.
-# --> logger.sh must be a valid file,
-# --> logger_wrapper.sh must be a valid file.
-load_dependencies(){
-
-  if [[ ! -f "$SYSTEM_DIR/source_OR_fail.sh" ]]; then
+  if [[ ! -f "$UTIL_DIR/source_OR_fail.sh" ]]; then
     echo "Missing required file: source_OR_fail.sh"
     exit 1
   fi
 
-  source "$SYSTEM_DIR/source_OR_fail.sh"
+  source "$UTIL_DIR/source_OR_fail.sh"
 
-  source_or_fail "$SYSTEM_DIR/logger.sh"
-  source_or_fail "$SYSTEM_DIR/logger_wrapper.sh"
+  source_or_fail "$UTIL_DIR/logger.sh"
+  source_or_fail "$UTIL_DIR/logger_wrapper.sh"
 
-   source_or_fail "$sandbox_script" 
-
-
+   source_or_fail "$PROJECT_ROOT/bin/main.sh"  # or wherever run_preflight is defined
+ 
 
  }
+ 
 
-  # Project root is the top level directory. 
-# The top level directory includes a .git(version control is required)
-# Changing directories will be subject to change.
-# 
-#
-  resolve_project_root() {
-  local source_path="${BATS_TEST_FILENAME:-${BASH_SOURCE[0]}}"
-  cd "$(dirname "$source_path")/.." && pwd
+
+@test "Check if sandbox_script is really available" {
+  echo "SCRIPT: $sandbox_script"
+  [ -n "$sandbox_script" ]  # This will fail if it's unset
 }
 
-setup_environment_paths() {
-  export PROJECT_ROOT="${PROJECT_ROOT:-$(resolve_project_root)}"
-  export SYSTEM_DIR="${SYSTEM_DIR:-$PROJECT_ROOT/system}"
+
+ 
+ 
+ @test "env initialized" {
+  [[ -n "$PROJECT_ROOT" && -d "$BIN_DIR" ]] || skip "env_init not sourced"
 }
 
 
@@ -125,7 +126,7 @@ setup_environment_paths() {
 # ──────────────────────────────────────────────────────────────────────────────
 
  
-make_mock () {            # $1 = env‑var name, $2 = exit‑status
+make_mock2 () {            # $1 = env‑var name, $2 = exit‑status
   local path="$BATS_TMPDIR/$1"
 
   cat >"$path" <<EOF
@@ -140,78 +141,79 @@ EOF
   export "$1=$path"               # quote the assignment
 }
 
+make_mock() {
+  local name="$1"
+  local exit_status="$2"
+  local mock_path="$BATS_TMPDIR/$name"
 
-@test "run_preflight aborts when context check fails" {
-  make_mock VALIDATOR     0   # validator passes
-  make_mock CONTEXT_CHECK 1   # context check fails
+  mkdir -p "$(dirname "$mock_path")"
 
- 
-export COMMAND="start"
+  echo "#!/usr/bin/env bash" >  "$mock_path"
+  echo "echo '💥 MOCK FIRED: $name' >&2" >> "$mock_path"
+  echo "echo '$name called' >> \"$BATS_TMPDIR/calls\"" >> "$mock_path"
+  echo "exit $exit_status" >> "$mock_path"
 
-  run run_preflight
-  [ "$status" -eq 1 ]
-
-  # optional interaction assertions
- # grep -q "VALIDATOR ./system/structure.spec" "$BATS_TMPDIR/calls"
- # grep -q "CONTEXT_CHECK"                     "$BATS_TMPDIR/calls"
+  chmod +x "$mock_path"
 }
 
 
-@test "run_preflight aborts when validator fails" {
-  make_mock VALIDATOR     1   # validator passes
-  make_mock CONTEXT_CHECK 0   # context check fails
-
- export COMMAND="start"
-
-
-  run run_preflight
-  [ "$status" -eq 1 ]
-
-  # optional interaction assertions
-  #grep -q "VALIDATOR ./system/structure.spec" "$BATS_TMPDIR/calls"
- # grep -q "CONTEXT_CHECK"                     "$BATS_TMPDIR/calls"
-}
-
-@test "run_preflight aborts when both fails" {
-  make_mock VALIDATOR     1   # validator passes
-  make_mock CONTEXT_CHECK 1   # context check fails
+ 
 
  
- 
-  run run_preflight
-  [ "$status" -eq 1 ]
 
-  # optional interaction assertions
-  #grep -q "VALIDATOR ./system/structure.spec" "$BATS_TMPDIR/calls"
-  #grep -q "CONTEXT_CHECK"                     "$BATS_TMPDIR/calls"
+@test "help does not call preflight" {
+  EXTRA_LIB="$BATS_TMPDIR/shim-contract-bomb.sh"
+  cat >"$EXTRA_LIB" <<'SH'
+require_contract_for(){ echo "SHOULD-NOT-CALL" >&2; exit 99; }
+SH
+  chmod +x "$EXTRA_LIB"; export EXTRA_LIB
+  run "$sandbox_script" help
+  [ "$status" -ne 99 ]            # would be 99 if preflight ran
+  [[ "$output" != *"SHOULD-NOT-CALL"* ]]
 }
 
 
-@test "run_preflight succeeds when both succeed" {
-  make_mock VALIDATOR     0   # validator passes
-  make_mock CONTEXT_CHECK 0   # context check fails
-
  
-#export COMMAND="start"
-  run run_preflight  
+
+@test "start aborts when contract fails" {
+  EXTRA_LIB="$BATS_TMPDIR/shim.sh"
+  cat >"$EXTRA_LIB" <<'SH'
+require_contract_for(){ return 1; }
+SH
+  chmod +x "$EXTRA_LIB"
+  export EXTRA_LIB           # make it visible to the SUT process
+
+  run "$sandbox_script" start
+  [ "$status" -eq 65 ]
+  [[ "$output" == *"Preflight contract failed"* ]]
+}
+
+
+@test "start calls preflight (contract stub prints marker)" {
+  # 1) Shim preflight so we can see it ran
+  EXTRA_LIB="$BATS_TMPDIR/shim-contract-mark.sh"
+  cat >"$EXTRA_LIB" <<'SH'
+require_contract_for(){ echo "[contract-called:$1]" >&2; return 0; }
+SH
+  chmod +x "$EXTRA_LIB"; export EXTRA_LIB
+
+  # 2) Fake a project with the default validator path
+  PROJ="$BATS_TMPDIR/proj"; mkdir -p "$PROJ/system"
+  # spec the script expects
+  : > "$PROJ/structure.spec"
+  # validator at the default location your script uses
+  cat >"$PROJ/system/structure_validator.rf.sh" <<'SH'
+#!/usr/bin/env bash
+# accept any args; succeed
+exit 0
+SH
+  chmod +x "$PROJ/system/structure_validator.rf.sh"
+  export PROJECT_ROOT="$PROJ"
+
+  run "$sandbox_script" start
+  if [ "$status" -ne 0 ]; then echo "---- OUTPUT ----"; echo "$output"; fi
   [ "$status" -eq 0 ]
-
-  # optional interaction assertions
-  #grep -q "VALIDATOR ./system/structure.spec" "$BATS_TMPDIR/calls"
-  #grep -q "CONTEXT_CHECK"                     "$BATS_TMPDIR/calls"
+  [[ "$output" == *"[contract-called:start]"* ]]
 }
-
-
-@test "run_preflight" {
-  make_mock VALIDATOR     0    
-  make_mock CONTEXT_CHECK 0    
 
  
- #local COMMAND="help"
-  run run_preflight   
-  [ "$status" -eq 0 ] 
-
-  # optional interaction assertions
-  #grep -q "VALIDATOR ./system/structure.spec" "$BATS_TMPDIR/calls"
-  #grep -q "CONTEXT_CHECK"                     "$BATS_TMPDIR/calls"
-}

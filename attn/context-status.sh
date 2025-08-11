@@ -60,6 +60,17 @@ print_exported_variables() {
   done
 }
 
+
+
+# print_project_env() {
+
+#   for var in PROJECT_ROOT BIN_DIR LIB_DIR TOOLS_DIR SYSTEM_DIR LOG_DIR UTIL_DIR; do
+#     ${var:-}
+#     printf "%s=%s\n" "$var" "${!var}"
+#   done
+# }
+
+
 check_runtime_cfg() {
   echo ""
   echo "📘 Config File Check"
@@ -88,7 +99,7 @@ check_directory_paths() {
 }
 
 print_final_summary() {
-  echo ""
+
   echo "📊 Final Status"
   echo "────────────────────"
   if [[ "${SSOT_LOADED:-0}" == "1" && -f "$CONFIG_FILE" ]]; then
@@ -106,7 +117,7 @@ if [[ "${1:-}" == "help" ]]; then
 fi
 
 print_context_summary
-print_exported_variables
+#print_project_env
 check_runtime_cfg
 check_directory_paths
 print_final_summary
