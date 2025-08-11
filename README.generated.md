@@ -1,0 +1,39 @@
+# 🏗️ Project System Overview
+
+Welcome!
+This system uses strict structure validation, module boundaries, and automation for resilience.
+
+---
+
+## 📦 Project Modules
+
+| Module | Notes |
+|:---|:---|
+
+---
+
+## ⚙️ Available Commands
+
+| Command | Purpose |
+|:---|:---|
+
+---
+
+## ⚠️ Modules Missing structure.spec
+
+_All modules have specs._
+
+---
+
+## 🧹 Structure Enforcement Policy
+
+- All directories and files must be explicitly declared.
+- Temporary artifacts like `.structure.snapshot` must not be committed.
+- Structure drift is flagged by CI and requires manual review.
+- Garbage detection prevents unknown or unauthorized files.
+
+---
+
+## Test Coverage Summary
+
+- No test files found.

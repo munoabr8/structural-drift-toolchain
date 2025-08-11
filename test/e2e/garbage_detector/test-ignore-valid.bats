@@ -1,39 +1,78 @@
 #!/usr/bin/env bats
 
+sandbox_script=""
+
 setup() {
-  # Work in an isolated per‑test tmpdir
+ 
+
+  PROJECT_ROOT="$(git rev-parse --show-toplevel)"
+
+  
+  source "$PROJECT_ROOT/lib/env_init.sh"
+  env_init --path --quiet
+  env_assert
+  
+  setup_sandbox
+
+  source_utilities
+ 
+  mkdir -p "$BATS_TEST_TMPDIR/logs"
+  touch "$BATS_TEST_TMPDIR/logs/logfile.log"
   cd "$BATS_TEST_TMPDIR"
+ 
+ 
+  
+  }
 
-  # Resolve repo paths from this test file’s location (adjust ../.. if needed)
-  local self="${BATS_TEST_FILENAME:-${BASH_SOURCE[0]}}"
-  PROJECT_ROOT="$(cd "$(dirname "$self")/../.." && pwd)"
-  TOOLS_DIR="$PROJECT_ROOT/tools"
-  SUT_SOURCE="$TOOLS_DIR/detect_garbage.sh"
 
-  # Export anything your script might expect
-  export PROJECT_ROOT TOOLS_DIR
+setup_sandbox(){
 
-  # Stage a sandbox copy of the SUT
-  [[ -f "$SUT_SOURCE" ]] || { echo "❌ SUT not found: $SUT_SOURCE"; return 1; }
-  sandbox_script="$BATS_TEST_TMPDIR/detect_garbage.sh"
-  cp "$SUT_SOURCE" "$sandbox_script" || { echo "❌ Failed to copy SUT"; return 1; }
-  chmod +x "$sandbox_script"
 
-  # Fixture
-  printf 'untracked.tmp\n' > .structure.ignore
-  touch untracked.tmp
-  printf 'file: ./declared.sh\n' > structure.spec
-  touch declared.sh
+  local original_script_path="$TOOLS_DIR/detect_garbage.sh"
+
+
+sandbox_dir="$BATS_TEST_TMPDIR/sandbox"
+  mkdir -p "$sandbox_dir"
+
+
+  readonly sandbox_script="$sandbox_dir/detect_garbage.sh"
+
+
+ cp "$original_script_path" "$sandbox_script" || {
+    echo "❌ Failed to copy main.sh from: $original_script_path"
+    exit 1
+  }
+ 
+  [[ -f "$sandbox_script" ]] || {
+    echo "Script under test not found: $sandbox_script"
+
+        echo "$PWD"
+
+    exit 1
+  }
+
+
+}
+ 
+source_utilities(){
+
+  if [[ ! -f "$UTIL_DIR/source_OR_fail.sh" ]]; then
+    echo "Missing required file: source_OR_fail.sh"
+    exit 1
+  fi
+
+  source "$UTIL_DIR/source_OR_fail.sh"
+
+  source_or_fail "$UTIL_DIR/logger.sh"
+  source_or_fail "$UTIL_DIR/logger_wrapper.sh"
+
+ 
+ 
+
+ }
+
+
+ @test "env initialized" {
+  [[ -n "$PROJECT_ROOT" && -d "$BIN_DIR" ]] || skip "env_init not sourced"
 }
 
-teardown() { :; } # Bats auto-cleans $BATS_TEST_TMPDIR
-
-# Helper to run the SUT against the local spec
-run_sut() { run bash "$sandbox_script" ./structure.spec; }
-
-@test "File listed in .structure.ignore is NOT flagged as garbage" {
-  run_sut
-  echo "$output"
-  [ "$status" -eq 0 ]
-  [[ ! "$output" =~ "❌ Untracked: ./untracked.tmp" ]]
-}

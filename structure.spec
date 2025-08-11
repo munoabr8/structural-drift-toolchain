@@ -38,6 +38,7 @@ file: ./.github/pull_request_template.md
 file: ./.gitignore
 file: ./.structure.ignore
 file: ./Makefile
+file: ./README.generated.md
 file: ./attn/context-status.rf.sh
 file: ./attn/context-status.sh
 file: ./bin/main.sh
@@ -95,7 +96,6 @@ file: ./test/lib-tests/test_logger.bats
 file: ./test/lib-tests/test_logger_min.sh
 file: ./test/lib-tests/test_source_safe.bats
 file: ./test/toggle_module_contracts.bats
-file: ./tools/README.generated.md
 file: ./tools/bats-guard.sh
 file: ./tools/check_git_trash.sh
 file: ./tools/detect_garbage.sh
