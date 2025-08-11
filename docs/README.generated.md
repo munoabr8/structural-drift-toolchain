@@ -36,4 +36,4 @@ _All modules have specs._
 
 ## Test Coverage Summary
 
-- Total BATS Tests: 25
+- No test files found.
