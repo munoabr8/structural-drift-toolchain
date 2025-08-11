@@ -1,8 +1,8 @@
-STRUCT_VAL_TEST=system-test/structure_validator
+STRUCT_VAL_TEST=test/e2e/structure_validator
 
-STRUCT_NEG_VAL_TEST=system-test/structure_negative_tests
+STRUCT_NEG_VAL_TEST=test/e2e/structure_negative_tests
 
-TEST_GARBAGE=system-test/garbage_detector
+TEST_GARBAGE=test/e2e/garbage_detector
 
 
 
