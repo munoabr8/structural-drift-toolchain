@@ -11,6 +11,20 @@ Explain what this PR does and why now.
 - Backward compatibility:
 - Risks / gotchas:
 
+# Layer(s) Affected
+- [ ] bin
+- [ ] lib
+- [ ] util
+- [ ] tests
+- [ ] system/infra
+- [ ] config
+- [ ] docs
+- [ ] ci/cd
+
+# Dependency Check
+- [ ] No reverse deps introduced (util↛lib↛bin
+- [ ] Interfaces remain backward-compatible
+
 ## Validation
 - CI: ✅/❌ (link)
 - Manual checks performed:
