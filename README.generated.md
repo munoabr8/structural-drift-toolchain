@@ -9,8 +9,6 @@ This system uses strict structure validation, module boundaries, and automation 
 
 | Module | Notes |
 |:---|:---|
-| `prototype/` |  |
-| `unit_testing/` |  |
 
 ---
 

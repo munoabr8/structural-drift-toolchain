@@ -1,23 +1,42 @@
 #!/usr/bin/env bats
 
+ 
 
-
+sandbox_script=""
 
 setup() {
-  OUTPUT_FILE="$BATS_TEST_TMPDIR/test_output.md"
+ 
+   OUTPUT_FILE="$BATS_TEST_TMPDIR/test_output.md"
+
+  local -r root="$(git rev-parse --show-toplevel)"
+ 
+  source "$root/lib/env_init.sh"
+  env_init --path --quiet
+
+  setup_sandbox
+
+  source_utilities
+ 
+  mkdir -p "$BATS_TEST_TMPDIR/logs"
+  touch "$BATS_TEST_TMPDIR/logs/logfile.log"
+  cd "$BATS_TEST_TMPDIR"
+ 
  
   
-  source "../system-test/testing-setup.sh"
-   
+  }
 
-local original_script_path="$PROJECT_ROOT/tools/gen_readme.rf.rf.sh"
-
-      sandbox_script="$BATS_TMPDIR/tools/gen_readme.sh"
  
 
+  setup_sandbox(){
+
+local original_script_path="$PROJECT_ROOT/tools/gen_readme.sh"
+
+ 
+  readonly sandbox_script="$BATS_TMPDIR/gen_readme.sh"
+  
 
   cp "$original_script_path" "$sandbox_script" || {
-    echo "❌ Failed to copy gen_readme.sh from: $original_script_path"
+    echo "Failed to copy structure_validator.sh from: $original_script_path"
     exit 1
   }
  
@@ -27,22 +46,40 @@ local original_script_path="$PROJECT_ROOT/tools/gen_readme.rf.rf.sh"
         echo "$PWD"
 
     exit 1
-  
+  }
 
 
   }
+ 
+source_utilities(){
 
-  source_bats_utilities "$sandbox_script" 
-   
+  if [[ ! -f "$UTIL_DIR/source_OR_fail.sh" ]]; then
+    echo "Missing required file: source_OR_fail.sh"
+    exit 1
+  fi
+
+  source "$UTIL_DIR/source_OR_fail.sh"
+
+  source_or_fail "$UTIL_DIR/logger.sh"
+  source_or_fail "$UTIL_DIR/logger_wrapper.sh"
+
+ 
+  source_or_fail "$sandbox_script" 
+
+
+ }
  
 
-  mkdir -p "$BATS_TEST_TMPDIR/logs"
-  touch "$BATS_TEST_TMPDIR/logs/logfile.log"
-  cd "$BATS_TEST_TMPDIR"
+@test "Check if sandbox_script is really available" {
+  echo "SCRIPT: $sandbox_script"
+  [ -n "$sandbox_script" ]  # This will fail if it's unset
+}
+ 
+ @test "env initialized" {
+  [[ -n "$PROJECT_ROOT" && -d "$BIN_DIR" ]] || skip "env_init not sourced"
+}
 
-  
-    
-  }
+
 
  
 @test "sandbox_script is available & evaluate_condition is defined" {
