@@ -4,4 +4,4 @@
 
 test-garbage:
 	@echo "🧪 Running garbage_detector validation tests..."
-	@bats system-test/garbage_detector
+	@bats ./test/e2e/garbage_detector
