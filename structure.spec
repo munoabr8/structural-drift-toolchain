@@ -6,6 +6,8 @@ dir: ./bin/
 dir: ./config/
 dir: ./lib/
 dir: ./lib/policy/
+dir: ./scripts/
+dir: ./scripts/ci/
 dir: ./system/
 dir: ./system-test/
 dir: ./system-test/features/
@@ -53,6 +55,7 @@ file: ./lib/policy/policy_query_p1.sh
 file: ./lib/policy/policy_query_tests.bats
 file: ./lib/policy/smoke_test_policy.query.sh
 file: ./lib/policy/transform_policy_p2.sh
+file: ./scripts/ci/check_boundaries.sh
 file: ./smoke.sh
 file: ./system-test/enforce_policy.bats
 file: ./system-test/features/drift_monitoring.feature
