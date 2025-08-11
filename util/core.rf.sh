@@ -38,10 +38,23 @@ core__abs_script_path() {
   fi
 }
 
+# core__git_toplevel() {
+#   local start="$1"
+#   command -v git >/dev/null 2>&1 || { printf '\n'; return 0; }
+#   git -C "$start" rev-parse --show-toplevel 2>/dev/null || printf '\n'
+# }
+
 core__git_toplevel() {
   local start="$1"
-  command -v git >/dev/null 2>&1 || { printf '\n'; return 0; }
-  git -C "$start" rev-parse --show-toplevel 2>/dev/null || printf '\n'
+
+  # If git is not installed
+  command -v git >/dev/null 2>&1 || {
+    core__dbg "git not available"
+    return 0
+  }
+
+  # If not a git repo, exit cleanly with no output
+  git -C "$start" rev-parse --show-toplevel 2>/dev/null || return 0
 }
 
 core__find_root_by_markers() {
@@ -62,6 +75,8 @@ core__derive_root() {
     core__dbg "preset ROOT_BOOT=$ROOT_BOOT"
     printf '%s\n' "$ROOT_BOOT"; return 0
   fi
+
+
 
   # 1) Base on this script's absolute path
   local script_path core_dir git_top mark_root parent

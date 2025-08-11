@@ -10,54 +10,36 @@ declare -a ERRORS
 declare -a WARNINGS
 
 
+ 
+
 
 resolve_project_root() {
-  local src="${BASH_SOURCE[0]}"
-  #
-  printf '%s\n' "$(cd "$(dirname "$src")/.." && pwd)" || return 1
+   local -r root="$(git rev-parse --show-toplevel)"
+ 
+  source "$root/lib/env_init.sh"
+  env_init --path --quiet
+
+ 
+  source_utilities
 }
 
  
-setup_environment_paths() {
+source_utilities(){
 
-
-PROJECT_ROOT="${PROJECT_ROOT:-$(resolve_project_root)}" || return $?
-
-  SYSTEM_DIR="${SYSTEM_DIR:-$PROJECT_ROOT/system}"
-  TOOLS_DIR="${TOOLS_DIR:-$PROJECT_ROOT/tools}"
- export LIB_DIR="${LIB_DIR:-$PROJECT_ROOT/lib}"
-POLICY_FILE="${POLICY_FILE:-$PROJECT_ROOT/config/policy.rules.yml}"
-
-  export PROJECT_ROOT SYSTEM_DIR TOOLS_DIR POLICY_FILE
-}
-
- 
-source_utilities() {
-
-#resolve_project_root
-setup_environment_paths
-
-echo "DEBUG PROJECT_ROOT=$PROJECT_ROOT"
-echo "DEBUG SYSTEM_DIR=$SYSTEM_DIR"
- 
-  local system_dir="${SYSTEM_DIR:-./system}"
-  local tools_dir="${TOOLS_DIR:-./tools}"
-  
-
-  if [[ ! -f "$LIB_DIR/source_OR_fail.sh" ]]; then
-    echo "Missing required file: $LIB_DIR/source_OR_fail.sh"
+  if [[ ! -f "$UTIL_DIR/source_OR_fail.sh" ]]; then
+    echo "Missing required file: source_OR_fail.sh"
     exit 1
   fi
-  source "$LIB_DIR/source_OR_fail.sh"
 
-  source_or_fail "$LIB_DIR/logger.sh"
-  source_or_fail "$LIB_DIR/logger_wrapper.sh"
+  source "$UTIL_DIR/source_OR_fail.sh"
 
-  source_or_fail "$PROJECT_ROOT/tools/exit_codes_enforcer.sh"
+  source_or_fail "$UTIL_DIR/logger.sh"
+  source_or_fail "$UTIL_DIR/logger_wrapper.sh"
 
-     
  
- }
+ 
+
+ } 
 
 read_rule_fields() {
   local index="$1"
@@ -205,7 +187,7 @@ execute() {
 
 main() {
   echo "DEBUG: entering main" >&2
-  source_utilities
+  resolve_project_root
 
   command -v yq >/dev/null 2>&1 || exit "$EXIT_DEP_YQ_MISSING"
   POLICY_FILE="${POLICY_FILE:-$PROJECT_ROOT/config/policy.rules.yml}"
