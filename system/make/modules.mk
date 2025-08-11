@@ -5,11 +5,11 @@ GARBAGE_DETECT=./tools/detect_garbage.sh
 
 .PHONY: generate-module-specs aggregate-spec detect-garbage
 
-generate-module-specs:
-	@bash $(MODULE_SPEC_GEN)
+#generate-module-specs:
+	#@bash $(MODULE_SPEC_GEN)
 
-aggregate-spec:
-	@bash $(STRUCT_AGG) $(STRUCTURE_SPEC)
+#aggregate-spec:
+	#@bash $(STRUCT_AGG) $(STRUCTURE_SPEC)
 
 
 detect-garbage:
