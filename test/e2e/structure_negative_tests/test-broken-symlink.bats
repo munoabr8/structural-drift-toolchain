@@ -1,7 +1,5 @@
  
 #!/usr/bin/env bats
- 
-
 
 sandbox_script=""
 
@@ -80,25 +78,4 @@ source_utilities(){
 }
 
 
-
  
-# Helpers
-write_spec() { printf '%s\n' "$@" > structure.spec; }
-run_sut()    { run bash "$sandbox_script" ./structure.spec; }
-
-# @test "Broken symlink fails validation" {
-#   # Create a broken symlink (target doesn't exist)
-#   ln -s nonexistent_target.sh bad_link.sh
-
-#   # Spec describing the symlink and intended target
-#   write_spec "link: ./bad_link.sh -> ./nonexistent_target.sh"
-
-#   run_sut
-#   echo "$output"
-
-#   # Expect failure status
-#   [ "$status" -ne 0 ]
-
-#   # Optional: assert on message (adjust to your validator's wording)
-#   # [[ "$output" =~ "broken symlink" ]] || [[ "$output" =~ "points to.*nonexistent" ]]
-# }
