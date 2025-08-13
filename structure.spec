@@ -92,10 +92,12 @@ file: ./test/e2e/structure_validator/test-raw-path.bats
 file: ./test/e2e/structure_validator/test-valid-structure.bats
 file: ./test/e2e/structure_validator_queries.bats
 file: ./test/e2e/testing-setup.sh
+file: ./test/integration/test_pre_git_switch.bats
 file: ./test/lib-tests/test_logger.bats
 file: ./test/lib-tests/test_logger_min.sh
 file: ./test/lib-tests/test_source_safe.bats
 file: ./test/toggle_module_contracts.bats
+file: ./test/unit/test_coverage_summary_real.bats
 file: ./tools/bats-guard.sh
 file: ./tools/check_git_trash.sh
 file: ./tools/detect_garbage.sh
@@ -115,8 +117,6 @@ file: ./tools/scan_duplicate_targets.sh
 file: ./tools/setup.sh
 file: ./tools/structure/structure_snapshot_gen.sh
 file: ./tools/structure_compare.sh
-file: ./tools/test_coverage_summary_real.bats
-file: ./tools/test_pre_git_switch.bats
 file: ./tools/utili-sourcing.sh
 file: ./tools/validate_ignore.sh
 file: ./util/core.rf.sh
