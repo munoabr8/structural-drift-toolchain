@@ -1,0 +1,6 @@
+# scope.yaml
+in_scope:
+  - structure.spec
+  - bin/**
+  - lib/**
+  - util/**

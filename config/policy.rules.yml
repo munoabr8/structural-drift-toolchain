@@ -65,7 +65,7 @@
   action: error
 
 - type: invariant
-  path: ./lib/policy
+  path: lib/policy
   condition: must_exist
   action: error      
 
@@ -102,6 +102,11 @@
  
 
 - type: invariant
+  path: bin/main.sh 
+  condition: must_exist
+  action: error 
+
+- type: invariant
   path: main.sh 
   condition: must_exist
   action: error 
@@ -118,7 +123,7 @@
    
 
 - type: invariant
-  path: Makefile 
+  path: Makefile
   condition: must_exist
   action: error 
   

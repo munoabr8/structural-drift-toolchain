@@ -138,6 +138,8 @@ assert() {
   fi
 }
 
+ 
+
 
 # When should enforcement of policy.rules.yml be executed?
 # Is 
@@ -156,6 +158,13 @@ assert() {
 do_start()   { run_cmd "$VALIDATOR" --quiet validate "$STRUCTURE_SPEC"; }
 do_context() { run_cmd "$CONTEXT_CHECK" "$@"; }
 do_selftest(){   make test-all; }
+do_enforce(){ 
+
+  POLICY=
+
+  run_policy_pipeline 
+
+   }
 
 int(){
 
