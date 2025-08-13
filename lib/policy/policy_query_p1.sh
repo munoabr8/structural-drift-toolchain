@@ -2,7 +2,10 @@
 set -euo pipefail
 
 
-POLICY_FILE="${POLICY_FILE:-./config/policy.rules.yml}"
+[[ ${TEST_FAIL_P1:-0} -eq 1 ]] && exit 99
+
+
+POLICY_FILE="${POLICY_FILE:-./../../config/policy.rules.yml}"
 
 
 #run_cmd_yq seam; propagates yq's exit code
@@ -35,7 +38,9 @@ arg_parse() {
     esac
   done
 }
- 
+
+
+
 
 
 # --- NEW: validate both invariants without side effects ---
