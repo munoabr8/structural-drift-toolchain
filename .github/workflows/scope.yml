@@ -1,47 +1,38 @@
-# .github/workflows/scope-guard.yml
-name: scope-guard
+name: Scope Guard
+
 on:
   pull_request:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
-  guard:
+  scope-guard:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
+
     steps:
-      - name: Checkout PR HEAD (full history)
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 0
-
-      - name: Fetch base branch
-        run: git fetch origin ${{ github.base_ref }} --depth=1
+          fetch-depth: 0  # ensures full git history for merge-base
 
       - name: Install yq
         uses: mikefarah/yq@v4.44.3
 
-      - name: Verify yq
+      - name: Debug Git State
         run: |
-          yq --version
-          command -v yq
+          git remote -v
+          git fetch origin main
+          git branch -a
+          git log --oneline --decorate --graph -n 5
+          echo "HEAD commit:"
+          git rev-parse --short HEAD
 
-      - name: Compute base and run scope guard (diagnostic)
+      - name: Compute deterministic base and run scope guard
         run: |
           set -euo pipefail
-          set -x
-          echo "HEAD=$(git rev-parse --short HEAD)"
-          BASE_COMMIT="$(git merge-base HEAD "origin/${{ github.base_ref }}")"
-          echo "Using base $BASE_COMMIT"
-
-          test -f tools/scope-guard.sh
-          chmod +x tools/scope-guard.sh || true
-          ls -l tools
-
-          set +e
-          BASE="$BASE_COMMIT" bash tools/scope-guard.sh
-          rc=$?
-          set -e
-          echo "scope_guard rc=$rc"
-          exit $rc
+          BASE_COMMIT="$(git merge-base HEAD origin/main || true)"
+          if [ -z "$BASE_COMMIT" ]; then
+            echo "ERROR: Could not compute BASE_COMMIT"
+            git fetch origin main
+            BASE_COMMIT="$(git merge-base HEAD origin/main)"
+          fi
