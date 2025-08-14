@@ -28,4 +28,4 @@ jobs:
           set -euo pipefail
           BASE_COMMIT="$(git merge-base HEAD "origin/${{ github.base_ref }}")"
           echo "Using base $BASE_COMMIT"
-          BASE="$BASE_COMMIT" bash tools/scope_guard.sh
+          BASE="$BASE_COMMIT" bash tools/scope-guard.sh
