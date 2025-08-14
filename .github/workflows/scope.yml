@@ -1,15 +1,25 @@
+
 name: Scope Guard
 
 on:
   pull_request:
     branches:
-      - main
 
 jobs:
   scope-guard:
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: read
     steps:
+      - name: Checkout PR HEAD (full history)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Fetch base branch
+        run: git fetch origin ${{ github.base_ref }} --depth=1
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
