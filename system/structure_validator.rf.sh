@@ -288,7 +288,7 @@ setup_environment_paths
 
  
   if [[ ! -f "$UTIL_DIR/source_OR_fail.sh" ]]; then
-    echo "Missing required file: /source_OR_fail.sh"
+    echo "Missing required file: $UTIL_DIR/source_OR_fail.sh"
     exit 1
   fi
   source "$UTIL_DIR/source_OR_fail.sh"
