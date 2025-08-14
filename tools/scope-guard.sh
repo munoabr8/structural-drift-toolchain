@@ -1,44 +1,54 @@
 #!/usr/bin/env bash
-
-# tools/scope_guard.ss
+# tools/scope_guard.sh
 set -euo pipefail
 shopt -s nullglob globstar
 
-SCOPE=${SCOPE:-./../scope.yaml}
+# Exit codes: 0 ok, 3 violations, 4 missing deps/config
+SCOPE=${SCOPE:-scope.yaml}
 BASE=${BASE:-origin/main}
 
 need(){ command -v "$1" >/dev/null || { echo "missing $1" >&2; exit 4; }; }
 need yq; need git
 
-mapfile -t IN < <(yq -r '.in_scope[]?' "$SCOPE")
+# load in-scope
+mapfile -t IN < <(yq -r '.in_scope[]?' "$SCOPE" || true)
+((${#IN[@]})) || { echo "scope_guard: no in_scope entries in $SCOPE" >&2; exit 4; }
 
-# NUL-separated: STATUS<TAB>PATH(…maybe\tOLDPATH for renames)
-readarray -d '' RECS < <(git diff --name-status -z "$BASE"...HEAD)
-
-match_any() { # arg: path
+match_any() {
   local p="$1"
-  for g in "${IN[@]}"; do [[ "$p" == $g ]] && return 0; done
+  for g in "${IN[@]}"; do [[ $p == $g ]] && return 0; done
   return 1
 }
 
-viol=0
-for rec in "${RECS[@]}"; do
-  [[ -z "$rec" ]] && continue
-  status=${rec%%$'\t'*}
-  rest=${rec#*$'\t'}
-  # handle rename: "R100\told\tnew"
-  if [[ "$status" == R* ]]; then
-    IFS=$'\t' read -r _ _ new <<<"$rec"
-    path="$new"
+# build a generator that yields NUL-separated diff records
+gen_diff() {
+  if [[ "$BASE" == "HEAD" ]]; then
+    # 1) staged
+    git diff --name-status -z --cached
+    # 2) if nothing staged, also check working tree (helps smoke tests)
+    if [[ -z "$(git diff --name-only --cached)" ]]; then
+      git diff --name-status -z
+    fi
   else
-    path="$rest"
+    git diff --name-status -z "$BASE"...HEAD
   fi
-  [[ "$status" == D ]] && continue
+}
+
+viol=0
+# records: "S<TAB>PATH" or "Rxxx<TAB>OLD<TAB>NEW"
+while IFS= read -r -d '' rec; do
+  [[ -z "$rec" ]] && continue
+  IFS=$'\t' read -r status path maybe_new <<<"$rec" || continue
+  [[ -z "${status:-}" ]] && continue
+  [[ $status == D* ]] && continue
+  [[ $status == R* ]] && path="$maybe_new"
+  [[ -z "${path:-}" ]] && continue
+
   if ! match_any "$path"; then
     echo "UNMAPPED: $path"
     viol=3
   fi
-done
+done < <(gen_diff)
 
-[[ $viol -eq 0 ]] && echo "scope_guard: ok"
+((viol==0)) && echo "scope_guard: ok"
 exit "$viol"

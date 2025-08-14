@@ -35,6 +35,7 @@ dir: ./tools/release/
 dir: ./tools/structure/
 dir: ./util/
 file: ./.github/pull_request_template.md
+file: ./.github/workflows/churn-pr.yml
 file: ./.github/workflows/scope.yml
 file: ./.gitignore
 file: ./.structure.ignore
@@ -111,6 +112,8 @@ file: ./test/toggle_module_contracts.bats
 file: ./test/unit/test_coverage_summary_real.bats
 file: ./tools/bats-guard.sh
 file: ./tools/check_git_trash.sh
+file: ./tools/churn-by-layer.sh
+file: ./tools/churn_compare.sh
 file: ./tools/detect_garbage.sh
 file: ./tools/doctor.sh
 file: ./tools/enforce_policy.sh
@@ -127,6 +130,7 @@ file: ./tools/release/gen_notes.sh
 file: ./tools/scan_duplicate_targets.sh
 file: ./tools/scope-guard.sh
 file: ./tools/setup.sh
+file: ./tools/smoke-scope-guard.sh
 file: ./tools/structure/structure_snapshot_gen.sh
 file: ./tools/structure_compare.sh
 file: ./tools/utili-sourcing.sh

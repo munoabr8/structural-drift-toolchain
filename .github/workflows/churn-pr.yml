@@ -1,0 +1,34 @@
+# .github/workflows/churn-pr.yml
+name: churn-pr
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]   # only PRs into main
+jobs:
+  churn:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write   # needed to comment
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mikefarah/yq@v4.44.3
+      - name: Run churn
+        id: run
+        run: |
+          out="$(tools/churn_by_layer.sh 30.days)"
+          echo "$out"
+          printf 'table<<EOF\n%s\nEOF\n' "$out" >> "$GITHUB_OUTPUT"
+      - name: Comment churn
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = "### Churn (30 days)\n```\n" + core.getInput('table') + "\n```";
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body
+            });
+        with:
+          table: ${{ steps.run.outputs.table }}
