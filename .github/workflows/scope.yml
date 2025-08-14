@@ -35,12 +35,12 @@ jobs:
           BASE_COMMIT="$(git merge-base HEAD "origin/${{ github.base_ref }}")"
           echo "Using base $BASE_COMMIT"
 
-          test -f tools/scope_guard.sh
-          chmod +x tools/scope_guard.sh || true
+          test -f tools/scope-guard.sh
+          chmod +x tools/scope-guard.sh || true
           ls -l tools
 
           set +e
-          BASE="$BASE_COMMIT" bash tools/scope_guard.sh
+          BASE="$BASE_COMMIT" bash tools/scope-guard.sh
           rc=$?
           set -e
           echo "scope_guard rc=$rc"
