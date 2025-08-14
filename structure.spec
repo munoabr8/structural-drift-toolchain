@@ -34,6 +34,7 @@ dir: ./util/
 file: ./.github/pull_request_template.md
 file: ./.github/workflows/churn-pr.yml
 file: ./.github/workflows/scope.yml
+file: ./.github/workflows/structural_drift.yml
 file: ./.gitignore
 file: ./.structure.ignore
 file: ./Makefile
@@ -78,6 +79,7 @@ file: ./system/make/preflight.mk
 file: ./system/make/preflight_shared.mk
 file: ./system/make/structure.mk
 file: ./system/make/test.mk
+file: ./system/smoke-structure-validator.sh
 file: ./system/structure_spec_validator.sh
 file: ./system/structure_validator.rf.sh
 file: ./system/structure_validator.sh
@@ -123,6 +125,7 @@ file: ./tools/git-hooks/pre-merge-check.sh
 file: ./tools/git-hooks/pre-push
 file: ./tools/install-hooks.sh
 file: ./tools/pre-git-switch.sh
+file: ./tools/providers/.gitkeep
 file: ./tools/release/gen_notes.sh
 file: ./tools/scan_duplicate_targets.sh
 file: ./tools/scope-guard.sh

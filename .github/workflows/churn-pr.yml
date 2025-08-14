@@ -17,7 +17,7 @@ jobs:
         id: run
         run: |
           #out="$(tools/churn_by_layer.sh 30.days)"
-          out="$(./tools/churn_by_layer.sh 30.days)"
+          out="$(tools/churn-by-layer.sh 30.days)"
 
           echo "$out"
           printf 'table<<EOF\n%s\nEOF\n' "$out" >> "$GITHUB_OUTPUT"
