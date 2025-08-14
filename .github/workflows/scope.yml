@@ -1,4 +1,3 @@
-# .github/workflows/scope.yml
 # .github/workflows/scope-guard.yml
 name: scope-guard
 on:
@@ -22,14 +21,27 @@ jobs:
 
       - name: Install yq
         uses: mikefarah/yq@v4.44.3
-      - name: Verify yq installation
+
+      - name: Verify yq
         run: |
           yq --version
-          command -v yq 
+          command -v yq
 
-      - name: Compute deterministic base and run scope guard
+      - name: Compute base and run scope guard (diagnostic)
         run: |
           set -euo pipefail
+          set -x
+          echo "HEAD=$(git rev-parse --short HEAD)"
           BASE_COMMIT="$(git merge-base HEAD "origin/${{ github.base_ref }}")"
           echo "Using base $BASE_COMMIT"
-          BASE="$BASE_COMMIT" bash tools/scope-guard.sh
+
+          test -f tools/scope_guard.sh
+          chmod +x tools/scope_guard.sh || true
+          ls -l tools
+
+          set +e
+          BASE="$BASE_COMMIT" bash tools/scope_guard.sh
+          rc=$?
+          set -e
+          echo "scope_guard rc=$rc"
+          exit $rc
