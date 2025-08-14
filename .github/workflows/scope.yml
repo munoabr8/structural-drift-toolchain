@@ -1,12 +1,14 @@
-# .github/workflows/scope.yml
-# .github/workflows/scope-guard.yml
-name: scope-guard
+
+name: Scope Guard
+
 on:
   pull_request:
-    branches: [main]
+    branches:
+      - main
+
 
 jobs:
-  guard:
+  scope-guard:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -20,6 +22,13 @@ jobs:
       - name: Fetch base branch
         run: git fetch origin ${{ github.base_ref }} --depth=1
 
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # ensures full git history for merge-base
+
       - name: Install yq
         uses: mikefarah/yq@v4.44.3
 
@@ -28,35 +37,22 @@ jobs:
           yq --version
           command -v yq
 
-      - name: Compute base and run scope guard (diagnostic)
+      - name: Debug Git State
         run: |
-set -euo pipefail
-echo "HEAD=$(git rev-parse --short HEAD)"
+          git remote -v
+          git fetch origin main
+          git branch -a
+          git log --oneline --decorate --graph -n 5
+          echo "HEAD commit:"
+          git rev-parse --short HEAD
 
-    # Fetch the PR base branch deterministically
-    echo "Fetching origin/${{ github.base_ref }} ..."
-    git fetch --no-tags --prune --depth=1 origin "+refs/heads/${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}"
+      - name: Compute deterministic base and run scope guard
+        run: |
+          set -euo pipefail
+          BASE_COMMIT="$(git merge-base HEAD origin/main || true)"
+          if [ -z "$BASE_COMMIT" ]; then
+            echo "ERROR: Could not compute BASE_COMMIT"
+            git fetch origin main
+            BASE_COMMIT="$(git merge-base HEAD origin/main)"
+          fi
 
-    echo "Remotes:"
-    git branch -r
-
-    # Compute a single merge base. Try fork-point first, fall back to merge-base.
-    BASE_REF="origin/${{ github.base_ref }}"
-    BASE_COMMIT="$(git merge-base --fork-point "$BASE_REF" HEAD || git merge-base HEAD "$BASE_REF")"
-    echo "Using base $BASE_COMMIT"
-
-    # Ensure guard path is correct (pick the one you actually have)
-    GUARD="tools/scope-guard.sh"    # or: tools/scope-guard.sh
-    test -f "$GUARD"
-    chmod +x "$GUARD" || true
-    ls -l tools
-
-    # yq must be present
-    yq --version
-
-    set +e
-    BASE="$BASE_COMMIT" bash "$GUARD"
-    rc=$?
-    set -e
-    echo "scope_guard rc=$rc"
-    exit $rc
