@@ -1,10 +1,31 @@
 # .github/workflows/scope.yml
+# .github/workflows/scope-guard.yml
 name: scope-guard
-on: [pull_request]
+on:
+  pull_request:
+    branches: [main]
+
 jobs:
   guard:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
-      - uses: mikefarah/yq@v4.44.3
-      - run: bash tools/scope-guard.sh
+      - name: Checkout PR HEAD (full history)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Fetch base branch
+        run: git fetch origin ${{ github.base_ref }} --depth=1
+
+      - name: Install yq
+        uses: mikefarah/yq@v4.44.3
+
+      - name: Compute deterministic base and run scope guard
+        run: |
+          set -euo pipefail
+          BASE_COMMIT="$(git merge-base HEAD "origin/${{ github.base_ref }}")"
+          echo "Using base $BASE_COMMIT"
+          BASE="$BASE_COMMIT" bash tools/scope_guard.sh
