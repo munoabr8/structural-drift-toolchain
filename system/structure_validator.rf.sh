@@ -292,7 +292,7 @@ setup_environment_paths
     echo "Missing required file: $UTIL_DIR/source_or_fail.sh"
     exit 1
   fi
-  source "$UTIL_DIR/source_OR_fail.sh"
+  source "$UTIL_DIR/source_or_fail.sh"
 
   source_or_fail "$UTIL_DIR/logger.sh"
   source_or_fail "$UTIL_DIR/logger_wrapper.sh"
