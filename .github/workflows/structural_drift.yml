@@ -25,8 +25,8 @@ jobs:
           LOG_FILE: "structure_validator.log"
         run: |
           set -euo pipefail
-          chmod +x ./system/structure_validator.rf.sh || true
-          ./system/structure_validator.rf.sh --spec structure.spec
+          chmod +x system/structure_validator.rf.sh || true
+          system/structure_validator.rf.sh --spec structure.spec
 
       - name: Upload logs on failure
         if: failure()
