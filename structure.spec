@@ -15,7 +15,6 @@ dir: ./test/bin-tests/
 dir: ./test/e2e/
 dir: ./test/e2e/features/
 dir: ./test/e2e/garbage_detector/
-dir: ./test/e2e/garbage_detector/tmp/
 dir: ./test/e2e/helpers/
 dir: ./test/e2e/structure_generator/
 dir: ./test/e2e/structure_ignore/
@@ -81,6 +80,7 @@ file: ./system/make/preflight.mk
 file: ./system/make/preflight_shared.mk
 file: ./system/make/structure.mk
 file: ./system/make/test.mk
+file: ./system/smoke-structure-validator.sh
 file: ./system/structure_spec_validator.sh
 file: ./system/structure_validator.rf.sh
 file: ./system/structure_validator.sh
