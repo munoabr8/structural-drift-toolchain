@@ -35,6 +35,8 @@ dir: ./tools/release/
 dir: ./tools/structure/
 dir: ./util/
 file: ./.github/pull_request_template.md
+file: ./.github/workflows/churn-pr.yml
+file: ./.github/workflows/scope.yml
 file: ./.gitignore
 file: ./.structure.ignore
 file: ./Makefile
@@ -66,6 +68,7 @@ file: ./lib/policy/smk_1-2.bats
 file: ./lib/policy/smk_1-2.sh
 file: ./lib/policy/smoke_test_policy.query.sh
 file: ./lib/policy/transform_policy_p2.sh
+file: ./scope.yaml
 file: ./smoke.sh
 file: ./system/comparator.txt
 file: ./system/exit-codes/exit_codes_validator.sh
@@ -109,6 +112,8 @@ file: ./test/toggle_module_contracts.bats
 file: ./test/unit/test_coverage_summary_real.bats
 file: ./tools/bats-guard.sh
 file: ./tools/check_git_trash.sh
+file: ./tools/churn-by-layer.sh
+file: ./tools/churn_compare.sh
 file: ./tools/detect_garbage.sh
 file: ./tools/doctor.sh
 file: ./tools/enforce_policy.sh
@@ -123,7 +128,9 @@ file: ./tools/install-hooks.sh
 file: ./tools/pre-git-switch.sh
 file: ./tools/release/gen_notes.sh
 file: ./tools/scan_duplicate_targets.sh
+file: ./tools/scope-guard.sh
 file: ./tools/setup.sh
+file: ./tools/smoke-scope-guard.sh
 file: ./tools/structure/structure_snapshot_gen.sh
 file: ./tools/structure_compare.sh
 file: ./tools/utili-sourcing.sh
