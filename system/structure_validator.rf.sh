@@ -140,7 +140,22 @@
  #set -x
 
   
+: "${EXIT_OK:=0}"
+: "${EXIT_USAGE:=64}"
+: "${EXIT_MISSING_SPEC:=2}"
+: "${EXIT_MISSING_PATH:=3}"
+: "${EXIT_INVALID_SYMLINK:=4}"
 
+# Optional libraries; skip if absent
+if [[ -d "${BASH_SOURCE[0]%/*}/../util" ]]; then
+  # best effort; do not hard-fail if missing
+  UTIL_DIR="${UTIL_DIR:-$(cd "${BASH_SOURCE[0]%/*}/../util" && pwd)}"
+  SYSTEM_DIR="${SYSTEM_DIR:-$(cd "${BASH_SOURCE[0]%/*}/../system" && pwd)}"
+  [[ -f "$UTIL_DIR/source_OR_fail.sh" ]] && source "$UTIL_DIR/source_OR_fail.sh" || true
+  [[ -f "$UTIL_DIR/logger.sh" ]] && source "$UTIL_DIR/logger.sh" || true
+  [[ -f "$UTIL_DIR/logger_wrapper.sh" ]] && source "$UTIL_DIR/logger_wrapper.sh" || true
+  [[ -f "$SYSTEM_DIR/exit-codes/exit_codes_validator.sh" ]] && source "$SYSTEM_DIR/exit-codes/exit_codes_validator.sh" || true
+fi
  
 
 if [[ "${1:-}" == "--quiet" ]]; then
@@ -398,25 +413,79 @@ exit_spec_directory() {
 
  
 
-locate_spec_file() {
-  local requested="$1"
-  # 1) if it exists as given, use it
-  [[ -f $requested ]] && { echo "$requested"; return; }
+# locate_spec_file() {
+#   local requested="$1"
+#   # 1) if it exists as given, use it
+#   [[ -f $requested ]] && { echo "$requested"; return; }
 
-  # 2) otherwise, start from this script’s parent and walk up
-  local dir
-  dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." >/dev/null && pwd)
-  while [[ $dir != / ]]; do
-    if [[ -f $dir/$requested ]]; then
-      echo "$dir/$requested"
-      return
+#   # 2) otherwise, start from this script’s parent and walk up
+#   local dir
+#   dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." >/dev/null && pwd)
+#   while [[ $dir != / ]]; do
+#     if [[ -f $dir/$requested ]]; then
+#       echo "$dir/$requested"
+#       return
+#     fi
+#     dir=$(dirname "$dir")
+#   done
+
+#   # 3) not found
+#   return 1
+# }
+
+# locate_spec_file() {
+#   local requested="${1:-structure.spec}"
+#   local anchor; anchor=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+#   local dir="$anchor"
+#   while :; do
+#     [[ -f "$dir/$requested" ]] && { printf '%s\n' "$dir/$requested"; return 0; }
+#     [[ "$dir" == "/" ]] && break
+#     dir=$(dirname "$dir")
+#   done
+#   return 1
+# }
+
+# locate_spec_file() {
+#   local in="$1"
+#   if [[ -f "$in" ]]; then
+#     printf '%s\n' "$(cd "$(dirname "$in")" && pwd)/$(basename "$in")"
+#     return 0
+#   fi
+#   # common fallbacks
+#   if [[ -f "./$in" ]]; then
+#     printf '%s\n' "$(pwd)/$in"; return 0
+#   fi
+#   if [[ -f "structure.spec" ]]; then
+#     printf '%s\n' "$(pwd)/structure.spec"; return 0
+#   fi
+#   return 1
+# }
+
+
+locate_spec_file() {
+  local requested="${1:-structure.spec}"
+
+  # 1) explicit path given and exists → return absolute
+  if [[ -f "$requested" ]]; then
+    printf '%s\n' "$(cd "$(dirname "$requested")" && pwd)/$(basename "$requested")"
+    return 0
+  fi
+
+  # 2) walk up from the script’s parent (repo tools usually live in tools/)
+  local dir; dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." >/dev/null && pwd)"
+  while :; do
+    if [[ -f "$dir/$requested" ]]; then
+      printf '%s\n' "$dir/$requested"
+      return 0
     fi
-    dir=$(dirname "$dir")
+    [[ "$dir" == "/" ]] && break
+    dir="$(dirname "$dir")"
   done
 
   # 3) not found
   return 1
 }
+
 
   
  # Will need to ensure that the policy file exists. 
@@ -443,47 +512,102 @@ locate_spec_file() {
 
 # If you never have spec or policy names that begin with hyphens, feel free to call:
 #parse_CLI_args CLI_STATE "$@"
+# main() {
+
+#   source_utilities
+#   echo "----->"
+
+#   declare -A CLI_STATE
+#   parse_CLI_args CLI_STATE "$@"
+
+#   # 2️⃣ Pull out raw inputs
+#   local mode="${CLI_STATE[MODE]}"
+#   local spec_input  spec_file
+#   spec_input="${CLI_STATE[SPEC]}"
+
+
+#   if [[ "$mode" == help ]]; then
+#     show_usage
+#     exit $EXIT_OK
+#   fi
+
+#   # 4️⃣ Ensure the user actually gave a spec
+#   if [[ -z "$spec_input" ]]; then
+#     show_usage
+#     exit $EXIT_MISSING_SPEC
+#   fi
+
+
+
+# spec_file="${spec_input:-structure.spec}"
+# spec_file="$(locate_spec_file "$spec_file" || true)"
+# [[ -z "$spec_file" ]] && { echo "missing structure.spec" >&2; exit "$EXIT_MISSING_SPEC"; }
+
+
+#  if ! spec_file="$(locate_spec_file "$spec_input")"; then
+#     safe_log "ERROR" "Spec file not found: $spec_input" "" "$EXIT_MISSING_SPEC"
+#     exit $EXIT_MISSING_SPEC
+#   fi
+ 
+ 
+#   safe_log "INFO" "Reading structure spec: $spec_file" "" "$EXIT_OK"
+
+#   enter_spec_directory "$spec_file"
+#   validate_file_structure "$(basename "$spec_file")"
+#   rc=$?
+#   exit_spec_directory
+#   exit "$rc"
+
+
+# }
+
+
 main() {
+  set -euo pipefail
 
-  source_utilities
-  echo "----->"
+  # --- optional libs (don’t hard-fail) ---
+  type source_utilities >/dev/null 2>&1 && source_utilities || true
 
+  # --- defaults for exits if libs not loaded ---
+  : "${EXIT_OK:=0}" "${EXIT_USAGE:=64}" "${EXIT_MISSING_SPEC:=2}"
+
+  # --- args ---
   declare -A CLI_STATE
-  parse_CLI_args CLI_STATE "$@"
+  parse_CLI_args CLI_STATE "$@" || { show_usage; exit "$EXIT_USAGE"; }
 
-  # 2️⃣ Pull out raw inputs
-  local mode="${CLI_STATE[MODE]}"
-  local spec_input  spec_file
-  spec_input="${CLI_STATE[SPEC]}"
+  local mode="${CLI_STATE[MODE]:-validate}"
+  local spec_input="${CLI_STATE[SPEC]:-structure.spec}"
 
-
-  if [[ "$mode" == help ]]; then
+  if [[ "$mode" == "help" ]]; then
     show_usage
-    exit $EXIT_OK
+    exit "$EXIT_OK"
   fi
 
-  # 4️⃣ Ensure the user actually gave a spec
-  if [[ -z "$spec_input" ]]; then
-    show_usage
-    exit $EXIT_MISSING_SPEC
+  # --- locate spec once ---
+  local spec_file
+  if ! spec_file="$(locate_spec_file "$spec_input")"; then
+    echo "ERROR: Spec file not found: $spec_input" >&2
+    exit "$EXIT_MISSING_SPEC"
   fi
 
-
-
- if ! spec_file="$(locate_spec_file "$spec_input")"; then
-    safe_log "ERROR" "Spec file not found: $spec_input" "" "$EXIT_MISSING_SPEC"
-    exit $EXIT_MISSING_SPEC
-  fi
- 
- 
-  safe_log "INFO" "Reading structure spec: $spec_file" "" "$EXIT_OK"
+  # --- run validator ---
+  safe_log "INFO" "Reading structure spec: $spec_file" "" "$EXIT_OK" || true
 
   enter_spec_directory "$spec_file"
-  validate_file_structure "$(basename "$spec_file")"
+  local rc=0
+  validate_file_structure "$(basename "$spec_file")" || rc=$?
   exit_spec_directory
 
-  exit $?
+  exit "$rc"
 }
+
+
+
+ 
+
+
+ 
+
 
 
 #Entrypoint

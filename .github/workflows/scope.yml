@@ -1,10 +1,62 @@
 # .github/workflows/scope.yml
+# .github/workflows/scope-guard.yml
 name: scope-guard
-on: [pull_request]
+on:
+  pull_request:
+    branches: [main]
+
 jobs:
   guard:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
-      - uses: mikefarah/yq@v4.44.3
-      - run: bash tools/scope_guard.sh
+      - name: Checkout PR HEAD (full history)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Fetch base branch
+        run: git fetch origin ${{ github.base_ref }} --depth=1
+
+      - name: Install yq
+        uses: mikefarah/yq@v4.44.3
+
+      - name: Verify yq
+        run: |
+          yq --version
+          command -v yq
+
+      - name: Compute base and run scope guard (diagnostic)
+        run: |
+set -euo pipefail
+echo "HEAD=$(git rev-parse --short HEAD)"
+
+    # Fetch the PR base branch deterministically
+    echo "Fetching origin/${{ github.base_ref }} ..."
+    git fetch --no-tags --prune --depth=1 origin "+refs/heads/${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}"
+
+    echo "Remotes:"
+    git branch -r
+
+    # Compute a single merge base. Try fork-point first, fall back to merge-base.
+    BASE_REF="origin/${{ github.base_ref }}"
+    BASE_COMMIT="$(git merge-base --fork-point "$BASE_REF" HEAD || git merge-base HEAD "$BASE_REF")"
+    echo "Using base $BASE_COMMIT"
+
+    # Ensure guard path is correct (pick the one you actually have)
+    GUARD="tools/scope-guard.sh"    # or: tools/scope-guard.sh
+    test -f "$GUARD"
+    chmod +x "$GUARD" || true
+    ls -l tools
+
+    # yq must be present
+    yq --version
+
+    set +e
+    BASE="$BASE_COMMIT" bash "$GUARD"
+    rc=$?
+    set -e
+    echo "scope_guard rc=$rc"
+    exit $rc
