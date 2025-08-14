@@ -68,57 +68,58 @@ if command -v logger >/dev/null && [[ "$(type -t log_json)" == "file" ]]; then
   return 99
 fi
  
+ 
 safe_log() {
-  log_json "$@" || {
-    echo "🛑 Logging failed. Exiting at level '$1' with message: $2" >&2
+  local level="$1" message="$2" error_code="${3:-}" exit_code="${4:-}"
+  
+  # Always try JSON logging first (your existing implementation)
+  log_json "$level" "$message" "$error_code" "$exit_code" || {
+    echo "🛑 Logging failed. Exiting at level '$level' with message: $message" >&2
     exit 99
   }
+
+  # Optional: also log a plain text line if LOG_FILE is set
+  if [[ -n "${LOG_FILE:-}" ]]; then
+    local timestamp
+    timestamp="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+    printf "%s [%s] %s (err:%s exit:%s)\n" \
+      "$timestamp" "$level" "$message" "$error_code" "$exit_code" \
+      >> "$LOG_FILE"
+  fi
 }
 
 
 log_json() {
-  # Invariant: Must have at least LEVEL and MESSAGE
-  if [[ "$#" -lt 2 ]]; then
-    echo "❌ ERROR: log_json() called with too few arguments. Got [$*]" >&2
-    return 99
-  fi
+  # ---- validate ----
+  (( $# >= 2 )) || { echo "log_json: need LEVEL MESSAGE" >&2; return 99; }
+  local level="$1" message="$2" detail="${3:-}" err="${4:-}" code="${5:-}"
+  case "$level" in INFO|ERROR|FATAL|SUCCESS) ;; *) echo "log_json: bad level $level" >&2; return 98;; esac
+  [[ "${QUIET:-false}" == "true" && "$level" != "ERROR" && "$level" != "FATAL" ]] && return 0
 
-  local level="${1:-""}"
-  local message="${2:-""}"
-  local error_code="${3:-""}"
-  local exit_code="${4:-""}"
+  # ---- helpers ----
+  json_escape() {
+    local s=$1
+    s=${s//\\/\\\\}; s=${s//\"/\\\"}; s=${s//$'\n'/\\n}; s=${s//$'\r'/\\r}; s=${s//$'\t'/\\t}
+    printf '%s' "$s"
+  }
 
- 
-  # Invariant: Level must be from accepted set
-  case "$level" in
-    INFO|ERROR|FATAL|SUCCESS) ;;
-    *)
-      echo "❌ ERROR: Unknown log level '$level'" >&2
-      return 98
-      ;;
-  esac
+  # ---- assemble ----
+  local ts; ts="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+  local j='{"timestamp":"'"$(json_escape "$ts")"'","level":"'"$level"'","message":"'"$(json_escape "$message")"'"'
+  [[ -n "$detail" ]] && j+=',"detail":"'"$(json_escape "$detail")"'"'
+  [[ -n "$err"    ]] && j+=',"error_code":"'"$(json_escape "$err")"'"'
+  [[ -n "$code"   ]] && j+=',"exit_code":"'"$(json_escape "$code")"'"'
+  j+=',"pid":'"$$"'}'
 
-   # If quiet mode, only allow ERROR or FATAL through
-  if [[ "${QUIET:-false}" == "true" && "$level" != "ERROR" && "$level" != "FATAL" ]]; then
-    return 0
-   fi
- 
-
-REDUCED_GRANULARITY="${REDUCED_GRANULARITY:-false}"
-
-  local timestamp
-  timestamp="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-
-  local log_line
-  log_line=$(printf '{"timestamp":"%s","level":"%s","message":"%s","error_code":"%s","exit_code":"%s"}\n' \
-    "$timestamp" "$level" "$message" "$error_code" "$exit_code")
-
-  # Add a separating newline before the log
+  # ---- output (stderr + optional file) ----
   if [[ -n "${LOG_OUTPUT_FILE:-}" ]]; then
-    printf "\n%s\n" "$log_line" | tee -a "$LOG_OUTPUT_FILE" >&2
-  else
-    printf "\n%s\n" "$log_line" >&2
+    # create file if missing; append atomically
+    umask 077; : >>"$LOG_OUTPUT_FILE"
+    printf '%s\n' "$j" | tee -a "$LOG_OUTPUT_FILE" >&2
+  
+    else
+    printf '%s\n' "$j" >&2
   fi
-
-
 }
+
+
