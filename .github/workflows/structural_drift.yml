@@ -1,0 +1,38 @@
+# .github/workflows/structural-drift.yml
+name: structural-drift
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout PR HEAD
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Run structure validator
+        id: run
+        env:
+          # set if your spec might live outside repo root
+          SPEC_SEARCH_PATHS: ".:config:system-test"
+          LOG_OUTPUT_FILE: "structure_validator.jsonl"
+          LOG_FILE: "structure_validator.log"
+        run: |
+          set -euo pipefail
+          chmod +x structure_validator.rf.sh || true
+          ./structure_validator.rf.sh --spec structure.spec
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: structural-drift-logs
+          path: |
+            structure_validator.jsonl
+            structure_validator.log
