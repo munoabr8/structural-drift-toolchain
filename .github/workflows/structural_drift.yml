@@ -13,6 +13,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Run structure validator (diagnostic)
+        run: |
+          set -euo pipefail
+          SCRIPT="system/structure_validator.rf.sh"
+          chmod +x "$SCRIPT"
+          "$SCRIPT" validate structure.spec
 
       - name: Run structure validator (diagnostic)
         env:
@@ -46,6 +52,7 @@ jobs:
           if [ -f "$LOG_FILE" ]; then sed -n '1,200p' "$LOG_FILE"; else echo "(missing)"; fi
 
           exit $rc
+          
 
       - name: Upload logs
         if: always()
