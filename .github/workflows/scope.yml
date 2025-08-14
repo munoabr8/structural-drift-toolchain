@@ -22,6 +22,10 @@ jobs:
 
       - name: Install yq
         uses: mikefarah/yq@v4.44.3
+      - name: Verify yq installation
+        run: |
+          yq --version
+          command -v yq 
 
       - name: Compute deterministic base and run scope guard
         run: |
