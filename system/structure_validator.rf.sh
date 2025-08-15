@@ -295,6 +295,7 @@ resolve_project_root() {
 
 setup_environment_paths() {
   PROJECT_ROOT="${PROJECT_ROOT:-$(resolve_project_root)}" || return $?
+  
   UTIL_DIR="${UTIL_DIR:-$PROJECT_ROOT/util}"
 
   SYSTEM_DIR="${SYSTEM_DIR:-$PROJECT_ROOT/system}"
@@ -307,11 +308,11 @@ resolve_project_root
 setup_environment_paths
 
  
-  if [[ ! -f "$UTIL_DIR/source_OR_fail.sh" ]]; then
-    echo "Missing required file: $lib_dir/source_OR_fail.sh"
+  if [[ ! -f "$UTIL_DIR/source_or_fail.sh" ]]; then
+    echo "Missing required file: $UTIL_DIR/source_or_fail.sh"
     exit 1
   fi
-  source "$UTIL_DIR/source_OR_fail.sh"
+  source "$UTIL_DIR/source_or_fail.sh"
 
   source_or_fail "$UTIL_DIR/logger.sh"
   source_or_fail "$UTIL_DIR/logger_wrapper.sh"

@@ -15,7 +15,6 @@ dir: ./test/bin-tests/
 dir: ./test/e2e/
 dir: ./test/e2e/features/
 dir: ./test/e2e/garbage_detector/
-dir: ./test/e2e/helpers/
 dir: ./test/e2e/structure_generator/
 dir: ./test/e2e/structure_ignore/
 dir: ./test/e2e/structure_negative_tests/
@@ -34,6 +33,7 @@ dir: ./util/
 file: ./.github/pull_request_template.md
 file: ./.github/workflows/churn-pr.yml
 file: ./.github/workflows/scope.yml
+file: ./.github/workflows/structural_drift.yml
 file: ./.gitignore
 file: ./.structure.ignore
 file: ./Makefile
@@ -125,6 +125,9 @@ file: ./tools/git-hooks/pre-merge-check.sh
 file: ./tools/git-hooks/pre-push
 file: ./tools/install-hooks.sh
 file: ./tools/pre-git-switch.sh
+file: ./tools/providers/.gitkeep
+file: ./tools/providers/localfs/.gitkeep
+file: ./tools/providers/terraform/.gitkeep
 file: ./tools/release/gen_notes.sh
 file: ./tools/scan_duplicate_targets.sh
 file: ./tools/scope-guard.sh

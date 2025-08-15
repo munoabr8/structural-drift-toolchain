@@ -5,11 +5,13 @@ on:
   pull_request:
     branches:
 
+
 jobs:
   scope-guard:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+
     steps:
       - name: Checkout PR HEAD (full history)
         uses: actions/checkout@v4
@@ -27,6 +29,11 @@ jobs:
 
       - name: Install yq
         uses: mikefarah/yq@v4.44.3
+
+      - name: Verify yq
+        run: |
+          yq --version
+          command -v yq
 
       - name: Debug Git State
         run: |
@@ -46,3 +53,4 @@ jobs:
             git fetch origin main
             BASE_COMMIT="$(git merge-base HEAD origin/main)"
           fi
+
