@@ -3,9 +3,26 @@
 set -euo pipefail
 shopt -s nullglob globstar
 
-# Exit codes: 0 ok, 3 violations, 4 missing deps/config
-SCOPE=${SCOPE:-scope.yaml}
+
+# discover SCOPE if not set
+   ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+ # Exit codes: 0 ok, 3 violations, 4 missing deps/config
+
 BASE=${BASE:-origin/main}
+
+SCOPE="${SCOPE:-$ROOT/scope.yaml}"
+[[ -f "$SCOPE" ]] || { echo "Error: open $SCOPE: no such file or directory"; exit 2; }
+yq -e '.in_scope | length > 0' "$SCOPE" >/dev/null || { echo "scope_guard: no in_scope entries in scope.yaml"; exit 2; }
+
+ 
+[[ -f "${SCOPE:-}" ]] || { echo "Error: open ${SCOPE:-<unset>}: no such file or directory"; exit 2; }
+
+
+# Exit codes: 0 ok, 3 violations, 4 missing deps/config
+ 
+
+echo "DEBUG SCOPE=$SCOPE"
+yq -r '.in_scope' "$SCOPE"
 
 need(){ command -v "$1" >/dev/null || { echo "missing $1" >&2; exit 4; }; }
 need yq; need git
