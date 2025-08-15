@@ -93,6 +93,7 @@ file: ./test/e2e/enforce_policy.bats
 file: ./test/e2e/features/drift_monitoring.feature
 file: ./test/e2e/garbage_detector/test-ignore-valid.bats
 file: ./test/e2e/garbage_detector/test-untracked-garbage.bats
+file: ./test/e2e/helpers/.gitkeep
 file: ./test/e2e/structure_generator/test-generate-spec.bats
 file: ./test/e2e/structure_ignore/.structure.ignore
 file: ./test/e2e/structure_ignore/test-validate-ignore.bats
