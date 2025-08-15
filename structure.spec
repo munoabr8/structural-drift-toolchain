@@ -252,6 +252,7 @@ file: ./tools/providers/terraform/.gitkeep
 file: ./tools/release/gen_notes.sh
 file: ./tools/scan_duplicate_targets.sh
 file: ./tools/scope-guard.sh
+file: ./tools/scope2.yaml
 file: ./tools/setup.sh
 file: ./tools/smoke-scope-guard.sh
 file: ./tools/structure/io-wrap.sh
