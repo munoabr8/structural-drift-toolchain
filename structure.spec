@@ -19,7 +19,6 @@ dir: ./test/e2e/structure_generator/
 dir: ./test/e2e/structure_ignore/
 dir: ./test/e2e/structure_negative_tests/
 dir: ./test/e2e/structure_validator/
-dir: ./test/e2e/structure_validator/tmp/
 dir: ./test/integration/
 dir: ./test/lib-tests/
 dir: ./test/unit/
