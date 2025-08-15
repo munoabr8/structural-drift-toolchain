@@ -15,6 +15,7 @@ dir: ./test/bin-tests/
 dir: ./test/e2e/
 dir: ./test/e2e/features/
 dir: ./test/e2e/garbage_detector/
+dir: ./test/e2e/helpers/
 dir: ./test/e2e/structure_generator/
 dir: ./test/e2e/structure_ignore/
 dir: ./test/e2e/structure_negative_tests/
@@ -32,6 +33,7 @@ dir: ./tools/structure/
 dir: ./util/
 file: ./.github/pull_request_template.md
 file: ./.github/workflows/churn-pr.yml
+file: ./.github/workflows/scope-guard.actions.yml
 file: ./.github/workflows/scope.yml
 file: ./.github/workflows/structural_drift.yml
 file: ./.gitignore
