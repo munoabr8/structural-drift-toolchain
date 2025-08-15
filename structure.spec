@@ -15,14 +15,10 @@ dir: ./test/bin-tests/
 dir: ./test/e2e/
 dir: ./test/e2e/features/
 dir: ./test/e2e/garbage_detector/
-dir: ./test/e2e/garbage_detector/tmp/
-dir: ./test/e2e/helpers/
 dir: ./test/e2e/structure_generator/
 dir: ./test/e2e/structure_ignore/
 dir: ./test/e2e/structure_negative_tests/
-dir: ./test/e2e/structure_negative_tests/tmp/
 dir: ./test/e2e/structure_validator/
-dir: ./test/e2e/structure_validator/tmp/
 dir: ./test/integration/
 dir: ./test/lib-tests/
 dir: ./test/unit/
@@ -35,6 +31,9 @@ dir: ./tools/release/
 dir: ./tools/structure/
 dir: ./util/
 file: ./.github/pull_request_template.md
+file: ./.github/workflows/churn-pr.yml
+file: ./.github/workflows/scope.yml
+file: ./.github/workflows/structural_drift.yml
 file: ./.gitignore
 file: ./.structure.ignore
 file: ./Makefile
@@ -66,6 +65,7 @@ file: ./lib/policy/smk_1-2.bats
 file: ./lib/policy/smk_1-2.sh
 file: ./lib/policy/smoke_test_policy.query.sh
 file: ./lib/policy/transform_policy_p2.sh
+file: ./scope.yaml
 file: ./smoke.sh
 file: ./system/comparator.txt
 file: ./system/exit-codes/exit_codes_validator.sh
@@ -78,6 +78,7 @@ file: ./system/make/preflight.mk
 file: ./system/make/preflight_shared.mk
 file: ./system/make/structure.mk
 file: ./system/make/test.mk
+file: ./system/smoke-structure-validator.sh
 file: ./system/structure_spec_validator.sh
 file: ./system/structure_validator.rf.sh
 file: ./system/structure_validator.sh
@@ -109,6 +110,8 @@ file: ./test/toggle_module_contracts.bats
 file: ./test/unit/test_coverage_summary_real.bats
 file: ./tools/bats-guard.sh
 file: ./tools/check_git_trash.sh
+file: ./tools/churn-by-layer.sh
+file: ./tools/churn_compare.sh
 file: ./tools/detect_garbage.sh
 file: ./tools/doctor.sh
 file: ./tools/enforce_policy.sh
@@ -121,9 +124,14 @@ file: ./tools/git-hooks/pre-merge-check.sh
 file: ./tools/git-hooks/pre-push
 file: ./tools/install-hooks.sh
 file: ./tools/pre-git-switch.sh
+file: ./tools/providers/.gitkeep
+file: ./tools/providers/localfs/.gitkeep
+file: ./tools/providers/terraform/.gitkeep
 file: ./tools/release/gen_notes.sh
 file: ./tools/scan_duplicate_targets.sh
+file: ./tools/scope-guard.sh
 file: ./tools/setup.sh
+file: ./tools/smoke-scope-guard.sh
 file: ./tools/structure/structure_snapshot_gen.sh
 file: ./tools/structure_compare.sh
 file: ./tools/utili-sourcing.sh

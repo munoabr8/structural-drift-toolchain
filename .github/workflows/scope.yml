@@ -1,0 +1,58 @@
+
+name: Scope Guard
+
+on:
+  pull_request:
+    branches:
+      - main
+
+
+jobs:
+  scope-guard:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout PR HEAD (full history)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Fetch base branch
+        run: git fetch origin ${{ github.base_ref }} --depth=1
+
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # ensures full git history for merge-base
+
+      - name: Install yq
+        uses: mikefarah/yq@v4.44.3
+
+      - name: Verify yq
+        run: |
+          yq --version
+          command -v yq
+
+      - name: Debug Git State
+        run: |
+          git remote -v
+          git fetch origin main
+          git branch -a
+          git log --oneline --decorate --graph -n 5
+          echo "HEAD commit:"
+          git rev-parse --short HEAD
+
+      - name: Compute deterministic base and run scope guard
+        run: |
+          set -euo pipefail
+          BASE_COMMIT="$(git merge-base HEAD origin/main || true)"
+          if [ -z "$BASE_COMMIT" ]; then
+            echo "ERROR: Could not compute BASE_COMMIT"
+            git fetch origin main
+            BASE_COMMIT="$(git merge-base HEAD origin/main)"
+          fi
+
