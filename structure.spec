@@ -125,6 +125,8 @@ file: ./tools/git-hooks/pre-push
 file: ./tools/install-hooks.sh
 file: ./tools/pre-git-switch.sh
 file: ./tools/providers/.gitkeep
+file: ./tools/providers/localfs/.gitkeep
+file: ./tools/providers/terraform/.gitkeep
 file: ./tools/release/gen_notes.sh
 file: ./tools/scan_duplicate_targets.sh
 file: ./tools/scope-guard.sh
