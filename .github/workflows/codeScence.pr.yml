@@ -15,18 +15,16 @@ jobs:
       CODESCENE_DELTA_ANALYSIS_URL: ${{ secrets.CODESCENE_DELTA_ANALYSIS_URL }}
       CODESCENE_USER:               ${{ secrets.CODESCENE_USER }}
       CODESCENE_PASSWORD:           ${{ secrets.CODESCENE_PASSWORD }}
-      GITHUB_API_TOKEN:             ${{ secrets.CODESCENE_GH_PAT }}  # PAT with repo/public_repo
+      GITHUB_API_TOKEN:             ${{ secrets.CODESCENE_GH_PAT }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+        with: { fetch-depth: 0 }
 
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
-      # Cache dependency directories for faster Lein builds
       - name: Cache Lein/Maven deps
         uses: actions/cache@v4
         with:
@@ -35,7 +33,6 @@ jobs:
             ~/.lein
           key: ${{ runner.os }}-lein-m2-${{ env.TOOL_TAG }}
 
-      # Reuse a previously built standalone jar if available
       - name: Restore CodeScene jar
         id: jar-cache
         uses: actions/cache@v4
@@ -43,16 +40,17 @@ jobs:
           path: .cache/codescene-ci-cd.jar
           key: ${{ runner.os }}-codescene-ci-cd-${{ env.TOOL_TAG }}
 
-      # Install Leiningen script (local, no sudo)
-      - name: Install Leiningen
+      - name: Install Leiningen (on PATH)
         if: ${{ steps.jar-cache.outputs.cache-hit != 'true' }}
         run: |
-          curl -fsSL https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein -o lein
-          chmod +x lein
-          ./lein -v
+          set -euo pipefail
+          mkdir -p "$HOME/bin"
+          curl -fsSL https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein -o "$HOME/bin/lein"
+          chmod +x "$HOME/bin/lein"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+          lein -v
 
-      # Configure repositories and build jar (only on cache miss)
-      - name: Configure Lein repos and build CodeScene CI/CD jar
+      - name: Configure repos and build CodeScene CI/CD jar
         if: ${{ steps.jar-cache.outputs.cache-hit != 'true' }}
         run: |
           set -euo pipefail
@@ -67,17 +65,14 @@ jobs:
               ["clojars" {:url "https://repo.clojars.org/"}]]}
           EOF
 
-          # Sanity check the problematic artifact is reachable
           curl -fsSL https://repo.clojars.org/slingshot/slingshot/0.12.2/slingshot-0.12.2.jar -o /dev/null
 
           mkdir -p .cache
           git clone --depth 1 --branch "$TOOL_TAG" https://github.com/empear-analytics/codescene-ci-cd.git .cache/codescene-ci-cd
           cd .cache/codescene-ci-cd
-
           git config --global advice.detachedHead false
-          ../lein -U deps
-          ../lein -U uberjar
-
+          lein -U deps
+          lein -U uberjar
           ls -l target/uberjar/
           cp target/uberjar/codescene-ci-cd-*-standalone.jar ../codescene-ci-cd.jar
           java -jar ../codescene-ci-cd.jar --help >/dev/null
