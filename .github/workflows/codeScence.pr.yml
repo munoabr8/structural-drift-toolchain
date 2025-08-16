@@ -15,11 +15,11 @@ jobs:
       CODESCENE_DELTA_ANALYSIS_URL: ${{ secrets.CODESCENE_DELTA_ANALYSIS_URL }}
       CODESCENE_USER:               ${{ secrets.CODESCENE_USER }}
       CODESCENE_PASSWORD:           ${{ secrets.CODESCENE_PASSWORD }}
-      GITHUB_API_TOKEN:             ${{ secrets.CODESCENE_GH_PAT }}
-
+      GITHUB_API_TOKEN:             ${{ secrets.CODESCENE_GH_PAT }}  # PAT with repo/public_repo
     steps:
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-java@v4
         with:
@@ -51,32 +51,21 @@ jobs:
           echo "$HOME/bin" >> "$GITHUB_PATH"
           "$HOME/bin/lein" -v
 
-      - name: Configure repos and build CodeScene CI/CD jar
+      - name: Build CodeScene CI/CD jar from source
         if: ${{ steps.jar-cache.outputs.cache-hit != 'true' }}
         run: |
           set -euo pipefail
-          mkdir -p ~/.lein
-          cat > ~/.lein/profiles.clj <<'EOF'
-          {:user
-           :repositories
-             [["central" {:url "https://repo1.maven.org/maven2/"}]
-              ["clojars" {:url "https://repo.clojars.org/"}]]
-           :plugin-repositories
-             [["central" {:url "https://repo1.maven.org/maven2/"}]
-              ["clojars" {:url "https://repo.clojars.org/"}]]}
-          EOF
-
-          curl -fsSL https://repo.clojars.org/slingshot/slingshot/0.12.2/slingshot-0.12.2.jar -o /dev/null
-
+          rm -f ~/.lein/profiles.clj || true
           mkdir -p .cache
           git clone --depth 1 --branch "$TOOL_TAG" https://github.com/empear-analytics/codescene-ci-cd.git .cache/codescene-ci-cd
           cd .cache/codescene-ci-cd
           git config --global advice.detachedHead false
           lein -U deps
-          lein -U uberjar
-
-          ls -l target/uberjar/
-          cp target/uberjar/codescene-ci-cd-*-standalone.jar ../codescene-ci-cd.jar
+          lein -U uberjar || lein uberjar
+          echo "Built files:"; ls -l target || true
+          JAR="$(ls -1 target/*standalone*.jar | head -n1)"
+          [[ -n "$JAR" && -f "$JAR" ]] || { echo "Standalone jar not found under target/"; exit 1; }
+          cp "$JAR" ../codescene-ci-cd.jar
           java -jar ../codescene-ci-cd.jar --help >/dev/null
 
       - name: Run CodeScene delta analysis and comment
