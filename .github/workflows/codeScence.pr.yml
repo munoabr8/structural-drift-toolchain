@@ -25,11 +25,6 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Install GitHub CLI (fallback)
-        uses: cli/cli@v2
-        with:
-          version: 2.54.0
-
       - name: Download CodeScene CI/CD CLI
         env:
           TAG: v1.3.3
@@ -48,11 +43,8 @@ jobs:
                 break
               fi
             done
-            if [[ ! -s "$JAR" ]]; then
-              echo "Falling back to gh release download"
-              gh release download "$TAG" -R "$REPO" -p '*standalone.jar' -O "$JAR"
-            fi
           fi
+          [[ -s "$JAR" ]] || { echo "Failed to fetch CodeScene CLI jar" >&2; exit 1; }
           java -jar "$JAR" --help >/dev/null
 
       - name: Run CodeScene delta analysis and comment
