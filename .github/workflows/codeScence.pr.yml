@@ -1,4 +1,10 @@
 # .github/workflows/codescene-pr.yml
+# Required repo secrets (Settings → Secrets and variables → Actions):
+# - CODESCENE_DEL_ANALYSIS_URL  (CodeScene Delta Analysis endpoint, project-specific)
+# - CODESCENE_USER              (CodeScene bot/user)
+# - CODESCENE_PASSWORD          (password or API token)
+# - CODESCENE_GH_PAT            (GitHub PAT; scope=repo for private, public_repo for public)
+
 name: codescene-pr
 on:
   pull_request:
@@ -12,14 +18,13 @@ jobs:
       contents: read
     env:
       TOOL_TAG: v1.3.3
-      CODESCENE_DELTA_ANALYSIS_URL: ${{ secrets.CODESCENE_DELTA_ANALYSIS_URL }}
+      CODESCENE_DELTA_ANALYSIS_URL: ${{ secrets.CODESCENE_DEL_ANALYSIS_URL }}
       CODESCENE_USER:               ${{ secrets.CODESCENE_USER }}
       CODESCENE_PASSWORD:           ${{ secrets.CODESCENE_PASSWORD }}
-      GITHUB_API_TOKEN:             ${{ secrets.CODESCENE_GH_PAT }}  # PAT with repo/public_repo
+      GITHUB_API_TOKEN:             ${{ secrets.CODESCENE_GH_PAT }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+        with: { fetch-depth: 0 }
 
       - uses: actions/setup-java@v4
         with:
@@ -68,19 +73,34 @@ jobs:
           cp "$JAR" ../codescene-ci-cd.jar
           java -jar ../codescene-ci-cd.jar --help >/dev/null
 
-      - name: Run CodeScene delta analysis and comment
+      - name: Validate CodeScene secrets
         run: |
+          set -euo pipefail
+          missing=0
+          for v in CODESCENE_DELTA_ANALYSIS_URL CODESCENE_USER CODESCENE_PASSWORD GITHUB_API_TOKEN; do
+            if [ -z "${!v:-}" ]; then echo "Missing $v"; missing=1; fi
+          done
+          [ "$missing" -eq 0 ] || exit 1
+
+      - name: Run CodeScene delta analysis and comment
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          OWNER:    ${{ github.repository_owner }}
+          REPO:     ${{ github.event.repository.name }}
+        run: |
+          set -euo pipefail
           java -jar .cache/codescene-ci-cd.jar \
-            --codescene-delta-analysis-url "${CODESCENE_DELTA_ANALYSIS_URL}" \
-            --codescene-user "${CODESCENE_USER}" \
-            --codescene-password "${CODESCENE_PASSWORD}" \
-            --analyze-branch-diff \
-            --create-github-comment \
+            --codescene-delta-analysis-url "$CODESCENE_DELTA_ANALYSIS_URL" \
+            --codescene-user "$CODESCENE_USER" \
+            --codescene-password "$CODESCENE_PASSWORD" \
+            --current-commit-id "$HEAD_SHA" \
+            --base-revision "$BASE_SHA" \
+            --github-owner "$OWNER" \
+            --github-repo "$REPO" \
             --github-api-url "https://api.github.com" \
-            --github-api-token "${GITHUB_API_TOKEN}" \
-            --github-owner "${{ github.repository_owner }}" \
-            --github-repo  "${{ github.event.repository.name }}" \
-            --github-pull-request-id "${{ github.event.pull_request.number }}" \
+            --github-api-token "$GITHUB_API_TOKEN" \
+            --create-github-comment \
             --coupling-threshold-percent 75 \
             --fail-on-high-risk \
             --result-path result.json \
