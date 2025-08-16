@@ -16,6 +16,7 @@ jobs:
       CODESCENE_USER:               ${{ secrets.CODESCENE_USER }}
       CODESCENE_PASSWORD:           ${{ secrets.CODESCENE_PASSWORD }}
       GITHUB_API_TOKEN:             ${{ secrets.CODESCENE_GH_PAT }}
+
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
@@ -48,7 +49,7 @@ jobs:
           curl -fsSL https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein -o "$HOME/bin/lein"
           chmod +x "$HOME/bin/lein"
           echo "$HOME/bin" >> "$GITHUB_PATH"
-          lein -v
+          "$HOME/bin/lein" -v
 
       - name: Configure repos and build CodeScene CI/CD jar
         if: ${{ steps.jar-cache.outputs.cache-hit != 'true' }}
@@ -73,6 +74,7 @@ jobs:
           git config --global advice.detachedHead false
           lein -U deps
           lein -U uberjar
+
           ls -l target/uberjar/
           cp target/uberjar/codescene-ci-cd-*-standalone.jar ../codescene-ci-cd.jar
           java -jar ../codescene-ci-cd.jar --help >/dev/null
