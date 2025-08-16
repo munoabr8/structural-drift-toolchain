@@ -25,27 +25,39 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: Install GitHub CLI (fallback)
+        uses: cli/cli@v2
+        with:
+          version: 2.54.0
+
       - name: Download CodeScene CI/CD CLI
         env:
           TAG: v1.3.3
           REPO: empear-analytics/codescene-ci-cd
-          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          api="https://api.github.com/repos/$REPO/releases/tags/$TAG"
-          url="$(curl -fsSL -H "Authorization: Bearer $GH_TOKEN" "$api" \
-            | jq -r '.assets[] | select(.name | test("standalone\\.jar$")) | .browser_download_url')"
-          if [[ -z "$url" || "$url" == "null" ]]; then
-            echo "No standalone jar found on $TAG" >&2
-            curl -fsSL -H "Authorization: Bearer $GH_TOKEN" "$api" | jq -r '.assets[].name' >&2
-            exit 1
+          mkdir -p .cache
+          JAR=".cache/codescene-ci-cd.jar"
+          if [[ ! -s "$JAR" ]]; then
+            for NAME in \
+              "codescene-ci-cd-${TAG#v}-standalone.jar" \
+              "codescene-ci-cd-standalone.jar"; do
+              URL="https://github.com/$REPO/releases/download/$TAG/$NAME"
+              echo "Trying $URL"
+              if curl -fL --retry 5 --retry-delay 2 --retry-all-errors -o "$JAR" "$URL"; then
+                break
+              fi
+            done
+            if [[ ! -s "$JAR" ]]; then
+              echo "Falling back to gh release download"
+              gh release download "$TAG" -R "$REPO" -p '*standalone.jar' -O "$JAR"
+            fi
           fi
-          curl -fsSL -o codescene-ci-cd.jar "$url"
-          java -jar codescene-ci-cd.jar --help >/dev/null
+          java -jar "$JAR" --help >/dev/null
 
       - name: Run CodeScene delta analysis and comment
         run: |
-          java -jar codescene-ci-cd.jar \
+          java -jar .cache/codescene-ci-cd.jar \
             --codescene-delta-analysis-url "${CODESCENE_DELTA_ANALYSIS_URL}" \
             --codescene-user "${CODESCENE_USER}" \
             --codescene-password "${CODESCENE_PASSWORD}" \
