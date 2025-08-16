@@ -39,15 +39,15 @@ jobs:
           TABLE: ${{ steps.run.outputs.table }}
         with:
           script: |
-          const body = [
+            const body = [
             '### Churn (30 days)',
             '```',
             process.env.TABLE,
             '```'
-          ].join('\n');
-          await github.rest.issues.createComment({
-          owner: context.repo.owner,
-          repo: context.repo.repo,
-          issue_number: context.issue.number,
-          body
-        });
+            ].join('\n');
+            await github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+            body
+            });
