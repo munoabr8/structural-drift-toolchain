@@ -1,0 +1,48 @@
+# .github/workflows/maat-coupling.yml
+name: maat-coupling
+on: pull_request
+jobs:
+  coupling:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: Build git2 log (365d window, exclude vendor/test)
+        run: |
+          CUTOFF="$(date -u -d '365 days ago' +%F 2>/dev/null || date -u -v-365d +%F)"
+          git log --all --numstat --date=short \
+            --pretty=format:'--%h--%ad--%aN' \
+            --no-renames --after="$CUTOFF" \
+            -- . ":(exclude)vendor/" ":(exclude)third_party/" ":(exclude)system-test/" ":(exclude)test/" \
+            > maat.log
+
+      - name: Download Code Maat (pinned)
+        run: |
+          curl -sL -o code-maat.jar \
+            https://github.com/adamtornhill/code-maat/releases/download/v1.0.2/code-maat-1.0.2-standalone.jar
+
+      - name: Run logical coupling
+        env:
+          JAVA_TOOL_OPTIONS: "-Djava.awt.headless=true -Xmx4g"
+        run: |
+          java -jar code-maat.jar \
+            -l maat.log -c git2 -a coupling \
+            -i 30 -m 5 -s 30 -r 400 > coupling.csv
+          head -n 200 coupling.csv > coupling.head.csv
+
+      - name: Comment top pairs
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs')
+            const body = "### Logical Coupling (last 365d)\n" +
+                         "```\n" + fs.readFileSync('coupling.head.csv','utf8') + "\n```"
+            github.rest.issues.createComment({
+              owner: context.repo.owner, repo: context.repo.repo,
+              issue_number: context.issue.number, body
+            })
