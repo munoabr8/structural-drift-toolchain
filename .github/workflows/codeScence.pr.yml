@@ -15,37 +15,33 @@ jobs:
       CODESCENE_USER:               ${{ secrets.CODESCENE_USER }}
       CODESCENE_PASSWORD:           ${{ secrets.CODESCENE_PASSWORD }}
       GITHUB_API_TOKEN:             ${{ secrets.CODESCENE_GH_PAT }}  # PAT with repo/public_repo
+      TOOL_TAG:                     v1.3.3
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+        with: { fetch-depth: 0 }
 
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
-      - name: Download CodeScene CI/CD CLI
-        env:
-          TAG: v1.3.3
-          REPO: empear-analytics/codescene-ci-cd
+      - name: Install Leiningen (build tool)
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein -o lein
+          chmod +x lein
+          sudo mv lein /usr/local/bin/lein
+          lein -v
+
+      - name: Build CodeScene CI/CD jar from source
         run: |
           set -euo pipefail
           mkdir -p .cache
-          JAR=".cache/codescene-ci-cd.jar"
-          if [[ ! -s "$JAR" ]]; then
-            for NAME in \
-              "codescene-ci-cd-${TAG#v}-standalone.jar" \
-              "codescene-ci-cd-standalone.jar"; do
-              URL="https://github.com/$REPO/releases/download/$TAG/$NAME"
-              echo "Trying $URL"
-              if curl -fL --retry 5 --retry-delay 2 --retry-all-errors -o "$JAR" "$URL"; then
-                break
-              fi
-            done
-          fi
-          [[ -s "$JAR" ]] || { echo "Failed to fetch CodeScene CLI jar" >&2; exit 1; }
-          java -jar "$JAR" --help >/dev/null
+          git clone --depth 1 --branch "$TOOL_TAG" https://github.com/empear-analytics/codescene-ci-cd.git .cache/codescene-ci-cd
+          cd .cache/codescene-ci-cd
+          lein uberjar
+          ls -l target/uberjar/
+          cp target/uberjar/codescene-ci-cd-*-standalone.jar ../codescene-ci-cd.jar
+          java -jar ../codescene-ci-cd.jar --help >/dev/null
 
       - name: Run CodeScene delta analysis and comment
         run: |
