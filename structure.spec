@@ -33,6 +33,7 @@ dir: ./tools/structure/
 dir: ./util/
 file: ./.github/pull_request_template.md
 file: ./.github/workflows/churn-pr.yml
+file: ./.github/workflows/codeScence.pr.yml
 file: ./.github/workflows/maat-coupling.yml
 file: ./.github/workflows/scope-guard.actions.yml
 file: ./.github/workflows/scope.yml
