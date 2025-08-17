@@ -51,7 +51,7 @@ emit() {
 build_candidates() {
   if (( ${NO_GIT:-0} == 0 )) && command -v git >/dev/null 2>&1 \
      && git -C "$PROJECT_ROOT" rev-parse >/dev/null 2>&1; then
-    git -C "$ROOT" ls-files
+    git -C "$PROJECT_ROOT" ls-files
   else
     # BSD/POSIX: use -print and strip ROOT
     find "$PROJECT_ROOT" -mindepth 1 -maxdepth 25 -print \
@@ -59,8 +59,13 @@ build_candidates() {
   fi
 }
 
+# 
+# CHATGPT:
+# Nobody calls this function.
+# If this function were removed, 
+# how would it affect the rest of the script.
 check_rule() { # $1=path $2=cond $3=mode
-  local path norm cand
+  local path cand #norm 
   path="$(normalize "$1")"
 
   case "$2" in
