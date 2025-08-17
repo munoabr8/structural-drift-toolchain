@@ -37,7 +37,7 @@ enforce-structure:
 	@test -x $(VALIDATOR) || (echo "❌ Validator not executable: $(VALIDATOR)" && exit 1)
 	@echo "🔍 Enforcing structure from $(STRUCTURE_SPEC)..."
  
-	@bash $(VALIDATOR) validate "$(STRUCTURE_SPEC)" \
+	@bash $(VALIDATOR) --quiet validate "$(STRUCTURE_SPEC)" \
 		|| { echo "Structure invalid." >&2; exit 1; }
 
 
