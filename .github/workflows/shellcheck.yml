@@ -9,6 +9,7 @@ on:
     paths:
       - '**/*.sh'
 
+      
 jobs:
   lint:
     runs-on: ubuntu-latest
