@@ -36,6 +36,7 @@ file: ./.github/workflows/churn-pr.yml
 file: ./.github/workflows/maat-coupling.yml
 file: ./.github/workflows/scope-guard.actions.yml
 file: ./.github/workflows/scope.yml
+file: ./.github/workflows/shellcheck.yml
 file: ./.github/workflows/structural_drift.yml
 file: ./.gitignore
 file: ./.structure.ignore

@@ -95,7 +95,7 @@
   action: error 
 
 - type: invariant
-  path: README.md
+  path: README.generated.md
   condition: must_exist
   action: error 
 
