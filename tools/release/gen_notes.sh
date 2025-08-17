@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+
+
 TAG="v2025.08.01"
 # Previous tag (fallback to repo root if none)
 PREV=$(git describe --tags --abbrev=0 "${TAG}^" 2>/dev/null || git rev-list --max-parents=0 HEAD | tail -1)

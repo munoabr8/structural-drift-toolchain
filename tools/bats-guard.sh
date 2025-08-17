@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # system/bats-guard.sh
 # Enforces minimal test invariants for BATS
 
