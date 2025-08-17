@@ -9,7 +9,7 @@ pass=0 fail=0 EXIT=0
 ok(){ echo "OK: $*";  ((pass++)); }
 bad(){ echo "FAIL: $*" >&2; ((fail++)); EXIT=1; }
 hdr(){ printf "\n=== %s ===\n" "$*"; }
-contains(){ [[ "$1" == *"$2"* ]]; }
+#contains(){ [[ "$1" == *"$2"* ]]; }
 
 # ------------ Shim utils ------------
 make_yq_shim(){  # prints dir with yq shim
