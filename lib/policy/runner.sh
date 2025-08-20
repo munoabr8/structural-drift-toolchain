@@ -21,6 +21,7 @@ resolve_script() { # $1=name $2=optional explicit path
   echo "missing $name" >&2; exit 127
 }
 
+
 run_policy_pipeline() { # $1=root $2=p1 $3=p2 $4=p3 $5=ff(0/1) $6=nogit(0/1)
   local root="$1" p1="$2" p2="$3" p3="$4" ff="$5" nogit="$6"
   local policy="$root/config/policy.rules.yml"
@@ -29,10 +30,46 @@ run_policy_pipeline() { # $1=root $2=p1 $3=p2 $4=p3 $5=ff(0/1) $6=nogit(0/1)
   local envv=(POLICY_FILE="$policy" SDT_ROOT="$root")
   (( ff )) && envv+=(FAIL_FAST=1)
   (( nogit )) && envv+=(NO_GIT=1)
-  env "${envv[@]}" bash -o pipefail -c "bash \"$p1\" | bash \"$p2\" | bash \"$p3\""
+
+  env "${envv[@]}" bash -o pipefail -c "bash \"$p1\"  | bash \"$p2\" " #| bash \"$p3\""
+
 }
 
+#inputQuery_pipelineRunner(){}
+# displayInputs_runnerscipt(){
+
+# echo "Number of inputs:  $#"
+# echo "All inputs: $@"
+# echo "Inputs: $*"
+# i=1
+# for arg in "$@"; do
+#   echo "Arg $i: $arg" 
+#   i=$((i+1))
+#  done 
+# }
+
+
+# #inputQuery_perStep(){}
+# displayInput_eachPipelineStep(){
+
+
+
+
+# }
+
+# #outputQuery_perStep(){}
+# displayOutput_eachPipelineStep(){
+
+
+
+
+# }
+
+
 main() {
+
+ 
+
   local root="" 
 
   ff=0 nogit=0 P1="" P2="" P3=""
@@ -65,9 +102,46 @@ main() {
     : "${root:=$(pwd -P)}"
   fi
 fi
-echo "root=$root policy=$root/config/policy.rules.yml" >&2
+   
+_die(){ printf 'contract:%s:%s\n' "$1" "$2" >&2; exit "${3:-99}"; }
+require(){ eval "$1" || _die pre  "$2" 97; }
+invariant(){ eval "$1" || _die inv  "$2" 96; }
+ensure(){ eval "$1" || _die post "$2" 98; }
 
-  run_policy_pipeline "$root" "$P1" "$P2" "$P3" "$ff" "$nogit"
+is_bool(){ case "$1" in 0|1) return 0;; *) return 1;; esac; }
+is_exec(){ [[ -f "$1" && -x "$1" ]]; }
+is_abs(){ [[ "$1" = /* ]]; }
+
+# after you compute: root, P1, P2, P3, ff, nogit, and POLICY_FILE under root
+# No behavior changes. Only guards.
+
+# 1) Flags are booleans
+require "is_bool $ff"           "ff must be 0|1"
+require "is_bool $nogit"        "nogit must be 0|1"
+
+# 2) Root exists and is absolute
+require "[[ -n \"$root\" ]]"     "root must be set"
+invariant "[[ -d \"$root\" ]]"   "root must exist"
+invariant "is_abs \"$root\""     "root must be absolute"
+
+# 3) Policy file presence (keep your current allow-empty policy logic; here strict)
+require "[[ -f \"$root/config/policy.rules.yml\" ]]" "missing policy.rules.yml"
+
+# 4) Stage scripts resolved and executable
+require "is_exec \"$P1\""       "P1 not executable: $P1"
+require "is_exec \"$P2\""       "P2 not executable: $P2"
+require "is_exec \"$P3\""       "P3 not executable: $P3"
+
+# 5) Stage paths absolute (prevents CWD surprises)
+invariant "is_abs \"$P1\""      "P1 must be absolute"
+invariant "is_abs \"$P2\""      "P2 must be absolute"
+invariant "is_abs \"$P3\""      "P3 must be absolute"
+
+# Optional: quick context line (stderr only; no stdout changes)
+printf 'run ctx: root=%s policy=%s ff=%s no_git=%s\n' \
+  "$root" "$root/config/policy.rules.yml" "$ff" "$nogit" >&2
+
+   run_policy_pipeline "$root" "$P1" "$P2" "$P3" "$ff" "$nogit"
 }
 
 [[ "${BASH_SOURCE[0]}" == "$0" ]] && main "$@"

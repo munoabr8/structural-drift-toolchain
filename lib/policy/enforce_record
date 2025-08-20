@@ -1,0 +1,32 @@
+# lib/policy/enforce_record
+#!/usr/bin/env bash
+(
+  set -euo pipefail
+
+  # Resolve inputs
+  SRC="${POLICY_SRC_ENFORCE:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)/policy/enforce_policy_p3.sh}"
+  CANON_CODE_ROOT="$(cd "$(dirname "$SRC")/../.." && pwd -P)"
+  CODE_ROOT="${CODE_ROOT:-$CANON_CODE_ROOT}"
+  FS_ROOT="${REPO_ROOT:-$PWD}"
+
+  # Guards
+  [[ -r "$SRC" ]] || { echo "shim: not readable: $SRC" >&2; exit 66; }
+  [[ -f "$SRC" ]] || { echo "shim: not a file: $SRC" >&2; exit 66; }
+  # prevent accidental self-source
+  [[ ! -e "$0" || ! "$SRC" -ef "$0" ]] || { echo "shim: SRC is this shim" >&2; exit 66; }
+  [[ -d "$CODE_ROOT" ]] || { echo "shim: bad CODE_ROOT: $CODE_ROOT" >&2; exit 70; }
+  [[ -d "$FS_ROOT"   ]] || { echo "shim: bad FS_ROOT: $FS_ROOT" >&2; exit 70; }
+
+  # Source code from code root
+  cd "$CODE_ROOT"
+  set +e +u; set +o pipefail
+  # shellcheck source=/dev/null
+  source "$SRC" || { echo "source failed: $SRC" >&2; exit 127; }
+  set -euo pipefail
+  type -t enforce_record >/dev/null 2>&1 || { echo "missing: enforce_record" >&2; exit 127; }
+
+  # Execute in FS root
+  cd "$FS_ROOT"
+  enforce_record "$@"
+  exit $?
+)

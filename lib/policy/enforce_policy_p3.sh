@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+#./lib/policy/enforce_policy_p3.sh
 
 # -------- Init --------
 _project_root() {
@@ -36,7 +37,7 @@ q_regex_any() {
     [[ "$cand" =~ $pat ]] && return 0
   done < <(build_candidates)
   return 1
-}
+} 
 
 # -------- Event emitter --------
 emit() {
@@ -47,6 +48,8 @@ emit() {
   for kv in "$@"; do printf '|%s' "$kv"; done
   printf '\n'
 }
+
+
 
 build_candidates() {
   if (( ${NO_GIT:-0} == 0 )) && command -v git >/dev/null 2>&1 \
@@ -87,40 +90,66 @@ check_rule() { # $1=path $2=cond $3=mode
 # 2) Normalize rule path and test
  
  # -------- Command logic --------
+# expects helpers: emit, normalize, q_literal_exists, q_regex_any, now_ns
+# env knobs: ENFORCE_LOG_LEVEL (silent|warn|info|debug), TRACE_ID, METRICS_FD
 enforce_record() {
+  rec="${1-}"   # safe under set -u
+  #emit debug "rec_raw=$rec"
   # arg: single record line: type|path|condition|action|mode
-  local rec="$1" type path condition action mode
+
+local rec="$1" type path condition action mode
   IFS='|' read -r type path condition action mode <<<"$rec"
   [[ -z "${type:-}" ]] && return 0
+  [[ -z "${mode:-}" ]] && { [[ $path =~ [][(){}^$*+?|\\] ]] && mode=regex || mode=literal; }
 
- emit check "path=$(normalize "$path")" "mode=$mode" "condition=$condition"
+
+  local start_s outcome reason rc path_norm
+
+  start_s="$(date +%s)"   # coarse timestamp, portable
+
+  local IFS='|'
+  read -r type path condition action mode <<<"$rec"
+  [[ -z "${type:-}" ]] && return 0
+
+  path_norm="$(normalize "$path")"
+
+  emit check "trace_id=${TRACE_ID:-}" "type=$type" "path_raw=$path" "path=$path_norm" \
+             "condition=$condition" "action=$action" "mode=$mode"
+
   case "$condition" in
     must_exist)
       if [[ "$mode" == "literal" ]]; then
         if q_literal_exists "$path"; then
-          emit ok "path=$(normalize "$path")"
-          return 0
+          outcome=ok rc=0
         else
-          emit violation "action=$action" "path=$path" "reason=missing"
-          return 1
+          outcome=violation reason=missing rc=1
         fi
       else
         if q_regex_any "$path"; then
-          emit ok "path~=$path"
-          return 0
+          outcome=ok rc=0
         else
-
-      emit violation "action=$action" "path~=$(normalize "$path")" "reason=no_match"
-          return 1
+          outcome=violation reason=no_match rc=1
         fi
       fi
       ;;
     *)
-      emit warn "path~=$(normalize "$path")" "reason=unsupported_condition:$condition"
-      return 0
+      outcome=warn reason="unsupported_condition:$condition" rc=0
       ;;
   esac
+
+  local end_s dur_ms
+  end_s="$(date +%s)"
+  dur_ms=$(( ( end_s - start_s ) * 1000 ))
+
+  emit "$outcome" "trace_id=${TRACE_ID:-}" "type=$type" "path=$path_norm" \
+       "condition=$condition" "action=$action" "mode=$mode" \
+       "reason=${reason:-}" "duration_ms=$dur_ms"
+
+  return "$rc"
 }
+
+
+
 
 enforce_stream() {
   # reads records from STDIN; FAIL_FAST=1 to stop on first violation
