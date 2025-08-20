@@ -104,6 +104,11 @@
   condition: must_exist
   action: error 
 
+- type: invariant
+  path: main.sh 
+  condition: must_exist
+  action: error   
+
  
 - type: invariant
   path: tools/structure/structure_snapshot_gen.sh  
