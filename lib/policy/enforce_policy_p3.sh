@@ -17,14 +17,7 @@ _fs_list_rel() {
 
 normalize() { local p="$1"; printf '%s\n' "${p#./}"; }
 
-
-# q_literal_exists() {  # arg: path relative to PROJECT_ROOT
-#   [[ -e "$PROJECT_ROOT/$1" ]]
-# }
-
-# q_regex_any() {       # arg: ERE pattern over relative paths
-#   _fs_list_rel | grep -Eq "$1"
-# }
+ 
 
 q_literal_exists() {
   local p; p="$(normalize "$1")"

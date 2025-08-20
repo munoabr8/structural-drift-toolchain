@@ -60,6 +60,8 @@ is_tty_stdin()      { [[ -t 0 ]]; }   # true if no piped stdin
 stdin_ready() { read -t 0 -N 0; }   # success if data is available
 stdin_present() { [[ ! -t 0 ]]; }
 
+valid_mode_or_empty() { [[ -z $1 || $1 == literal || $1 == regex ]]; }
+
 _die(){ printf 'contrac222222t:%s:%s\n' "$1" "$2" >&2; exit "${3:-99}"; }
 require()    { eval "$1" || _die pre  "$2" 97; }
 ensure()     { eval "$1" || _die post "$2" 98; }
@@ -171,23 +173,71 @@ valid_mode()      { [[ $1 == literal || $1 == regex ]]; }
 args_le()      { (( $1 <= $2 )); }                      # args_le "$#" 1
 valid_mode()   { [[ $1 == literal || $1 == regex ]]; }
  
-has_valid_shape() {
-  local t p c a m extra
-  IFS='|' read -r t p c a m extra <<<"$1"
-  # require first 4 fields nonempty and no extra fields;
-  # allow missing mode or mode ∈ {literal,regex}
-  [[ -n $t && -n $p && -n $c && -n $a && -z ${extra+x} ]] &&
-  [[ -z ${m:-} || $m == literal || $m == regex ]]
+has_valid_shape() {  # 4 or 5 fields; mode ∈ {∅,literal,regex}; no extras
+  local line t p c a m extra
+  line=${1-}
+
+  # Preconditions (caller obligations)
+  _pre is_nonempty "$line" "line must be nonempty"
+  line=${line%$'\r'}  # strip CR if present
+
+  # Parse without touching global IFS
+  local IFS='|'
+  read -r t p c a m extra <<<"$line"
+
+  # Validate (function’s responsibility)
+  if [[ -n $extra ]]; then return 1; fi
+  if [[ -z $t || -z $p || -z $c || -z $a ]]; then return 1; fi
+  if ! valid_mode_or_empty "${m:-}"; then return 1; fi
+
+  # Invariants on success (internal truths)
+  _inv is_empty "${extra:-}"                      "no extra fields"
+  _inv is_nonempty "$t"                           "type empty"
+  _inv is_nonempty "$p"                           "path empty"
+  _inv is_nonempty "$c"                           "condition empty"
+  _inv is_nonempty "$a"                           "action empty"
+  _inv valid_mode_or_empty "${m:-}"               "mode invalid"
+
+  # Postconditions (guarantees to caller)
+  _post is_empty "${extra:-}"                     "post: extra fields present"
+  _post is_nonempty "$t"                          "post: type empty"
+  _post is_nonempty "$p"                          "post: path empty"
+  _post is_nonempty "$c"                          "post: condition empty"
+  _post is_nonempty "$a"                          "post: action empty"
+  _post valid_mode_or_empty "${m:-}"              "post: mode not ∅|literal|regex"
+
+  return 0
 }
 
+_field_count() {
+  local s=$1 n=1
+  s=${s%$'\r'}
+  while [[ $s == *"|"* ]]; do s=${s#*"|"}; ((n++)); done
+  printf '%s' "$n"
+}
 
-has_fields_between() {
-  local line=$1 min=$2 max=$3 count=1
-  while [[ $line == *"|"* ]]; do
-    line=${line#*"|"}   # strip up to first '|'
-    ((count++))
-  done
-  (( count >= min && count <= max ))
+has_valid_shape() {
+  local line=${1-} t p c a m extra
+  [[ -n $line ]] || return 1
+  line=${line%$'\r'}
+
+  # hard gate on field count
+  local f; f=$(_field_count "$line") || return 3
+  (( f == 4 || f == 5 )) || return 3
+
+  # parse
+  local IFS='|'
+  read -r t p c a m extra <<<"$line"
+
+  # no extras
+  [[ -z ${extra-} ]] || return 2
+
+  # required fields must be nonempty (this is what fails "t|p|c|")
+  [[ -n "$t" && -n "$p" && -n "$c" && -n "$a" ]] || return 3
+
+  # mode ok if absent or literal|regex
+  [[ -z ${m-} || $m == literal || $m == regex ]] || return 4
+  return 0
 }
 
 main() {
@@ -201,9 +251,9 @@ main() {
   # Postconditions: each line has 4 or 5 fields, mode valid if present
   while IFS= read -r line; do
     [[ -z "${line//[[:space:]]/}" ]] && continue
-_post has_fields_between "$line" 4 5 "line must have 4 or 5 fields"
+_post has_valid_shape "$line" 4 5 "line must have 4 or 5 fields"
   done <<<"$out"
-echo "---------------..,,.,.,.,."
+#echo "---------------..,,.,.,.,."
   printf '%s\n' "$out"
   return 0
 }

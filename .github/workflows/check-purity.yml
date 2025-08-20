@@ -1,0 +1,16 @@
+name: purity-check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enforce predicate purity
+        run: |
+          grep -nE '\b(stat|find|ls|cat|grep|sed|awk|readlink|file|du|wc|ps|date|kill|read\s*-t)\b' lib/predicates.sh && exit 1
+          grep -nE '\b(>|>>|rm|mv|cp|mkdir|touch|tee|truncate)\b' lib/queries.sh && exit 1

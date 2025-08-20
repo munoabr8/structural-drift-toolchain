@@ -1,6 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+
+_die(){ printf 'contract:%s:%s\n' "$1" "$2" >&2; exit "${3:-99}"; }
+require(){ eval "$1" || _die pre  "$2" 97; }
+invariant(){ eval "$1" || _die inv  "$2" 96; }
+ensure(){ eval "$1" || _die post "$2" 98; }
+
+is_bool(){ case "$1" in 0|1) return 0;; *) return 1;; esac; }
+is_exec(){ [[ -f "$1" && -x "$1" ]]; }
+is_abs(){ [[ "$1" = /* ]]; }
+
+
 usage() {
   cat <<'USAGE'
 usage: pipeline_runner.sh [--root DIR] [--fail-fast] [--no-git]
@@ -31,40 +42,10 @@ run_policy_pipeline() { # $1=root $2=p1 $3=p2 $4=p3 $5=ff(0/1) $6=nogit(0/1)
   (( ff )) && envv+=(FAIL_FAST=1)
   (( nogit )) && envv+=(NO_GIT=1)
 
-  env "${envv[@]}" bash -o pipefail -c "bash \"$p1\"  | bash \"$p2\" " #| bash \"$p3\""
+  env "${envv[@]}" bash -o pipefail -c "bash \"$p1\"  | bash \"$p2\"  | bash \"$p3\""
 
 }
-
-#inputQuery_pipelineRunner(){}
-# displayInputs_runnerscipt(){
-
-# echo "Number of inputs:  $#"
-# echo "All inputs: $@"
-# echo "Inputs: $*"
-# i=1
-# for arg in "$@"; do
-#   echo "Arg $i: $arg" 
-#   i=$((i+1))
-#  done 
-# }
-
-
-# #inputQuery_perStep(){}
-# displayInput_eachPipelineStep(){
-
-
-
-
-# }
-
-# #outputQuery_perStep(){}
-# displayOutput_eachPipelineStep(){
-
-
-
-
-# }
-
+ 
 
 main() {
 
@@ -103,14 +84,7 @@ main() {
   fi
 fi
    
-_die(){ printf 'contract:%s:%s\n' "$1" "$2" >&2; exit "${3:-99}"; }
-require(){ eval "$1" || _die pre  "$2" 97; }
-invariant(){ eval "$1" || _die inv  "$2" 96; }
-ensure(){ eval "$1" || _die post "$2" 98; }
 
-is_bool(){ case "$1" in 0|1) return 0;; *) return 1;; esac; }
-is_exec(){ [[ -f "$1" && -x "$1" ]]; }
-is_abs(){ [[ "$1" = /* ]]; }
 
 # after you compute: root, P1, P2, P3, ff, nogit, and POLICY_FILE under root
 # No behavior changes. Only guards.
