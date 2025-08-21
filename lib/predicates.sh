@@ -2,23 +2,18 @@
 
 nonblank() { [[ -n "${1//[[:space:]]/}" ]]; }
 is_empty() { [[ -z $1 ]]; }
-# shape
+
 valid_mode_or_empty() { [[ -z $1 || $1 == literal || $1 == regex ]]; }
  
- 
-
- is_nonempty_str() { [[ -n ${1-} ]]; }
+is_nonempty_str() { [[ -n ${1-} ]]; }
 is_nonempty() { (( $1 > 0 )); }     # pure
 
 args_le() { (( $1 <= $2 )); }
  
- args_eq() { (( $1 == $2 )); }                                     # args_eq "$#" N
+args_eq() { (( $1 == $2 )); }                                     # args_eq "$#" N
  
 is_bool()           { [[ $1 == 0 || $1 == 1 ]]; }
-matches()           { [[ $1 =~ $2 ]]; }
-
- 
- 
+matches()           { [[ $1 =~ $2 ]]; } 
 
 has_ext()            { local f=${1-} ext=${2-}; [[ $f == *".$ext" ]]; }
 
@@ -67,9 +62,7 @@ matches_glob()      { [[ ${1-} == ${2-} ]]; }  # e.g., 'ab*cd'
 in_set()            { local x=${1-}; shift; local a; for a in "$@"; do [[ $x == "$a" ]] && return 0; done; return 1; }
 not_in_set()        { ! in_set "$@"; }
 
-# booleans
-is_bool01()         { [[ ${1-} == 0 || ${1-} == 1 ]]; }
-
+  
 # combinators (predicate names as args)
 notp()              { local p=$1; shift; "$p" "$@" && return 1 || return 0; }
 anyp()              { local p=$1; shift; local v; for v in "$@"; do "$p" "$v" && return 0; done; return 1; }
@@ -77,6 +70,51 @@ allp()              { local p=$1; shift; local v; for v in "$@"; do "$p" "$v" ||
 
   
  
+
+ . ./enums.sh
+
+is_bool01()         { [[ ${1-} == 0 || ${1-} == 1 ]]; }
+
+ #is_stdin_kind(){ [[ $1 == $STDIN_TTY || $1 == $STDIN_PIPE || $1 == $STDIN_FILE || $1 == $STDIN_UNKNOWN ]]; }
+
+is_stdin_kind(){ local k=$1; [[ $k == $STDIN_TTY || $k == $STDIN_PIPE || $k == $STDIN_FILE || $k == $STDIN_UNKNOWN ]]; }
+
+ 
+
+# Safe to echo prompts without corrupting a pipe/file consumer?
+# $1=stdin_kind  $2=stdout_is_tty(0|1)
+#safe_to_prompt(){ local sk=$1 out_tty=$2; is_bool01 "$out_tty" || return 2; [[ $sk == tty && $out_tty -eq 1 ]]; }
+#safe_to_prompt(){ local out=$1; is_bool01 "$out" || return 2; (( out )); }  # 0=yes, 1=no, 2=contract
+safe_to_prompt(){ local t=$1; [[ $t == 0 || $t == 1 ]] || return 2; (( t )); }
+
+trace_pred(){ local name=$1; shift; local s=0; "$name" "$@" || s=$?; printf 'dec|%s s=%d args="%s"\n' "$name" "$s" "$*" >&2; return $s; }
+# $1=want $2=kind $3=ready $4=allow_block $5=allow_empty
+should_read_stdin() {
+  local w=$1 k=$2 r=$3 b=$4 e=$5
+  is_bool01 "$w" && is_bool01 "$r" && is_bool01 "$b" && is_bool01 "$e" || return 2
+  is_stdin_kind "$k" || return 2
+  (( w )) || return 1
+  case $k in
+    tty)        (( r || b || e )) ;;
+    pipe|file)  (( r || e )) ;;
+    *)          return 1 ;;
+  esac
+}
+
+# $1=file_arg $2=prefer(0|1) $3=kind enum $4=ready(0|1)
+prefer_stdin(){
+  local f=$1 p=$2 k=$3 r=$4
+  is_bool01 "$p" && is_bool01 "$r" && is_stdin_kind "$k" || return 2
+  [[ $f == "-" ]] && return 0
+  (( p )) || return 1
+  case $k in pipe|file) return 0;; tty) (( r )) && return 0 || return 1;; *) return 1;; esac
+}
+
+
+
+
+
+
 
 
 
@@ -100,5 +138,11 @@ args_eq()                 { (( ${1-0} == ${2-0} )); }
 is_bool01()               { [[ ${1-} == 0 || ${1-} == 1 ]]; }
 matches()                 { [[ ${1-} =~ ${2-} ]]; }
 has_ext()                 { [[ ${1-} == *".${2-}" ]]; }  # pick one name and stick with it
+
+
+
+
+
+
 
  

@@ -1,0 +1,1 @@
+STDIN_TTY=tty; STDIN_PIPE=pipe; STDIN_FILE=file; STDIN_UNKNOWN=unknown

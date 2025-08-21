@@ -1,0 +1,7 @@
+# file  prefer kind     ready | expect
+-      0      unknown  0     | 0
+f.txt  1      pipe     0     | 0
+f.txt  0      pipe     1     | 1
+f.txt  1      tty      0     | 1
+f.txt  1      tty      1     | 0
+f.txt 1 badkind 1 | 2

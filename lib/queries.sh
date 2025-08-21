@@ -1,6 +1,7 @@
 # keep: env-touching only
-
+ 
 . ./predicates.sh
+. ./enums.sh
  
 
 fn_defined()         { declare -F "$1" >/dev/null 2>&1; }      # boolean-valued query (status only)
@@ -71,3 +72,71 @@ query_has_shebang() {
     esac
   }
 }
+
+
+stdin_kind=$(
+  stdin_is_tty   && echo "$STDIN_TTY"  || \
+  stdin_is_pipe  && echo "$STDIN_PIPE" || \
+  stdin_is_file  && echo "$STDIN_FILE" || echo "$STDIN_UNKNOWN"
+)
+stdout_tty=$([ -t 1 ] && echo 1 || echo 0)
+stdin_ready=$({ stdin_has_data_nb && echo 1; } || echo 0)
+  
+
+
+emit_fact(){ declare -F fact >/dev/null && fact "$@"; }  # no-op if trace.sh not loaded
+
+q_stdin_kind(){
+  local k
+  [[ -t 0 ]] && k=tty || [[ -p /dev/stdin ]] && k=pipe || [[ -f /dev/stdin ]] && k=file || k=unknown
+  emit_fact stdin_kind "$k"; printf '%s\n' "$k"
+}
+
+q_stdin_ready(){
+  case "$(q_stdin_kind)" in
+    pipe|file) r=1 ;;
+    tty)       IFS= read -r -t 0 _ && r=1 || r=0 ;;
+    *)         r=0 ;;
+  esac
+  emit_fact stdin_ready "$r"; printf '%s\n' "$r"
+}
+
+q_stderr_is_tty(){ [ -t 2 ] && printf 1 || printf 0; }
+
+
+ 
+
+fact(){ printf 'fact|%s=%s\n' "$1" "$2" >&2; }   # stderr only
+
+
+q_stdin_kind2(){
+
+
+  local k; [[ -t 0 ]] && k=tty || [[ -p /dev/stdin ]] && k=pipe || [[ -f /dev/stdin ]] && k=file || k=unknown
+  fact stdin_kind "$k"
+  printf '%s\n' "$k"
+}
+
+ 
+
+q_stdin_ready2() {
+  local r
+  IFS= read -r -t 0 -N 0 2>/dev/null && r=1 || r=0   # Bash≥4; OK, status-only
+  fact stdin_ready "$r"
+  printf '%s\n' "$r"
+}
+
+
+
+
+  q_stderr_is_tty(){ [ -t 2 ] && echo 1 || echo 0; }
+  
+
+q_stdout_is_tty(){ [[ -t 1 ]] && echo 1 || echo 0; }
+# readiness (Bash ≥4: -N 0; Bash 3 fallback)
+stdin_has_data_nb() {
+  IFS= read -r -t 0 -N 0 2>/dev/null || { IFS= read -r -t 0 -n 1 ch || return 1; printf '%s' "$ch"; cat; }
+}
+
+file_readable()  { [[ -r ${1-} ]]; }
+
