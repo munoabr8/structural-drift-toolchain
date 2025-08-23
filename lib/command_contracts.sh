@@ -37,7 +37,8 @@ require_contract_for() {
 
 if declare -p CMD_CONTRACTS &>/dev/null && [[ "$(declare -p CMD_CONTRACTS 2>/dev/null)" == *"$cmd"* ]]; then
   contract="${CMD_CONTRACTS[$cmd]}"
-  echo "Contract keys: ${!CMD_CONTRACTS[@]}"
+  echo "Contract keys:" "${!CMD_CONTRACTS[@]}"
+  #echo "Contract keys: ${!CMD_CONTRACTS[@]}"
 else
   echo "⚠️ No contract defined for '$cmd', defaulting..." >&2
   contract="env=1 deps=1 context=0"

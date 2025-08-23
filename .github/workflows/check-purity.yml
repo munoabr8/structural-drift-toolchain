@@ -1,0 +1,27 @@
+name: purity-check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enforce predicate/queries purity
+        run: |
+          echo "[predicates] checking..."
+          if grep -nE '\b(stat|find|ls|cat|grep|sed|awk|readlink|file|du|wc|ps|date|kill|read\s*-t)\b' lib/predicates.sh; then
+            echo "Forbidden commands found in predicates.sh"; exit 1
+          else
+            echo "OK: predicates.sh clean"
+          fi
+
+          echo "[queries] checking..."
+          if grep -nE '\b(>|>>|rm|mv|cp|mkdir|touch|tee|truncate)\b' lib/queries.sh; then
+            echo "Forbidden commands found in queries.sh"; exit 1
+          else
+          echo "OK: queries.sh clean"
+          fi

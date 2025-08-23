@@ -9,7 +9,7 @@ pass=0 fail=0 EXIT=0
 ok(){ echo "OK: $*";  ((pass++)); }
 bad(){ echo "FAIL: $*" >&2; ((fail++)); EXIT=1; }
 hdr(){ printf "\n=== %s ===\n" "$*"; }
-contains(){ [[ "$1" == *"$2"* ]]; }
+#contains(){ [[ "$1" == *"$2"* ]]; }
 
 # ------------ Shim utils ------------
 make_yq_shim(){  # prints dir with yq shim
@@ -17,7 +17,7 @@ make_yq_shim(){  # prints dir with yq shim
   cat >"$d/yq" <<'SH'
 #!/usr/bin/env bash
 # Pass -e structural check, fail data query
-if [[ "$1" == "-e" ]]; then exit 0; fi
+if [[ "$1" == "-e" ]]; then exit 0; f
 exit 42
 SH
   chmod +x "$d/yq"
@@ -29,7 +29,8 @@ case_happy_stdin(){
   hdr "Case 1: happy stdin"
   local rc out yaml
   yaml=$'- type: invariant\n  path: README.md\n  condition: must_exist\n  action: error\n'
-  out="$(bash "$SCRIPT" --stdin <<<"$yaml" 2>&1)"; rc=$?
+
+  out="$(bash "$SCRIPT" --stdin <<<"$yaml")"; rc=$?   # no 2>&1
   if [[ $rc -eq 0 ]]; then ok "happy stdin rc"; else bad "happy stdin rc (rc=$rc out=[$out])"; fi
   if [[ "$out" == $'invariant\tREADME.md\tmust_exist\terror' ]]; then
     ok "happy stdin output"

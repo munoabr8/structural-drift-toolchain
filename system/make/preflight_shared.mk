@@ -17,7 +17,7 @@ preflight-drift:
 
 preflight-enforce:
 	@echo "🔒 Validating enforced structure..."
-	@bash $(VALIDATOR) $(STRUCTURE_SPEC)
+	@bash $(VALIDATOR) --quiet validate $(STRUCTURE_SPEC)
 
 preflight-context:
 	@echo "🧠 Validating project context sanity..."

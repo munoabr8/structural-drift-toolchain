@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # util/core.sh (idempotent)
 [[ -n ${__CORE_SH__:-} ]] && return 0; __CORE_SH__=1
 set -Eeo pipefail; 

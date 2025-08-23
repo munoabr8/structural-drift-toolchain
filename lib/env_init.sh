@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # lib/env_init.sh
 # Responsibility: detect/validate/export core env vars for the toolchain.
 # Usage (from bin/*):  source "$PROJECT_ROOT/lib/env_init.sh"; env_init --dotenv ".env" --path
