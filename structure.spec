@@ -51,7 +51,6 @@ file: ./attn/context-status.rf.sh
 file: ./attn/context-status.sh
 file: ./bin/emit-env
 file: ./bin/main.sh
-<<<<<<< HEAD
 file: ./ci/check-env-shape.sh
 file: ./ci/check_contracts.sh
 file: ./ci/check_frames.sh
@@ -60,10 +59,8 @@ file: ./ci/check_queries.sh
 file: ./ci/checklib.sh
 file: ./ci/env-shape.baseline
 file: ./ci/lib.sh
-=======
 file: ./ci/check_layering.sh
 file: ./config/enforcer_tests.txt
->>>>>>> f0312ed (Added session that are related to process queries.)
 file: ./config/policy.rules.yml
 file: ./config/runtime.cfg
 file: ./config/runtime_flags.sh
@@ -91,12 +88,8 @@ file: ./lib/evaluate.frame.sh
 file: ./lib/evaluate.sh
 file: ./lib/file.sh
 file: ./lib/findings.json
-<<<<<<< HEAD
 file: ./lib/frame.rf.sh
 file: ./lib/frame.sh
-=======
-file: ./lib/foo.sh
->>>>>>> f0312ed (Added session that are related to process queries.)
 file: ./lib/load-frame.sh
 file: ./lib/main.sh
 file: ./lib/memory.sh
@@ -135,11 +128,8 @@ file: ./lib/queries.sh
 file: ./lib/queries/darwin_memory.sh
 file: ./lib/queries/queries.rules.sh
 file: ./lib/queries/rules.sh
-<<<<<<< HEAD
 file: ./lib/queries/sha256.sh
-=======
 file: ./lib/queries/session.queries.sh
->>>>>>> f0312ed (Added session that are related to process queries.)
 file: ./lib/rules.json
 file: ./lib/run-table.sh
 file: ./lib/run_with_frame.sh
