@@ -13,13 +13,6 @@
 RULES_FILE="${rules:-${RULES_FILE:-./rules.json}}"
 
 findings_normalized()        { "$JQ_BIN" -e 'type=="array"' -- "$FINDINGS_FILE" >/dev/null; }
-
-
-
- 
- 
- 
-
  
 
 

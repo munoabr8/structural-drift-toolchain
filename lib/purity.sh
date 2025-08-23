@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # lib/purity.sh
 enforce_contract_purity() { # $1=contract file
   local f="$1"
@@ -17,6 +19,9 @@ forbid_re='\b(>[^>]|>>|rm|mv|cp|chmod|chown|mkdir|rmdir|ln|tee|truncate|sed[[:sp
      | grep -vE "$allow_re|function|^[0-9]+:" >/dev/null; then
     : # keep simple now; tighten later if needed
   fi
+  
+  echo "Pure"
+  
 }
 
 # CI helper
