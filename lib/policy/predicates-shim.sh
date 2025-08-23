@@ -57,56 +57,10 @@ EOF
   esac
 }
 
-
-has_shebang() {  # $1=file $2=regex for interpreter (e.g., 'bash' or '/usr/bin/env bash')
-  local file=$1 expected=$2 first
-  [[ -f "$file" && -r "$file" ]] || { echo "not readable: $file"; return 1; }
-  IFS= read -r first <"$file" || { echo "cannot read: $file"; return 1; }
-  # strip possible UTF-8 BOM
-  first="${first#$'\xEF\xBB\xBF'}"
-  [[ $first =~ ^#! ]] || { echo "no shebang: <$first>"; return 1; }
-  [[ $first =~ $expected ]] || { echo "shebang mismatch: <$first>"; return 1; }
-}
-
  
  
 
-# portable field counter
-_field_count() {
-  local s=$1 n=1
-  s=${s%$'\r'}
-  while [[ $s == *"|"* ]]; do s=${s#*"|"}; ((n++)); done
-  printf '%s' "$n"
-}
-
-# 0=ok, 1=empty line, 2=>5 fields, 3=<4 or missing required, 4=bad mode
-has_valid_shape() {
-  local line=${1-} t p c a m extra
-  [[ -n $line ]] || return 1
-  line=${line%$'\r'}
-
-  # hard gate on field count
-  local f; f=$(_field_count "$line") || return 3
-  (( f == 4 || f == 5 )) || return 3
-
-  # parse
-  local IFS='|'
-  read -r t p c a m extra <<<"$line"
-
-  # no extras
-  [[ -z ${extra-} ]] || return 2
-
-  # required fields must be nonempty (this is what fails "t|p|c|")
-  [[ -n "$t" && -n "$p" && -n "$c" && -n "$a" ]] || return 3
-
-  # mode ok if absent or literal|regex
-  [[ -z ${m-} || $m == literal || $m == regex ]] || return 4
-  return 0
-}
-
-# inside has_valid_shape, after parsing t p c a m extra:
  
-
 assert_success() { [ "$status" -eq 0 ] || { echo "expected success, got $status"; return 1; }; }
 assert_failure() { [ "$status" -ne 0 ] || { echo "expected failure, got 0"; return 1; }; }
 assert_cmd()     { "$@"; rc=$?; [ $rc -eq 0 ] || { echo "assert_cmd failed: $* -> $rc"; return 1; }; }

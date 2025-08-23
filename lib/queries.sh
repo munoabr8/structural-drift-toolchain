@@ -138,5 +138,26 @@ stdin_has_data_nb() {
   IFS= read -r -t 0 -N 0 2>/dev/null || { IFS= read -r -t 0 -n 1 ch || return 1; printf '%s' "$ch"; cat; }
 }
 
-file_readable()  { [[ -r ${1-} ]]; }
 
+
+
+
+# load the query functions (put these in lib/queries/memory.sh)
+no_rwx_maps_darwin() { local f=$1; [[ -r $f ]] || return 2; ! grep -qE '\brwx\b' "$f"; }
+
+heap_under_mb_darwin() {
+  local f=$1 max=$2; [[ -r $f ]] || return 2
+  awk '
+    function mb(x,  n,u){u=substr(x,length(x),1); n=substr(x,1,length(x)-1);
+      if(u=="G")return n*1024; if(u=="M")return n; if(u=="K")return n/1024; return n/1024 }
+    /^REGION TYPE/ {in=1; next}
+    in && NF==0 {in=0}
+    in && $1=="MALLOC" {
+      for(i=NF;i>=1;i--) if($i ~ /^[0-9.]+[GMK]$/){sum+=mb($i); break}
+    }
+    END{exit !(sum<=max)}
+  ' max="$max" "$f"
+}
+
+
+ 

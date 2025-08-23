@@ -15,3 +15,7 @@ if safe_to_prompt "$out_tty"; then
   printf 'Prompt> ' >&2      # stderr
 fi
 echo "DATA"    
+
+
+
+
