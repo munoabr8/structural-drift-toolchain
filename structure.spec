@@ -7,7 +7,6 @@ dir: ./ci/
 dir: ./config/
 dir: ./docs/
 dir: ./lib/
-dir: ./lib/.evidence/
 dir: ./lib/policy/
 dir: ./lib/queries/
 dir: ./system/
@@ -50,13 +49,11 @@ file: ./attn/context-status.rf.sh
 file: ./attn/context-status.sh
 file: ./bin/main.sh
 file: ./ci/check_layering.sh
-file: ./config/enforcer_tests.txt
 file: ./config/policy.rules.yml
 file: ./config/runtime.cfg
 file: ./config/runtime_flags.sh
 file: ./darwin_memory.sh
 file: ./docs/CHANGELOG.md
-file: ./docs/Focus.txt
 file: ./docs/README.generated.md
 file: ./docs/README.md
 file: ./lib/README.md
@@ -89,7 +86,6 @@ file: ./lib/policy/enforce_policy_p3.sh
 file: ./lib/policy/enforce_record
 file: ./lib/policy/enforce_record_tests.bats
 file: ./lib/policy/isolated_policy_tests.bats
-file: ./lib/policy/logs.txt
 file: ./lib/policy/negative-e2e.bats
 file: ./lib/policy/out.tsv
 file: ./lib/policy/p1-p3smoke.sh
@@ -131,7 +127,6 @@ file: ./lib/with_contracts.sh
 file: ./new.sh
 file: ./scope.yaml
 file: ./smoke2.sh
-file: ./system/comparator.txt
 file: ./system/exit-codes/exit_codes_validator.sh
 file: ./system/make/garbage.mk
 file: ./system/make/guard_rails.mk
@@ -145,6 +140,7 @@ file: ./system/make/preflight_shared.mk
 file: ./system/make/structure.mk
 file: ./system/make/test.mk
 file: ./system/smoke-structure-validator.sh
+file: ./system/structure
 file: ./system/structure_spec_validator.sh
 file: ./system/structure_validator.rf.sh
 file: ./system/structure_validator.sh
@@ -199,6 +195,8 @@ file: ./tools/scan_duplicate_targets.sh
 file: ./tools/scope-guard.sh
 file: ./tools/setup.sh
 file: ./tools/smoke-scope-guard.sh
+file: ./tools/structure/negative.bats
+file: ./tools/structure/snapshot.bats
 file: ./tools/structure/structure_snapshot_gen.sh
 file: ./tools/structure_compare.sh
 file: ./tools/utili-sourcing.sh
