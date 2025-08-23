@@ -84,9 +84,8 @@ is_stdin_kind(){ local k=$1; [[ $k == $STDIN_TTY || $k == $STDIN_PIPE || $k == $
 # Safe to echo prompts without corrupting a pipe/file consumer?
 # $1=stdin_kind  $2=stdout_is_tty(0|1)
 #safe_to_prompt(){ local sk=$1 out_tty=$2; is_bool01 "$out_tty" || return 2; [[ $sk == tty && $out_tty -eq 1 ]]; }
-#safe_to_prompt(){ local out=$1; is_bool01 "$out" || return 2; (( out )); }  # 0=yes, 1=no, 2=contract
+safe_to_prompt(){ local out=$1; is_bool01 "$out" || return 2; (( out )); }  # 0=yes, 1=no, 2=contract
 safe_to_prompt(){ local t=$1; [[ $t == 0 || $t == 1 ]] || return 2; (( t )); }
-
 trace_pred(){ local name=$1; shift; local s=0; "$name" "$@" || s=$?; printf 'dec|%s s=%d args="%s"\n' "$name" "$s" "$*" >&2; return $s; }
 # $1=want $2=kind $3=ready $4=allow_block $5=allow_empty
 should_read_stdin() {
@@ -110,6 +109,9 @@ prefer_stdin(){
   case $k in pipe|file) return 0;; tty) (( r )) && return 0 || return 1;; *) return 1;; esac
 }
 
+
+
+ids_unique() { declare -A s=(); for id in "$@"; do [[ ${s[$id]+x} ]] && return 1; s[$id]=1; done; }
 
 
 
