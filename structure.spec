@@ -51,7 +51,11 @@ file: ./bin/emit-env
 file: ./bin/main.sh
 file: ./ci/check_layering.sh
 file: ./ci/check-env-shape.sh
+file: ./ci/check_contracts.sh
+file: ./ci/check_predicates.sh
+file: ./ci/check_queries.sh
 file: ./ci/env-shape.baseline
+file: ./ci/lib.sh
 file: ./config/policy.rules.yml
 file: ./config/runtime.cfg
 file: ./config/runtime_flags.sh
