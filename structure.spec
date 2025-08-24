@@ -13,7 +13,6 @@ dir: ./system/
 dir: ./system/exit-codes/
 dir: ./system/make/
 dir: ./test/
-dir: ./test/acceptance/
 dir: ./test/bin-tests/
 dir: ./test/e2e/
 dir: ./test/e2e/features/
@@ -35,7 +34,6 @@ dir: ./tools/release/
 dir: ./tools/structure/
 dir: ./util/
 file: ./.github/pull_request_template.md
-file: ./.github/workflows/acceptance.yml
 file: ./.github/workflows/check-purity.yml
 file: ./.github/workflows/churn-pr.yml
 file: ./.github/workflows/maat-coupling.yml
@@ -51,16 +49,9 @@ file: ./attn/context-status.rf.sh
 file: ./attn/context-status.sh
 file: ./bin/emit-env
 file: ./bin/main.sh
-file: ./ci/check-env-shape.sh
-file: ./ci/check_contracts.sh
-file: ./ci/check_frames.sh
-file: ./ci/check_predicates.sh
-file: ./ci/check_queries.sh
-file: ./ci/checklib.sh
-file: ./ci/env-shape.baseline
-file: ./ci/lib.sh
 file: ./ci/check_layering.sh
-file: ./config/enforcer_tests.txt
+file: ./ci/check-env-shape.sh
+file: ./ci/env-shape.baseline
 file: ./config/policy.rules.yml
 file: ./config/runtime.cfg
 file: ./config/runtime_flags.sh
@@ -88,8 +79,7 @@ file: ./lib/evaluate.frame.sh
 file: ./lib/evaluate.sh
 file: ./lib/file.sh
 file: ./lib/findings.json
-file: ./lib/frame.rf.sh
-file: ./lib/frame.sh
+file: ./lib/foo.sh
 file: ./lib/load-frame.sh
 file: ./lib/main.sh
 file: ./lib/memory.sh
@@ -126,9 +116,7 @@ file: ./lib/primitive_checks.bats
 file: ./lib/purity.sh
 file: ./lib/queries.sh
 file: ./lib/queries/darwin_memory.sh
-file: ./lib/queries/queries.rules.sh
 file: ./lib/queries/rules.sh
-file: ./lib/queries/sha256.sh
 file: ./lib/queries/session.queries.sh
 file: ./lib/queries/sha256.sh
 file: ./lib/rules.json
@@ -160,12 +148,6 @@ file: ./system/structure_spec_validator.sh
 file: ./system/structure_validator.rf.sh
 file: ./system/structure_validator.sh
 file: ./system/validate_structure.sh
-file: ./test/acceptance/acceptance.bats
-file: ./test/acceptance/assert_upper.sh
-file: ./test/acceptance/domain.log.jsonl
-file: ./test/acceptance/domain_probe.sh
-file: ./test/acceptance/env_from_probe.sh
-file: ./test/acceptance/run_acceptance.sh
 file: ./test/bin-tests/main-context-check-mock.bats
 file: ./test/bin-tests/main-preflight.bats
 file: ./test/bin-tests/main-structure-validator-mock.bats
