@@ -80,7 +80,11 @@ pre() {
  
 	rules_valid_json					|| exit 202
  
+<<<<<<< HEAD
  
+=======
+
+>>>>>>> a3cc64d (Fix/snapshot generator ignore (#50))
   rules_schema_valid  # require array root
 
  
