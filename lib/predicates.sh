@@ -1,3 +1,5 @@
+# shellcheck shell=bash   # tells ShellCheck the dialect 
+
  # predicates are closed off to the enviorment. 
 
 nonblank() { [[ -n "${1//[[:space:]]/}" ]]; }

@@ -112,6 +112,7 @@ file: ./lib/purity.sh
 file: ./lib/queries.sh
 file: ./lib/queries/darwin_memory.sh
 file: ./lib/queries/rules.sh
+file: ./lib/queries/sha256.sh
 file: ./lib/rules.json
 file: ./lib/run-table.sh
 file: ./lib/run_with_frame.sh

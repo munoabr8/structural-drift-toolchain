@@ -1,3 +1,4 @@
+# shellcheck shell=bash 
 # probes/tty.sh  (requires `script`)
 #!/usr/bin/env bash
  

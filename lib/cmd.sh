@@ -1,16 +1,21 @@
 #!/usr/bin/env bash
-
 # bin/cmd.sh
 
 set -euo pipefail
 
-# repo root
+# shellcheck source-path=ROOT
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")"/.. && pwd)"
 
-# deps
+
+ # shellcheck source=../lib/queries.sh
 . "$ROOT/lib/queries.sh"
+  # shellcheck source=../lib/predicates.sh
 . "$ROOT/lib/predicates.sh"
+ # shellcheck source=../lib/trace.sh
 . "$ROOT/lib/trace.sh"
+
+echo "$ROOT"
+
 
 # facts
 k="$(q_stdin_kind)"           # tty|pipe|file|unknown
@@ -37,3 +42,15 @@ dec should_read_stdin "$s" "want=1 kind=$k ready=$r block=$allow_block empty=$al
 if (( s==0 )); then
   cat
 fi
+
+
+
+
+
+main(){
+
+
+echo "dfkjflkdj"
+
+
+}

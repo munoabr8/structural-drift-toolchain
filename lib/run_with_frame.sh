@@ -1,29 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-# . "$DIR/lib/contracts2.sh"
 
-# run_with_frame() {
-#   local pre post
-#   pre=$(frame_snapshot)
-#   "$@"
-#   post=$(frame_snapshot)
-#   if [[ "$pre" != "$post" ]]; then
-#     echo "frame violated" >&2
-#     exit 1
-#   fi
-# }
 
+ # shellcheck source=predicates.sh
+# shellcheck source=enums.sh
+
+ 
+. "$ROOT/predicates.sh"; echo "sourced: predicates"
+. "$ROOT/enums.sh";      echo "sourced: enums"
 
  
 
- 
+# shellcheck source=contract_env.sh
+# shellcheck source=contract_fs.sh
 
-
-
-
-. lib/contract_env.sh
-. lib/contract_fs.sh
+. ./lib/contract_env.sh
+. ./lib/contract_fs.sh
 
 contracts_reset_env; contracts_reset_fs
 . contracts/evaluate.frame.sh           # declarations only

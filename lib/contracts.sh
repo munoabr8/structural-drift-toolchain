@@ -1,4 +1,4 @@
- 
+#shellcheck=bash 
 
 nonblank() { [[ -n "${1//[[:space:]]/}" ]]; }
 is_empty() { [[ -z $1 ]]; }

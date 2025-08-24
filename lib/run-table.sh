@@ -1,29 +1,27 @@
-# tools/run-table.sh
 #!/usr/bin/env bash
+# tools/run-table.sh
+
 set -o pipefail
-#exec </dev/null     # <-- neuter stdin for the whole runner
+ 
+ 
+# shellcheck source-path=SCRIPTDIR
+SCRIPTDIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 
 
-set -euo pipefail
-. ./predicates.sh
-. ./enums.sh
- set -u
-set -o pipefail
-# no -e while debugging
-echo "start: $$"
-SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-ROOT="$SCRIPT_DIR"
+ # shellcheck source=../lib/predicates.sh
+. "$SCRIPTDIR/lib/predicates.sh"
+
+ echo "$SCRIPTDIR"
+ 
+ROOT="$SCRIPTDIR"
+ 
+ 
+ 
  
 
-
- 
-set -o pipefail
-set +u
-. "$ROOT/predicates.sh"; echo "sourced: predicates"
 . "$ROOT/enums.sh";      echo "sourced: enums"
 
- set -u
-
+ 
 
 tsv="${1:-}"; [[ -n $tsv ]] || { echo "no arg"; exit 2; }
 [[ -r $tsv ]] || { echo "not readable: $tsv"; exit 2; }
@@ -57,13 +55,13 @@ run_file() {
     left=$(printf '%s' "$left" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
     [[ -z $left || ${left#\#} != "$left" ]] && continue
     if [[ "$raw" != *"|"* ]]; then
-      set -- $left; expect=${!#}; left=${left%$expect}; left=${left%[[:space:]]}
+      set -- "$left"; expect=${!#}; left=${left%"$expect"}; left=${left%[[:space:]]}
     else
       expect=$(tr -d ' \t\r' <<<"$expect")
     fi
     case "$expect" in 0|1|2) ;; *) expect=2 ;; esac
 
-    set -- $left
+    set -- "$left"
     case "$1" in
       0|1)  # should_read_stdin: want kind ready block empty
         w=$(norm "$1"); kind=$(lower "$(norm "${2:-}")"); r=$(norm "${3:-}"); b=$(norm "${4:-}"); e=$(norm "${5:-}")

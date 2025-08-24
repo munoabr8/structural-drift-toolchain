@@ -1,5 +1,5 @@
-# probes/file.sh
 #!/usr/bin/env bash
+# probes/file.sh
 set -euo pipefail
 tmp=$(mktemp); trap 'rm -f "$tmp" "$tmp.out" "$tmp.err"' EXIT
 printf "hello\n" > "$tmp"

@@ -1,3 +1,4 @@
+# shellcheck shell=bash   # tells ShellCheck the dialect
 # tools/load_frame.sh
 set -euo pipefail
 declare -ag IMM_ENV=() MUT_ENV=() FS_PATHS=()
