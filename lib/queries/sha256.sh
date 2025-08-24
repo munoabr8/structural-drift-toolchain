@@ -4,7 +4,7 @@
 # Choose once, allow override, cache
 _sha256_cmd() {
   if [ -n "${_SHA256_CMD:-}" ]; then printf '%s\n' "$_SHA256_CMD"; return 0; fi
-  if [ -n "${SHA256_BACKEND:-}" ] && command -v "${SHA256_BACKEND%% *}" >/dev/null 2>&1; then
+  if [ -n "${SHA256_BACKEND:-}" ] && command -v ${SHA256_BACKEND%% *} >/dev/null 2>&1; then
     _SHA256_CMD="$SHA256_BACKEND"
   elif command -v sha256sum >/dev/null 2>&1; then
     _SHA256_CMD="sha256sum"
@@ -26,8 +26,7 @@ sha256_file() {
   local f=${1:?missing file}
   [ -r "$f" ] || { printf 'sha256_file: unreadable: %s\n' "$f" >&2; return 1; }
   local h; h=$(_sha256_cmd) || { printf 'sha256: tool not found\n' >&2; return 127; }
-  LC_ALL=C 
-  case "$h" in
+  LC_ALL=C case "$h" in
     "sha256 -q")                  $h -- "$f" ;;
     "openssl dgst -sha256 -r")    $h -- "$f" | awk '{print tolower($1)}' ;;
     python3)                      python3 -c 'import sys,hashlib;print(hashlib.sha256(open(sys.argv[1],"rb").read()).hexdigest())' "$f" ;;
@@ -37,8 +36,7 @@ sha256_file() {
 
 sha256_stdin() {
   local h; h=$(_sha256_cmd) || { printf 'sha256: tool not found\n' >&2; return 127; }
-  LC_ALL=C 
-  case "$h" in
+  LC_ALL=C case "$h" in
     "sha256 -q")                  $h ;;
     "openssl dgst -sha256 -r")    $h | awk '{print tolower($1)}' ;;
     python3)                      python3 -c 'import sys,hashlib;print(hashlib.sha256(sys.stdin.buffer.read()).hexdigest())' ;;
@@ -86,8 +84,7 @@ sha256_check() {
 
 # Cache: reuse .sha256 if newer than the file
 sha256_cached() {
-  local f=${1:?file} 
-  local c="${f}.sha256" d
+  local f=${1:?file} c="${f}.sha256" d
   if [ -f "$c" ] && [ "$c" -nt "$f" ]; then
     awk '{print tolower($1)}' -- "$c"; return
   fi

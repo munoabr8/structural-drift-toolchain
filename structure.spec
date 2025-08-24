@@ -130,6 +130,7 @@ file: ./lib/queries/queries.rules.sh
 file: ./lib/queries/rules.sh
 file: ./lib/queries/sha256.sh
 file: ./lib/queries/session.queries.sh
+file: ./lib/queries/sha256.sh
 file: ./lib/rules.json
 file: ./lib/run-table.sh
 file: ./lib/run_with_frame.sh
