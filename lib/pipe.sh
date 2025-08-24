@@ -1,5 +1,6 @@
-# probes/pipe.sh
 #!/usr/bin/env bash
+# probes/pipe.sh
+ 
 set -euo pipefail
 out=$(printf "hello" | ./cmd.sh 2>&1)
 echo "$out" | grep -q '^FACT|stdin_kind=pipe'

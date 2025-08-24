@@ -5,9 +5,8 @@
  
 # env-specific contract: pin selected env keys + global shape
 
-# portable sha
-_sha256(){ command -v sha256sum >/dev/null 2>&1 && sha256sum | awk '{print $1}' \
-        || shasum -a 256 | awk '{print $1}'; }
+ 
+
 
 # config
 : "${ENV_IGNORE_RE:='^(PWD=|SHLVL=|_=|OLDPWD=|TMPDIR=)'}"
@@ -21,7 +20,6 @@ env_shape_digest(){
   local re=${1:-$ENV_IGNORE_RE}
   LC_ALL=C env | sort | grep -vE "$re" | awk -F= '{print $1}' | _sha256
 }
-
 
 env_pins_snapshot(){ 
   LC_ALL=C 

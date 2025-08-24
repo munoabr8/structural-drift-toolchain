@@ -1,3 +1,5 @@
+# shellcheck shell=bash   # tells ShellCheck the dialect
+
 parse_rule() {
   local line=$1 t p c a m extra
   IFS='|' read -r t p c a m extra <<<"$line"

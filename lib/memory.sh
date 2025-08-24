@@ -1,3 +1,5 @@
+# shellcheck shell=bash   # tells ShellCheck the dialect
+
 # 1) Run and capture syscalls (SIP may limit), get PID
 sudo dtruss -f -- your_cmd args 2> .evidence/mem.log & PID=$!
 wait "$PID"

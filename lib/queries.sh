@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # keep: env-touching only
  
 . ./predicates.sh
@@ -22,15 +24,7 @@ stdin_is_tty()   { [[ -t 0 ]]; }
 stdin_is_pipe()  { [[ -p /dev/stdin ]]; }    # named pipe
 stdin_is_file()  { [[ -f /dev/stdin ]]; }    # regular file/device (incl. /dev/null)
 
-# readiness (non-blocking)
-# Bash ≥4: true if data available without consuming
-stdin_has_data_nb() { IFS= read -r -t 0 -N 0; }
-
-# Bash 3 fallback (may consume 1 byte; restore via printf if needed)
-stdin_has_data_nb_b3() {
-  IFS= read -r -t 0 -n 1 ch || return 1
-  printf '%s' "$ch"; cat    # put it back: echo the byte, then the rest
-}
+ 
 
 
 file_size()          { stat -c%s -- "$1" 2>/dev/null || stat -f%z -- "$1"; }
@@ -56,9 +50,34 @@ cmd_path()           { command -v -- "$1" >/dev/null 2>&1; }     # status only
 env_or_default()     { local n=$1 def=$2; printf '%s' "${!n:-$def}"; }
 pid_alive()          { kill -0 "$1" 2>/dev/null; }               # status only
 
-sha256_file()        { command -v sha256sum >/dev/null \
-                         && sha256sum -- "$1" | awk '{print $1}' \
-                         || shasum -a 256 -- "$1" | awk '{print $1}'; }
+# choose tool once
+_sha256_cmd() {
+  if command -v sha256sum >/dev/null 2>&1; then echo "sha256sum";
+  elif command -v shasum   >/dev/null 2>&1; then echo "shasum -a 256";
+  elif command -v sha256   >/dev/null 2>&1; then echo "sha256 -q";        # BSD
+  elif command -v openssl  >/dev/null 2>&1; then echo "openssl dgst -sha256 -r";
+  else return 127;
+  fi
+}
+
+sha256_file() {
+  local f=${1:?missing file}
+  [[ -r $f ]] || { printf 'sha256_file: unreadable: %s\n' "$f" >&2; return 1; }
+  local h; h=$(_sha256_cmd) || { printf 'sha256: tool not found\n' >&2; return 127; }
+  case "$h" in
+    "sha256 -q")        $h -- "$f" ;;
+    *)                  $h -- "$f" | awk '{print $1}' ;;
+  esac
+}
+
+sha256_stdin() {
+  local h; h=$(_sha256_cmd) || { printf 'sha256: tool not found\n' >&2; return 127; }
+  case "$h" in
+    "sha256 -q")        $h ;;
+    *)                  $h | awk '{print $1}' ;;
+  esac
+}
+
 
 # boolean-valued, env-reading, composed with a predicate: OK
 query_has_shebang() {
@@ -73,16 +92,7 @@ query_has_shebang() {
   }
 }
 
-
-stdin_kind=$(
-  stdin_is_tty   && echo "$STDIN_TTY"  || \
-  stdin_is_pipe  && echo "$STDIN_PIPE" || \
-  stdin_is_file  && echo "$STDIN_FILE" || echo "$STDIN_UNKNOWN"
-)
-stdout_tty=$([ -t 1 ] && echo 1 || echo 0)
-stdin_ready=$({ stdin_has_data_nb && echo 1; } || echo 0)
-  
-
+ 
 
 emit_fact(){ declare -F fact >/dev/null && fact "$@"; }  # no-op if trace.sh not loaded
 
@@ -101,8 +111,25 @@ q_stdin_ready(){
   emit_fact stdin_ready "$r"; printf '%s\n' "$r"
 }
 
-q_stderr_is_tty(){ [ -t 2 ] && printf 1 || printf 0; }
+ 
+# query (reads env/process)
+q_stderr_kind() {
+  if [ -t 2 ]; then echo tty
+  elif stdin_is_pipe; then echo pipe
+  elif stdin_is_file; then echo file
+  else echo unknown
+  fi
+}
 
+# predicates (pure)
+pred_is_tty_kind()   { [ "${1:?}" = tty   ]; }
+pred_is_file_kind()  { [ "${1:?}" = file  ]; }
+
+# use
+# k=$(q_stderr_kind)
+# if pred_is_tty_kind "$k"; then
+#   # tty-specific behavior
+# fi
 
  
 
@@ -129,7 +156,6 @@ q_stdin_ready2() {
 
 
 
-  q_stderr_is_tty(){ [ -t 2 ] && echo 1 || echo 0; }
   
 
 q_stdout_is_tty(){ [[ -t 1 ]] && echo 1 || echo 0; }
