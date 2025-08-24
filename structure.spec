@@ -3,6 +3,7 @@
 dir: ./
 dir: ./attn/
 dir: ./bin/
+dir: ./ci/
 dir: ./config/
 dir: ./docs/
 dir: ./lib/
@@ -47,7 +48,10 @@ file: ./Makefile
 file: ./README.generated.md
 file: ./attn/context-status.rf.sh
 file: ./attn/context-status.sh
+file: ./bin/emit-env
 file: ./bin/main.sh
+file: ./ci/check-env-shape.sh
+file: ./ci/env-shape.baseline
 file: ./config/policy.rules.yml
 file: ./config/runtime.cfg
 file: ./config/runtime_flags.sh
@@ -67,9 +71,9 @@ file: ./lib/contracts2.sh
 file: ./lib/contracts_dsl.sh
 file: ./lib/contracts_env.sh
 file: ./lib/darwin_memory.sh
-file: ./lib/demo.sh
 file: ./lib/enums.sh
 file: ./lib/env_init.sh
+file: ./lib/environment.contract.sh
 file: ./lib/evaluate.contract.sh
 file: ./lib/evaluate.frame.sh
 file: ./lib/evaluate.sh
@@ -121,10 +125,9 @@ file: ./lib/testdata/should_read_stdin.tsv
 file: ./lib/trace.sh
 file: ./lib/tty.sh
 file: ./lib/vmmapframe.sh
+file: ./lib/with_contract_env.sh
 file: ./lib/with_contracts.sh
-file: ./new.sh
 file: ./scope.yaml
-file: ./smoke2.sh
 file: ./system/exit-codes/exit_codes_validator.sh
 file: ./system/make/garbage.mk
 file: ./system/make/guard_rails.mk

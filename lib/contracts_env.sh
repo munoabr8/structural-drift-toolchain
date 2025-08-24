@@ -1,13 +1,50 @@
 #!/usr/bin/env bash
-# contracts_env_core.sh
+# ./contracts_env.sh
 # Purpose: deterministic env drift detection on pinned keys + global shape.
  
  
 # env-specific contract: pin selected env keys + global shape
 
 # portable sha
-_sha256(){ command -v sha256sum >/dev/null 2>&1 && sha256sum | awk '{print $1}' \
-        || shasum -a 256 | awk '{print $1}'; }
+# _sha256(){ command -v sha256sum >/dev/null 2>&1 && sha256sum | awk '{print $1}' \
+#         || shasum -a 256 | awk '{print $1}'; 
+
+#       }
+
+
+
+_sha256_cmd() {
+  if [ -n "${_SHA256_CMD:-}" ]; then printf '%s\n' "$_SHA256_CMD"; return 0; fi
+  if [ -n "${SHA256_BACKEND:-}" ] && command -v "${SHA256_BACKEND%% *}" >/dev/null 2>&1; then
+    _SHA256_CMD="$SHA256_BACKEND"
+  elif command -v sha256sum >/dev/null 2>&1; then
+    _SHA256_CMD="sha256sum"
+  elif command -v shasum >/dev/null 2>&1; then
+    _SHA256_CMD="shasum -a 256"
+  elif command -v sha256 >/dev/null 2>&1; then
+    _SHA256_CMD="sha256 -q"
+  elif command -v openssl >/dev/null 2>&1; then
+    _SHA256_CMD="openssl dgst -sha256 -r"
+  elif command -v python3 >/dev/null 2>&1; then
+    _SHA256_CMD="python3"
+  else
+    return 127
+  fi
+  printf '%s\n' "$_SHA256_CMD"
+}
+
+
+
+
+envs_pins_snapshot() {
+  local k v
+  for k in "$@"; do
+    if declare -p "$k" >/dev/null 2>&1; then v=${!k}; else v=; fi
+    printf '%s=%s\n' "$k" "$v"
+  done | LC_ALL=C sort
+}
+
+ 
 
 # config
 : "${ENV_IGNORE_RE:='^(PWD=|SHLVL=|_=|OLDPWD=|TMPDIR=)'}"
@@ -16,14 +53,20 @@ IFS=' ' read -r -a ENV_KEYS <<<"$ENV_KEYS"
 ENV_STACK=()
 EC_NO_BEGIN=200 EC_DRIFT=201
 
+ 
+
 # internals
-env_shape_digest(){
+env_shape_digest()
+{
   local re=${1:-$ENV_IGNORE_RE}
-  LC_ALL=C env | sort | grep -vE "$re" | awk -F= '{print $1}' | _sha256
+  LC_ALL=C env | sort | grep -vE "$re" | awk -F= '{print $1}' | _sha256_cmd
+
 }
-env_pins_snapshot(){ LC_ALL=C for k in "$@"; do printf '%s=%s\n' "$k" "${!k-}"; done | sort; }
+
+
 env_snapshot(){
-  { env_pins_snapshot "${ENV_KEYS[@]}"; printf 'SHAPE=%s\n' "$(env_shape_digest)"; } | LC_ALL=C sort
+  { 
+  env_pins_snapshot "${ENV_KEYS[@]}"; printf 'SHAPE=%s\n' "$(env_shape_digest "$@")"; } | LC_ALL=C sort
 }
 
 # API

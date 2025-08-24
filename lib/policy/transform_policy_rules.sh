@@ -1,5 +1,7 @@
-# lib/policy/transform_policy_rules.sh
 #!/usr/bin/env bash
+#shellcheck shell=bash 
+
+# lib/policy/transform_policy_rules.sh
 (
   set -euo pipefail
   #REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"

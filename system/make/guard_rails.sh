@@ -1,3 +1,5 @@
+# shellcheck shell=bash 
+
 # ./system/guard_rails.mk
 
 guardrails:

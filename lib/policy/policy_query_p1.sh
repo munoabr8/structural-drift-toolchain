@@ -332,7 +332,7 @@ enforce_single_doc() { #updated
 displayInputs(){
 
 echo "Number of inputs:  $#"
-echo "All inputs: $@"
+
 echo "Inputs: $*"
 i=1
 for arg in "$@"; do

@@ -1,3 +1,4 @@
+# shellcheck shell=bash 
 # predicates-shim.sh
 
 # ---- Generic predicates ----
