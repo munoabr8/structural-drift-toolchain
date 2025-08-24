@@ -13,8 +13,7 @@ SNAPSHOT_GEN=./tools/structure/structure_snapshot_gen.sh
 check-structure-drift:
 	@echo "🚨 Enforcing structure integrity..."
 	@test -f $(SNAPSHOT_GEN) || (echo "❌ Missing: $(SNAPSHOT_GEN)" && exit 1)
-
-	@bash $(SNAPSHOT_GEN) generate_structure_spec . > .structure.snapshot || echo "⚠️ Snapshot generation non-critical failure (check manually)"
+	@bash $(SNAPSHOT_GEN) --root . --out .structure.snapshot
 	@diff -u $(STRUCTURE_SPEC) .structure.snapshot || echo "❗ Structure drift detected — please snapshot-and-promote if intended."
 
 
@@ -37,7 +36,7 @@ enforce-structure:
 	@test -x $(VALIDATOR) || (echo "❌ Validator not executable: $(VALIDATOR)" && exit 1)
 	@echo "🔍 Enforcing structure from $(STRUCTURE_SPEC)..."
  
-	@bash $(VALIDATOR) validate "$(STRUCTURE_SPEC)" \
+	@bash $(VALIDATOR) --quiet validate "$(STRUCTURE_SPEC)" \
 		|| { echo "Structure invalid." >&2; exit 1; }
 
 
@@ -46,10 +45,11 @@ enforce-structure:
 ###############################################################
 snapshot-structure:
 	@test -f $(SNAPSHOT_GEN) || (echo "❌ Missing: $(SNAPSHOT_GEN)" && exit 1)
-	@echo "📸 Generating current structure snapshot..."
-	@bash $(SNAPSHOT_GEN) generate_structure_snapshot . > .structure.snapshot; \
- 	EXIT_CODE=$$?; \
- 	echo "🔁 Return code from generate_structure_snapshot: $$EXIT_CODE";  \
+	@echo "Generating current structure snapshot..."
+	@bash $(SNAPSHOT_GEN) --root . --out .structure.snapshot
+	#@ASSERT=1 ASSERT_IGNORE_EXPECT='/.evidence' bash $(SNAPSHOT_GEN) --root . --out .structure.snapshot
+	EXIT_CODE=$$?; \
+	echo "Return code from generate_structure_snapshot: $$EXIT_CODE";  \
  
 	 
 

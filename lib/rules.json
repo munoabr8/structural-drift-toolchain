@@ -1,0 +1,14 @@
+{
+  "rules": [
+    {
+      "id": "a",
+      "reads": ["input/data.json", "config/*.json"],
+      "writes": ["out/report.json"]
+    },
+    {
+      "id": "b",
+      "reads": [],
+      "writes": ["logs/run.log"]
+    }
+  ]
+}
