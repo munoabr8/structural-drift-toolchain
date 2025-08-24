@@ -1,4 +1,4 @@
-
+#shellcheck shell=bash 
 
 rules_rw_schema_violations() {
   local f=${1:-${RULES_FILE:?missing}}

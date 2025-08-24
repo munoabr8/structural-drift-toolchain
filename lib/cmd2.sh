@@ -1,3 +1,4 @@
+#shellcheck shell=bash 
 # cmd.sh — wiring example (no prints inside predicates)
 set -euo pipefail
 . ./queries.sh
