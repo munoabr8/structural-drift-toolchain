@@ -13,8 +13,7 @@ SNAPSHOT_GEN=./tools/structure/structure_snapshot_gen.sh
 check-structure-drift:
 	@echo "🚨 Enforcing structure integrity..."
 	@test -f $(SNAPSHOT_GEN) || (echo "❌ Missing: $(SNAPSHOT_GEN)" && exit 1)
-
-	@bash $(SNAPSHOT_GEN) generate_structure_spec . > .structure.snapshot || echo "⚠️ Snapshot generation non-critical failure (check manually)"
+	@bash $(SNAPSHOT_GEN) --root . --out .structure.snapshot
 	@diff -u $(STRUCTURE_SPEC) .structure.snapshot || echo "❗ Structure drift detected — please snapshot-and-promote if intended."
 
 
