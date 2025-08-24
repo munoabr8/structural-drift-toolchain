@@ -1,5 +1,5 @@
-
 # shellcheck shell=bash 
+
 nonblank() { [[ -n "${1//[[:space:]]/}" ]]; }
 is_empty() { [[ -z $1 ]]; }
 # shape
