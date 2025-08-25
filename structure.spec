@@ -10,7 +10,6 @@ dir: ./lib/
 dir: ./lib/.evidence/
 dir: ./lib/policy/
 dir: ./lib/queries/
-dir: ./lib/testdata/
 dir: ./system/
 dir: ./system/exit-codes/
 dir: ./system/make/
