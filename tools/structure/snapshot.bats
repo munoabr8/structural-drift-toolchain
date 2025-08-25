@@ -1,0 +1,37 @@
+#!/usr/bin/env bats
+
+setup() {
+  REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
+  # Path to the UPDATED script under test; override via env if needed
+  SNAPSHOT_GEN="${SNAPSHOT_GEN:-$REPO_ROOT/structure/structure_snapshot_gen.rf.sh}"
+
+  TMPROOT="$(mktemp -d)"
+  cd "$TMPROOT"
+
+  mkdir -p a b evidence/sub
+  touch keep.dat evidence.txt b/keep2.log evidence/sub/inner.dat
+
+  # Ignore the evidence dir and any *.txt files
+  printf '%s\n' 'evidence' '.txt' > .structure.ignore
+}
+
+teardown() {
+  cd /
+  rm -rf "$TMPROOT"
+}
+
+@test ".structure.ignore IS applied by updated script" {
+  run bash "$SNAPSHOT_GEN" generate_structure_snapshot .
+
+  [ "$status" -eq 0 ]
+
+  # Assert: ignored entries do NOT appear
+  [[ "$output" != *"evidence.txt"* ]]         # filtered by ".txt"
+  [[ "$output" != *"dir: "*"evidence/"* ]]    # filtered by "evidence"
+  [[ "$output" != *"file: "*"evidence/sub/inner.dat"* ]]
+
+  # Sanity: non-ignored files still listed
+  [[ "$output" == *"file: "*"keep.dat"* ]]
+  [[ "$output" == *"file: "*"b/keep2.log"* ]]
+}
+

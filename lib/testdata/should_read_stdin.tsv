@@ -1,0 +1,8 @@
+#should_read_stdin.tsv
+# want kind     ready block empty | expect
+1     tty       0     0     0     | 1
+1     tty       0     1     0     | 0
+1     pipe      0     0     1     | 0
+1     file      0     0     0     | 1
+0     pipe      1     0     0     | 1
+1 badkind 0 0 0 | 2
