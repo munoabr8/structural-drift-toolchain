@@ -7,10 +7,11 @@
 *.swp
 *.bak
 *~
- 
+
 
 # Temporary dirs created by tests
 /tmp/
+/.evidence
 
 # Python Virtual Environments
 .venv/
