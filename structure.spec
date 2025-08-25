@@ -55,6 +55,7 @@ file: ./ci/check_contracts.sh
 file: ./ci/check_predicates.sh
 file: ./ci/check_queries.sh
 file: ./ci/env-shape.baseline
+file: ./ci/frame.sh
 file: ./ci/lib.sh
 file: ./config/policy.rules.yml
 file: ./config/runtime.cfg
@@ -81,11 +82,15 @@ file: ./lib/environment.contract.sh
 file: ./lib/evaluate.contract.sh
 file: ./lib/evaluate.frame.sh
 file: ./lib/evaluate.sh
+file: ./lib/evidence.json
 file: ./lib/file.sh
 file: ./lib/findings.json
+file: ./lib/frame.rf.sh
+file: ./lib/frame.sh
 file: ./lib/load-frame.sh
 file: ./lib/main.sh
 file: ./lib/memory.sh
+file: ./lib/out.json
 file: ./lib/parse.sh
 file: ./lib/pipe.sh
 file: ./lib/policy/enforce_policy_p3.sh
@@ -119,6 +124,7 @@ file: ./lib/primitive_checks.bats
 file: ./lib/purity.sh
 file: ./lib/queries.sh
 file: ./lib/queries/darwin_memory.sh
+file: ./lib/queries/queries.rules.sh
 file: ./lib/queries/rules.sh
 file: ./lib/queries/sha256.sh
 file: ./lib/rules.json
