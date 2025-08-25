@@ -10,8 +10,7 @@
 
  SCRIPT_DIR="$(cd -- "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
- echo "$SCRIPT_DIR"
-
+ 
 
 set -euo pipefail
 
@@ -31,6 +30,7 @@ while (($#)); do
   esac
 done
 [[ -n ${E_ROOT:-} && -n ${E_RULES_FILE:-} ]] || usage
+(($#)) || usage 
 
 # default PATH if not provided
 if [[ -z ${E_PATH:-} ]]; then
@@ -140,7 +140,9 @@ _abs=();   for p in "${_clean[@]}"; do case $p in /*) _abs+=("$p");; *) _abs+=("
 ALLOW=("${_abs[@]}")
 #printf 'ALLOW:\n'; printf '  %s\n' "${ALLOW[@]}" >&2
 
-
+for p in "${ALLOW[@]}"; do
+  [[ $p != *$'\n'* && $p != *' '* ]] || { echo "bad WRITES path: $p" >&2; exit 2; }
+done
 
 snap=_snap_stat
 [[ $metric == sha256 ]] && snap=_snap_sha
@@ -149,6 +151,7 @@ snap=_snap_stat
 [[ ${DEBUG_FRAME:-0} -eq 1 ]] && printf 'frame: gate=%s metric=%s writes=%s\n' "$gate" "$metric" "$(IFS=,; echo "${ALLOW[*]}")" >&2
 
 
+ cd -P -- "$E_ROOT"  # run payload from root for deterministic relatives
  
 
 case $gate in
@@ -178,6 +181,9 @@ case $gate in
     exit $rc
     ;;
 esac
+
+
+
 
 
  
