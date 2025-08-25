@@ -24,7 +24,7 @@ rules_have_unique_ids      || echo "ids fail"
  debug || echo "debug fail"
 rules_declare_reads_writes || echo "reads/writes fail"
     
- echo "------"
+ 
 # parse --out or --out=...
 out=
 while (($#)); do
