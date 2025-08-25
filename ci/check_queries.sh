@@ -1,17 +1,28 @@
 #!/usr/bin/env bash
 set -euo pipefail
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
-#!/usr/bin/env bash
+
 # shellcheck shell=bash
 # ci/check_queries.sh — fail if queries perform writes/mutations
 
 set -euo pipefail
 
-f=${1:-../lib/queries.sh}
-[[ -r $f ]] || { printf 'check_queries: missing %s\n' "$f" >&2; exit 2; }
+
+script_dir="$(cd -- "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+repo_root="$(git -C "$script_dir" rev-parse --show-toplevel 2>/dev/null)"
+
+f=${1:-"$repo_root/lib/predicates.sh"}
+
+
+echo "[predicates] $f"
+
+
+
 
  
-echo "[queries] $f"
+#echo "[queries] $f"
+
+
 
 # 1) Forbid mutating commands. Allow pipes and ||.
 deny_cmds='rm|mv|cp|chmod|chown|mkdir|rmdir|ln|truncate|tee'

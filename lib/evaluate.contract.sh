@@ -63,6 +63,7 @@ nondet_env_clean() { [[ "${TZ-UTC}" == "UTC" && "${LANG-}" =~ ^(C|C\.UTF-8|en_US
 # --- pre/post ---
 pre() {
  
+echo "-----034034030340340300"
 
    if [[ -z "${rules:-}" ]]; then
     echo "ERROR: \$rules variable not set" >&2
@@ -80,7 +81,7 @@ pre() {
  
 	rules_valid_json					|| exit 202
  
-
+ 
   rules_schema_valid  # require array root
 
  

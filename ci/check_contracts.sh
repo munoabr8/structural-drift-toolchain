@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+
+
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
+
+script_dir="$(cd -- "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+repo_root="$(git -C "$script_dir" rev-parse --show-toplevel 2>/dev/null)"
+
 
 fns=$(git ls-files '../lib/*.contract.sh' 2>/dev/null || echo ./lib/*.contract.sh)
 ok=1

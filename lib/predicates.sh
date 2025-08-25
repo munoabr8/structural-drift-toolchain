@@ -1,6 +1,34 @@
 # shellcheck shell=bash   # tells ShellCheck the dialect 
+# purity: class=predicates
 
  # predicates are closed off to the enviorment. 
+
+
+ 
+
+# p: E -> Ω   (pure; checks only shape, not filesystem)
+# usage: env_shape_ok "$E_ROOT" "$E_RULES_FILE" ["$E_PATH"]
+env_shape_ok() {
+  local root=$1 rules=$2 path=${3-}
+  [[ -n $root && -n $rules ]] || return 1
+  [[ $root != *$'\n'* && $rules != *$'\n'* && $path != *$'\n'* ]] || return 1
+}
+
+
+
+
+# p: PATH -> Ω (shape only, pure)
+path_shape_ok() {
+  local p=$1
+  [[ -n $p ]] || return 1
+  [[ $p != *$'\n'* && $p != :* && $p != *::* && $p != *: ]] || return 1
+  local IFS=:
+  for d in $p; do
+    [[ $d = /* && $d != . && $d != *" "* ]] || return 1
+  done
+}
+
+
 
 nonblank() { [[ -n "${1//[[:space:]]/}" ]]; }
 is_empty() { [[ -z $1 ]]; }

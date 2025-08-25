@@ -1,10 +1,78 @@
+# shellcheck shell=bash
 #!/usr/bin/env bash
+# shellcheck source-path=SCRIPTDIR
+# shellcheck source=lib/predicates.sh
+
+# purity: class=queries
+
+
+
+. "$(dirname "${BASH_SOURCE[0]}")/predicates.sh"
+
+
+
 
 # keep: env-touching only
  
-. ./predicates.sh
 . ./enums.sh
  
+
+# q: E -> Ω   (read-only; verifies existence/readability)
+# usage: env_valid "$E_ROOT" "$E_RULES_FILE" ["$E_PATH"]
+env_valid() {
+  local root=$1 rules=$2 path=${3-}
+
+  env_shape_ok "$root" "$rules" "$path" || return 2
+
+  [[ -d $root && -r $root ]]   || return 1
+  [[ -f $rules && -r $rules ]] || return 1
+
+  # optional PATH check if provided
+  if [[ -n $path ]]; then
+    # colon list with no newlines; no writes
+    [[ $path != *$'\n'* ]] || return 1
+  fi
+}
+
+
+ # q: PATH -> PATH (sanitized, read-only)
+path_sanitize() {
+  local p=$1; path_shape_ok "$p" || return 2
+  local IFS=: d out=() seen=
+  declare -A seen
+  for d in $p; do
+    [[ -d $d && -x $d ]] || continue
+    [[ ${seen[$d]+y} ]] && continue
+    seen[$d]=1; out+=("$d")
+  done
+  ((${#out[@]})) || return 1
+  (IFS=:; printf '%s\n' "${out[*]}")
+}
+
+#Sanitize (Bash 3.2-safe, no assoc arrays)
+# Drop non-existent / non-exec dirs, dedupe, keep order
+path_sanitize() {
+  local p=$1 IFS=: d acc=
+  for d in $p; do
+    [[ -d $d && -x $d ]] || continue
+    case ":$acc:" in *":$d:"*) : ;; *) acc="${acc:+$acc:}$d" ;; esac
+  done
+  [[ -n $acc ]] || return 1
+  printf '%s\n' "$acc"
+}
+
+
+
+# q: PATH -> Ω (existence/perm check)
+path_valid() {
+  local p=$1; path_shape_ok "$p" || return 2
+  local IFS=: d
+  for d in $p; do
+    [[ -d $d && -x $d ]] || return 1
+  done
+}
+
+
 
 fn_defined()         { declare -F "$1" >/dev/null 2>&1; }      # boolean-valued query (status only)
 is_readable()        { [[ -r ${1-} ]]; }                       # boolean-valued query
