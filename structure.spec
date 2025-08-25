@@ -83,7 +83,6 @@ file: ./lib/environment.contract.sh
 file: ./lib/evaluate.contract.sh
 file: ./lib/evaluate.frame.sh
 file: ./lib/evaluate.sh
-file: ./lib/evidence.json
 file: ./lib/file.sh
 file: ./lib/findings.json
 file: ./lib/frame.rf.sh
@@ -91,7 +90,6 @@ file: ./lib/frame.sh
 file: ./lib/load-frame.sh
 file: ./lib/main.sh
 file: ./lib/memory.sh
-file: ./lib/out.json
 file: ./lib/parse.sh
 file: ./lib/pipe.sh
 file: ./lib/policy/enforce_policy_p3.sh
