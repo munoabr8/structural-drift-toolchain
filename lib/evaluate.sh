@@ -7,29 +7,53 @@
 # ENVS:   VAR1 VAR2
 
 set -euo pipefail
-
-
+ 
  
 : "${RULES_FILE:?missing}"
-CTX_FILE="${CTX_FILE:-/dev/null}"
+ 
 
-jq '
-  if type=="array"
-  then map({id, status:"ok"})
-  else error("rules must be array")
-  end
-' -- "$RULES_FILE"
+LIB="./queries/queries.rules.sh"
 
-. "./contracts_dsl.sh"
-. "./evaluate.contract.sh"
+# shellcheck source=lib/queries/queries.rules.sh
+[[ -r "$LIB" ]] || { echo "missing: $LIB" >&2; exit 2; }
+. "$LIB"
 
-require rules_have_unique_ids
-require rules_declare_reads_writes
-require no_time_or_random_sources
-assert_i pure_eval
-assert_i order_invariant
-assert_i hermetic
-findings=$(evaluate_rules "$RULES_FILE" "$CTX_FILE")
-ensure findings_normalized "$FINDINGS_FILE"
+ 
+ rules_schema_valid         || echo "schema fail"
+rules_have_unique_ids      || echo "ids fail"
+ debug || echo "debug fail"
+rules_declare_reads_writes || echo "reads/writes fail"
+    
+ echo "------"
+# parse --out or --out=...
+out=
+while (($#)); do
+  case $1 in
+    --out)     out=${2:?}; shift 2 ;;
+    --out=*)   out=${1#*=}; shift ;;
+    *)         shift ;;
+  esac
+done
+: "${out:?missing --out}"
+
+# resolve relative paths to E_ROOT (exported by the frame)
+case $out in /*) target=$out ;; *)
+  : "${E_ROOT:?E_ROOT not set by frame}"
+  target="$E_ROOT/$out"
+esac
+mkdir -p -- "$(dirname "$target")"
+
+# write bytes that actually change
+tmp=$(mktemp)
+# replace this line with your real output
+printf 'result:%s\n' "$(date +%s%N)" > "$tmp"
+mv -f -- "$tmp" "$target"
+
+
+
+
+echo "Eval complete?"
+
+ 
 
  

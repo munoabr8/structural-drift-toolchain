@@ -80,7 +80,7 @@ pre() {
  
 	rules_valid_json					|| exit 202
  
-
+ 
   rules_schema_valid  # require array root
 
  
