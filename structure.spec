@@ -6,7 +6,9 @@ dir: ./bin/
 dir: ./config/
 dir: ./docs/
 dir: ./lib/
+dir: ./lib/.evidence/
 dir: ./lib/policy/
+dir: ./lib/queries/
 dir: ./system/
 dir: ./system/exit-codes/
 dir: ./system/make/
