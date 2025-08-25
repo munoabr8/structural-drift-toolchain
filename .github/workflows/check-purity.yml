@@ -1,12 +1,57 @@
 name: purity
-on: [push, pull_request]
+on:
+  push:
+    paths:
+      - 'ci/**'
+      - 'lib/**'
+      - '**/*.sh'
+  pull_request:
+    paths:
+      - 'ci/**'
+      - 'lib/**'
+      - '**/*.sh'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: purity-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
 jobs:
   purity:
     runs-on: ubuntu-latest
+    env:
+      LC_ALL: C
+      LANG: C
+      TZ: UTC
+      CI: "true"
     steps:
       - uses: actions/checkout@v4
-      - run: chmod +x ci/check_*.sh
-      - run: ci/check_predicates.sh
-      - run: ci/check_queries.sh
-      - run: ci/check_contracts.sh
-      - run: ci/check_frames.sh
+        with: { fetch-depth: 0 }
+
+      - name: Make check scripts executable
+        run: chmod +x ci/check_*.sh
+
+      - name: Run purity checks (aggregate)
+        run: |
+          set -euo pipefail
+          mkdir -p reports
+          rc=0
+          ci/check_predicates.sh | tee reports/predicates.log || rc=1
+          ci/check_queries.sh    | tee reports/queries.log    || rc=1
+          ci/check_contracts.sh  | tee reports/contracts.log  || rc=1
+          ci/check_frames.sh     | tee reports/frames.log     || rc=1
+          echo "rc=$rc"
+          exit "$rc"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: purity-logs
+          path: reports/*.log

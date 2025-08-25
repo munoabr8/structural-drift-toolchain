@@ -7,8 +7,6 @@
 # All use $1 = path to rules file (default: $E_RULES_FILE)
 
  
-
-# q: FILE -> Ω
 rules_schema_valid() {
   local f=${1:-${E_RULES_FILE:?}}
   [[ -r $f && -s $f ]] || { echo "rules file missing/empty: $f" >&2; return 1; }
@@ -21,11 +19,6 @@ rules_schema_valid() {
     rows | type=="array"
   ' >/dev/null
 }
-
-
-
-
-
 
  
 rules_have_unique_ids() {  # q: FILE -> Ω

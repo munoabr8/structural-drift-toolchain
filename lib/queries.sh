@@ -1,20 +1,19 @@
-# shellcheck shell=bash
 #!/usr/bin/env bash
-# shellcheck source-path=SCRIPTDIR
-# shellcheck source=lib/predicates.sh
-
+  
 # purity: class=queries
 
+# shellcheck shell=bash
+# shellcheck source-path=SCRIPTDIR
+# shellcheck source=./predicates.sh
 
-
-. "$(dirname "${BASH_SOURCE[0]}")/predicates.sh"
-
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+. "$SCRIPT_DIR/predicates.sh"
 
 
 
 # keep: env-touching only
  
-. ./enums.sh
+#. ./enums.sh
  
 
 # q: E -> Ω   (read-only; verifies existence/readability)
@@ -37,7 +36,10 @@ env_valid() {
 
  # q: PATH -> PATH (sanitized, read-only)
 path_sanitize() {
-  local p=$1; path_shape_ok "$p" || return 2
+  local p=$1; 
+
+  path_shape_ok "$p" || return 2
+  
   local IFS=: d out=() seen=
   declare -A seen
   for d in $p; do
@@ -51,7 +53,7 @@ path_sanitize() {
 
 #Sanitize (Bash 3.2-safe, no assoc arrays)
 # Drop non-existent / non-exec dirs, dedupe, keep order
-path_sanitize() {
+path_sanitize3() {
   local p=$1 IFS=: d acc=
   for d in $p; do
     [[ -d $d && -x $d ]] || continue
@@ -164,11 +166,23 @@ query_has_shebang() {
 
 emit_fact(){ declare -F fact >/dev/null && fact "$@"; }  # no-op if trace.sh not loaded
 
-q_stdin_kind(){
-  local k
-  [[ -t 0 ]] && k=tty || [[ -p /dev/stdin ]] && k=pipe || [[ -f /dev/stdin ]] && k=file || k=unknown
-  emit_fact stdin_kind "$k"; printf '%s\n' "$k"
+ 
+
+stdin_kind() {
+  if   [[ -t 0 ]]; then echo tty
+  elif [[ -p /dev/stdin ]]; then echo pipe
+  elif [[ -f /dev/stdin ]]; then echo file
+  else echo unknown; return 3
+  fi
 }
+
+q_stdin_kind() {
+  local k; k=$(stdin_kind) || :  # keep exit for unknown if you prefer
+  emit_fact stdin_kind "$k" || :
+  printf '%s\n' "$k"
+}
+
+
 
 q_stdin_ready(){
   case "$(q_stdin_kind)" in
@@ -204,25 +218,10 @@ pred_is_file_kind()  { [ "${1:?}" = file  ]; }
 fact(){ printf 'fact|%s=%s\n' "$1" "$2" >&2; }   # stderr only
 
 
-q_stdin_kind2(){
-
-
-  local k; [[ -t 0 ]] && k=tty || [[ -p /dev/stdin ]] && k=pipe || [[ -f /dev/stdin ]] && k=file || k=unknown
-  fact stdin_kind "$k"
-  printf '%s\n' "$k"
-}
-
  
 
-q_stdin_ready2() {
-  local r
-  IFS= read -r -t 0 -N 0 2>/dev/null && r=1 || r=0   # Bash≥4; OK, status-only
-  fact stdin_ready "$r"
-  printf '%s\n' "$r"
-}
-
-
-
+ 
+ 
 
   
 
