@@ -52,10 +52,11 @@ file: ./bin/main.sh
 file: ./ci/check_layering.sh
 file: ./ci/check-env-shape.sh
 file: ./ci/check_contracts.sh
+file: ./ci/check_frames.sh
 file: ./ci/check_predicates.sh
 file: ./ci/check_queries.sh
+file: ./ci/checklib.sh
 file: ./ci/env-shape.baseline
-file: ./ci/frame.sh
 file: ./ci/lib.sh
 file: ./config/policy.rules.yml
 file: ./config/runtime.cfg
