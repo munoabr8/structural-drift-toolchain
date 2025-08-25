@@ -11,17 +11,16 @@ set -euo pipefail
 script_dir="$(cd -- "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(git -C "$script_dir" rev-parse --show-toplevel 2>/dev/null)"
 
-f=${1:-"$repo_root/lib/predicates.sh"}
+f=${1:-"$repo_root/lib/queries.sh"}
 
 
-echo "[predicates] $f"
+echo "[queries] $f"
 
 
 
 
  
-#echo "[queries] $f"
-
+ 
 
 
 # 1) Forbid mutating commands. Allow pipes and ||.
