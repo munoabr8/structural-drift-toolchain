@@ -8,6 +8,9 @@
 *.bak
 *~
 
+foo.sh
+
+foo.sh
 
 # Temporary dirs created by tests
 /tmp/

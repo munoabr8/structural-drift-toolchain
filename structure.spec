@@ -53,6 +53,7 @@ file: ./bin/main.sh
 file: ./ci/check-env-shape.sh
 file: ./ci/check_contracts.sh
 file: ./ci/check_frames.sh
+file: ./ci/check_layering.sh
 file: ./ci/check_predicates.sh
 file: ./ci/check_queries.sh
 file: ./ci/checklib.sh
@@ -125,6 +126,7 @@ file: ./lib/queries.sh
 file: ./lib/queries/darwin_memory.sh
 file: ./lib/queries/queries.rules.sh
 file: ./lib/queries/rules.sh
+file: ./lib/queries/session.queries.sh
 file: ./lib/queries/sha256.sh
 file: ./lib/rules.json
 file: ./lib/run-table.sh

@@ -1,7 +1,6 @@
 # shellcheck shell=bash
 
 # Constants for sourcing elsewhere.
-# shellcheck disable=SC2034
 
 # shellcheck disable=SC2034
 : "${STDIN_TTY:=tty}" "${STDIN_PIPE:=pipe}" "${STDIN_FILE:=file}" "${STDIN_UNKNOWN:=unknown}"
