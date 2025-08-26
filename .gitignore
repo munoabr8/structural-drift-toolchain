@@ -9,6 +9,8 @@
 *~
 
 
+foo.sh
+
 # Temporary dirs created by tests
 /tmp/
 /.evidence
