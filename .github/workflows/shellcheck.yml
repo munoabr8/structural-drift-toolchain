@@ -1,3 +1,4 @@
+# .github/workflows/shellcheck.yml
 name: ShellCheck
 on: [push, pull_request, workflow_dispatch]
 
@@ -10,10 +11,10 @@ jobs:
       - name: ShellCheck (only fail on errors)
         uses: ludeeus/action-shellcheck@2.0.0
         env:
-          SHELLCHECK_OPTS: -x
+          SHELLCHECK_OPTS: -x        # follow sources
         with:
           scandir: './'
-          severity: error
+          severity: error            # warnings/notes won’t fail
 
       - name: Save full report
         run: |

@@ -1,5 +1,4 @@
 # shellcheck shell=bash   # tells ShellCheck the dialect 
-
 # purity: class=predicates
 
  # predicates are closed off to the enviorment. 
@@ -60,7 +59,9 @@ path_shape_ok() {
 #matches()           { [[ $1 =~ $2 ]]; } 
 
 #has_ext()            { local f=${1-} ext=${2-}; [[ $f == *".$ext" ]]; }
- 
+
+
+
 
  
 # ---------- Pure predicate (args-only, no I/O)
@@ -77,7 +78,6 @@ predicate_has_shebang_line() { # $1=line $2=expected-regex
 
 
 # strings
-
 # is_nonempty_str()   { [[ -n ${1-} ]]; }
 # is_blank_str()      { [[ -z ${1//[[:space:]]/} ]]; }
 # equals_str()        { [[ ${1-} == ${2-} ]]; }
@@ -110,9 +110,10 @@ predicate_has_shebang_line() { # $1=line $2=expected-regex
 # notp()              { local p=$1; shift; "$p" "$@" && return 1 || return 0; }
 # anyp()              { local p=$1; shift; local v; for v in "$@"; do "$p" "$v" && return 0; done; return 1; }
 # allp()              { local p=$1; shift; local v; for v in "$@"; do "$p" "$v" || return 1; done; return 0; }
+
+  
  
- 
- 
+
 #  . ./enums.sh
 
 # is_bool01()         { [[ ${1-} == 0 || ${1-} == 1 ]]; }
@@ -141,7 +142,7 @@ predicate_has_shebang_line() { # $1=line $2=expected-regex
 #     *)          return 1 ;;
 #   esac
 # }
- 
+
 # $1=file_arg $2=prefer(0|1) $3=kind enum $4=ready(0|1)
 prefer_stdin(){
   local f=$1 p=$2 k=$3 r=$4

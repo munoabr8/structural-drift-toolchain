@@ -9,7 +9,6 @@
 set -euo pipefail
  
  
- 
 : "${RULES_FILE:?missing}"
  
 
@@ -56,5 +55,5 @@ mv -f -- "$tmp" "$target"
 echo "Eval complete?"
 
  
- 
+
  
