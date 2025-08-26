@@ -86,7 +86,6 @@ file: ./lib/evaluate.frame.sh
 file: ./lib/evaluate.sh
 file: ./lib/file.sh
 file: ./lib/findings.json
-file: ./lib/foo.sh
 file: ./lib/frame.rf.sh
 file: ./lib/frame.sh
 file: ./lib/load-frame.sh
@@ -216,7 +215,6 @@ file: ./tools/utili-sourcing.sh
 file: ./tools/validate_ignore.sh
 file: ./util/core.rf.sh
 file: ./util/core.sh
-file: ./util/foo.sh
 file: ./util/logger.sh
 file: ./util/logger_wrapper.sh
 file: ./util/source_or_fail.sh
