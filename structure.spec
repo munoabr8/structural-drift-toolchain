@@ -237,7 +237,6 @@ file: ./tools/utili-sourcing.sh
 file: ./tools/validate_ignore.sh
 file: ./util/core.rf.sh
 file: ./util/core.sh
-file: ./util/foo.sh
 file: ./util/logger.sh
 file: ./util/logger_wrapper.sh
 file: ./util/source_or_fail.sh
