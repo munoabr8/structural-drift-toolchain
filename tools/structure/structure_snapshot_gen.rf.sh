@@ -1,24 +1,28 @@
 #!/usr/bin/env bash
 # ./tools/structure/structure_snapshot_gen.sh
-
-
 set -euo pipefail
 
- 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  ROOT=$(git rev-parse --show-toplevel)
+declare -r IGNORE_FILE=${IGNORE_FILE:-"$ROOT/structure.ignore"}
 
- 
-if [[ -f "$SCRIPT_DIR/util/source_or_fail.sh" ]]; then
+# ---------- Args to be removed in future: ----------
+
+OUT="${OUT:-}"
+LEGACY=0
+
+: "${SNAPSHOT_VALIDATE:=0}"      # 1 = schema-check stdout
+
+if [[ -f "$ROOT/util/source_or_fail.sh" ]]; then
   # shellcheck disable=SC1091
-  source "$SCRIPT_DIR/util/source_or_fail.sh"
+  source "$ROOT/util/source_or_fail.sh"
 fi
-if [[ -f "$SCRIPT_DIR/util/logger.sh" ]]; then
+if [[ -f "$ROOT/util/logger.sh" ]]; then
   # shellcheck disable=SC1091
-  source "$SCRIPT_DIR/util/logger.sh"
+  source "$ROOT/util/logger.sh"
 fi
-if [[ -f "$SCRIPT_DIR/util/logger_wrapper.sh" ]]; then
+if [[ -f "$ROOT/util/logger_wrapper.sh" ]]; then
   # shellcheck disable=SC1091
-  source "$SCRIPT_DIR/util/logger_wrapper.sh"
+  source "$ROOT/util/logger_wrapper.sh"
 fi
 # degrade if logging unavailable
 if ! type log_json >/dev/null 2>&1; then
@@ -28,54 +32,36 @@ if ! type log_json >/dev/null 2>&1; then
 fi
 
  
- 
 # ====================================================================================
 # QUERIES: Read-only. They may read FS/env, print results to stdout, and return 0/!0.
 # No mutations, no tempfile writes, no logging.
 # ====================================================================================
 
 # Query: absolute path to potential ignore file
-query_ignore_file() { # $1=root
-  local root=${1:-}
-  [[ -n $root ]] || return 2
-  printf '%s/.structure.ignore\n' "$root"
+query_ignore_file() { #
+  printf '%s/.structure.ignore\n' "$ROOT"
 }
-
-# Query: true if ignore file exists and is a regular file
-query_has_ignore_file() { # $1=root
-  local f; f="$(query_ignore_file "$1")" || return 2
-  [[ -f "$f" ]]
-}
-
-# Query: stream of ignore patterns (no comments, no blank lines)
-query_ignore_patterns() { # $1=root
-  local f; f="$(query_ignore_file "$1")" || return 2
-  [[ -f "$f" ]] || return 1
-  # read-only normalization
-  grep -vE '^\s*(#|$)' "$f" || true
-}
+ 
 
 # Query: list directories under root (current behavior preserved: ignores only .git)
 query_list_dirs() { # $1=root
-  local root=${1:-}
-  [[ -n $root && -d $root ]] || return 2
-  find "$root" -type d ! -name 'structure.spec' \
+
+  find "$ROOT" -type d ! -name 'structure.spec' \
     | grep -vE '\.git' \
     | sort
 }
 
 # Query: list files under root (current behavior preserved; ignore plumbing stays inert)
 query_list_files_raw() { # $1=root
-  local root=${1:-}
-  [[ -n $root && -d $root ]] || return 2
-  find "$root" -type f \
+
+  find "$ROOT" -type f \
       ! -name 'structure.spec' \
       ! -name '.structure.snapshot' \
       ! -name '*.log' \
       ! -name '*.tmp' \
       ! -name '.DS_Store' \
-      ! -path "$root/tmp/*" \
-      ! -path "$root/.git/*" \
+      ! -path "$ROOT/tmp/*" \
+      ! -path "$ROOT/.git/*" \
       2>/dev/null \
       | sort
 }
@@ -87,10 +73,8 @@ query_list_files_effective() { # $1=root
 }
 
 # Query: list symlinks (no effects)
-query_list_symlinks() { # $1=root
-  local root=${1:-}
-  [[ -n $root && -d $root ]] || return 2
-  find "$root" -type l ! -name 'structure.spec' \
+query_list_symlinks() { 
+  find "$ROOT" -type l ! -name 'structure.spec' \
     | grep -vE '\.git' \
     | sort
 }
@@ -108,22 +92,17 @@ cmd_log_error() { safe_log "ERROR" "$1" "" "1"; }
 # simple, line-based patterns (no globs). comments/blank lines stripped.
  
 
- 
-
- 
-
-
 # strip comments/blanks; literal lines
-query_ignore_patterns_simple() {  # $1=root
-  local f="$1/.structure.ignore"
-  [[ -f $f ]] || return 1
-  grep -vE '^\s*(#|$)' "$f" || true
+query_ignore_patterns_simple() {
+  [[ -f "$IGNORE_FILE" ]] || return 1
+  grep -vE '^\s*(#|$)' "$IGNORE_FILE" || true
 }
 
+
+
 apply_ignore_filter() {           # $1=root ; stdin=paths
-  local root="$1"
   local pats
-  pats="$(query_ignore_patterns_simple "$root")" || { cat; return 0; }
+  pats="$(query_ignore_patterns_simple)" || { cat; return 0; }
   grep -vFf <(printf '%s\n' "$pats") || true
 }
 
@@ -132,59 +111,7 @@ query_list_dirs_effective()  { local r=${1:?}; query_list_dirs  "$r" | apply_ign
 query_list_files_effective() { local r=${1:?}; query_list_files_raw "$r" | apply_ignore_filter "$r"; }
 
 
-generate_structure_snapshot() { # $1=root
-
-# dirs
-   
-  cmd_log_info "Entered structure snapshot function"
-  local root="${1:-}"
-  if [[ -z "$root" || ! -d "$root" ]]; then
-    echo "❌ Invalid or missing root: '$root'" >&2
-    return 1
-  fi
-
-  # Header
-  echo "# Auto-generated structure.spec"
-  echo ""
-
-  # Directories
-  echo " Scanning directories..." >&2
-
-if ! query_list_dirs_effective "$root" | sed 's|^|dir: |; s|$|/|'; then 
-   
-    echo "❌ Failed during directory scan" >&2
-    return 1
-  fi
-
-  # Files
-  echo " Scanning files in: $root" >&2
-  if ! query_list_files_effective "$root" | sed 's|^|file: |'; then 
-    echo "❌ Failed during file scan for module: $root" >&2
-    return 1
-  fi
-
-  # Symlinks
-  echo " Scanning symlinks..." >&2
-  local fail_symlink=0
-  while IFS= read -r link; do
-    if target="$(readlink "$link" 2>/dev/null)"; then
-      echo "link: $link -> $target"
-    else
-      echo "❌ readlink failed for: $link" >&2
-      fail_symlink=1
-    fi
-  done < <(query_list_symlinks "$root")
-
-  if (( fail_symlink )); then
-    echo "❌ Failed during symlink scan" >&2
-    return 1
-  else
-    echo "✅ Symlink scan completed successfully" >&2
-  fi
-
-  return 0
-}
-
+ 
   # ---------- Help ----------
 usage() {
   cat <<'EOF'
@@ -207,12 +134,6 @@ NOTES
 EOF
 }
 
-# ---------- Args ----------
-ROOT="."
-OUT="${OUT:-}"
-LEGACY=0
-
- 
 parse_args() {
   # legacy function-name first arg
   if [[ "${1-}" == "generate_structure_snapshot" ]]; then
@@ -226,14 +147,16 @@ parse_args() {
 
   while (( $# )); do
     case "$1" in
-      --root) ROOT="${2:-}"; shift 2 ;;
+      --root) ROOT="${2:-}"; shift 2 ;; 
       --out)  OUT="${2:-}";  shift 2 ;;
       -h|--help|-help|--h)  usage; exit 0 ;;
       *) die "unknown option: $1" ;;
     esac
   done
 
-  [[ -d "$ROOT" ]] || die "not a directory: $ROOT"
+
+  root_is_valid "$ROOT" 
+
 }
 
 # ---------- Commands (logging ok) ----------
@@ -253,28 +176,6 @@ cmd_write_output() { # $1=outfile
   tmp=""                              # avoid stale cleanup
 }
 
-
-
-# ---- toggles -------------------------------------------------
-: "${ASSERT:=0}"                 # 1 = enforce pre/post checks
-: "${SNAPSHOT_VALIDATE:=0}"      # 1 = schema-check stdout
-# optional asserts
-#   ASSERT_IGNORE_EXPECT="evidence"   -> require this exact line in .structure.ignore
-#   ASSERT_NO_IGNORE_LEAK=1           -> fail if any ignored path appears in output
-
-# ---- tiny helpers -------------------------------------------
-die(){ echo "❌ $*" >&2; exit 90; }
-require_dir(){ [[ -d ${1-} ]] || die "not a dir: ${1-}"; }
-
-ignore_has_line(){ # $1=file $2=exact line
-  [[ -f $1 ]] || return 1
-  awk -v want="$2" '
-    /^[[:space:]]*#/ || /^[[:space:]]*$/ { next }
-    { sub(/^[[:space:]]+/,""); sub(/[[:space:]]+$/,"") }
-    $0 == want { found=1 }
-    END{ exit found?0:1 }
-  ' "$1"
-}
 
 validate_snapshot_stream(){ # passthru + schema check
   awk '
@@ -365,38 +266,147 @@ query_io() {
   return "$ec"
 }
  
+generate_structure_snapshot() { # $1=root
+   
+  cmd_log_info "Entered structure snapshot function"
+  local root="${1:-}"
 
+  # Header
+  echo "# Auto-generated structure.spec"
+  echo ""
 
+  # Directories
+  echo " Scanning directories..." >&2
 
-# ---- main: top-down -----------------------------------------
-main() {
- 
-
-    query_io --mode=passthrough parse_args "$@"  
-  # PRE
- 
-  if (( ASSERT )); then
-    require_dir "$ROOT"
-    if [[ -n "${ASSERT_IGNORE_EXPECT:-}" && -f "$ROOT/.structure.ignore" ]]; then
-        ignore_has_line "$ROOT/.structure.ignore" "$ASSERT_IGNORE_EXPECT" \
-        || die "ignore missing exact line: $ASSERT_IGNORE_EXPECT"
-    fi
+  if ! query_list_dirs_effective "$root" | sed 's|^|dir: |; s|$|/|'; then 
+   
+    echo "❌ Failed during directory scan" >&2
+    return 1
   fi
 
-  # EXEC
+  # Files
+  echo " Scanning files in: $root" >&2
+  if ! query_list_files_effective "$root" | sed 's|^|file: |'; then 
+    echo "❌ Failed during file scan for module: $root" >&2
+    return 1
+  fi
+
+  # Symlinks
+  echo " Scanning symlinks..." >&2
+  local fail_symlink=0
+  while IFS= read -r link; do
+    if target="$(readlink "$link" 2>/dev/null)"; then
+      echo "link: $link -> $target"
+    else
+      echo "❌ readlink failed for: $link" >&2
+      fail_symlink=1
+    fi
+  done < <(query_list_symlinks "$root")
+
+  if (( fail_symlink )); then
+    echo "❌ Failed during symlink scan" >&2
+    return 1
+  else
+    echo "✅ Symlink scan completed successfully" >&2
+  fi
+
+  return 0
+}
+
+# Preconditions (documentation only)
+# pre: ROOT is a dir; IGNORE_FILE exists and is readable
+# inv: realpath(ROOT) stable; sha256(IGNORE_FILE) stable; IO under ROOT
+
+hash_file() {
+  # Preconditions: $1 provided, file readable
+  [[ $# -ge 1 && -r $1 ]] || { printf '%s\n' "hash_file: need readable file" >&2; return 2; }
+
+  set -o pipefail
+  local out
+  if command -v sha256sum >/dev/null; then
+    out="$(sha256sum -- "$1" | awk '{print $1}')" || return $?
+  elif command -v shasum >/dev/null; then
+    out="$(shasum -a 256 -- "$1" | awk '{print $1}')" || return $?
+  else
+    printf '%s\n' "hash_file: no sha256 tool found" >&2
+    return 127
+  fi
+
+  # Postconditions: 64-hex, newline, exit 0
+  [[ $out =~ ^[0-9a-f]{64}$ ]] || { printf '%s\n' "hash_file: bad digest" >&2; return 3; }
+  printf '%s\n' "$out"
+}
+
+observe_begin(){
+  ROOT_REAL_START="$(cd "$ROOT" && pwd -P 2>/dev/null)"
+  IGN_HASH_START="$(hash_file "$IGNORE_FILE" 2>/dev/null || true)"
+
+}
+
+observe_end(){
+
+ 
+  ROOT_REAL_END="$(cd "$ROOT" && pwd -P 2>/dev/null)"
+
+
+
+  IGN_HASH_END="$(hash_file "$IGNORE_FILE" 2>/dev/null || true)"
+
+
+  [[ "$ROOT_REAL_START" != "$ROOT_REAL_END" ]] \
+    && printf 'WARN: ROOT realpath changed: %s -> %s\n' "$ROOT_REAL_START" "$ROOT_REAL_END" >&2
+
+
+ 
+  [[ -n "$IGN_HASH_START" && "$IGN_HASH_START" != "$IGN_HASH_END" ]] \
+    && printf 'WARN: IGNORE_FILE content changed\n' >&2
+
+ # 
+
+
+}
+
+pre(){
+
+  # Root must:
+     #    exist
+     #    be a directory
+     #    never change
+     #    be a single path(?)
+     #    valid
+
+  # Ignore file must:
+     #      exist
+     #      never change
+     #      be a readable file
+
+    #Checks if the root is actually a directory.
+    root_is_valid "$ROOT" 
+
+}
+
+root_is_valid(){ [[ -d ${1-} && -n ${1-} && ! -z ${1-} ]] || die "not a dir: ${1-}"; }
+
+die(){ echo "❌ $*" >&2; exit 90; }
+
+command(){
+
   if [[ -n "${OUT:-}" ]]; then
-    query_io --mode=capture cmd_write_output "$OUT"    # calls generate_structure_snapshot "$ROOT"
+     cmd_write_output "$OUT"    # calls generate_structure_snapshot "$ROOT"
   else
     if (( SNAPSHOT_VALIDATE )); then
-      generate_structure_snapshot "$ROOT" | validate_snapshot_stream
+        generate_structure_snapshot "$ROOT" | validate_snapshot_stream
     else
-        query_io --mode=capture   generate_structure_snapshot "$ROOT"
+            generate_structure_snapshot "$ROOT"
     fi
   fi
 
-  # POST (optional ignore leak check)
-  if (( ASSERT )) && [[ -n "${ASSERT_NO_IGNORE_LEAK:-}" ]] && [[ -f "$ROOT/.structure.ignore" ]]; then
-    pats="$(grep -vE '^\s*(#|$)' "$ROOT/.structure.ignore" || true)"
+}
+
+post(){
+
+  if [[ -f "$IGNORE_FILE" ]]; then
+    pats="$(grep -vE '^\s*(#|$)' "$IGNORE_FILE" || true)"
     if [[ -n "$pats" ]]; then
       out="$(generate_structure_snapshot "$ROOT")"
       if grep -Ff <(printf '%s\n' "$pats") <<<"$out" >/dev/null 2>&1; then
@@ -404,6 +414,35 @@ main() {
       fi
     fi
   fi
+
+}
+
+# Read root 
+#  -> check ignore file exists
+#     ->read ignore file <-> cache ignore file -> read FS -> enforce file.
+
+# ---- main: top-down -----------------------------------------
+main() {
+ 
+    parse_args "$@" 
+    
+    pre
+    
+    observe_begin
+
+    command
+
+    observe_end
+
+  # I don't know why an echo statement will not print after observe_end finishes executing.
+  # It has something to do with the stdin/stdout.    
+    # command
+     #query_io --mode=capture command
+ 
+  # POST (optional ignore leak check)
+
+    #query_io --mode=capture post
+ 
 }
 
 # entrypoint
