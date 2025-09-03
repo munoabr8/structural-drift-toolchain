@@ -66,11 +66,11 @@ file: ./ci/check_predicates.sh
 file: ./ci/check_queries.sh
 file: ./ci/checklib.sh
 file: ./ci/env-shape.baseline
-file: ./ci/gen_ci_hours.sh
 file: ./ci/lib.sh
 file: ./ci/roi/build_inputs.sh
 file: ./ci/roi/compute_roit.py
 file: ./ci/roi/fetch_artifacts.sh
+file: ./ci/roi/gen_ci_hours.sh
 file: ./config/policy.rules.yml
 file: ./config/runtime.cfg
 file: ./config/runtime_flags.sh

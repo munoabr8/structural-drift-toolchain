@@ -1,6 +1,5 @@
 # .github/workflows/ci-hours.yml
 name: CI Hours
- 
 
 on:
   workflow_run:
@@ -10,28 +9,26 @@ on:
     branches: [dev, main]   # run for PRs targeting these branches
   workflow_dispatch: {}     # allow manual runs
 
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - run: sudo apt-get update && sudo apt-get install -y jq gh
- 
+
       - uses: actions/checkout@v4
-        - name: Generate ci-hours.csv
-            env:
-              GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              TOGGL_API_TOKEN: ${{ secrets.TOGGL_API_TOKEN }}
-              HOURS_SOURCE: ${{ vars.HOURS_SOURCE || 'github' }}
-            run: |
-              case "$HOURS_SOURCE" in
-                github) bash ./ci/roi/gen_ci_hours.sh github ;;
-                toggl)  bash ./ci/roi/gen_ci_hours.sh toggl ;;
-                manual) bash ./ci/roi/gen_ci_hours.sh manual ;;
-              *)      echo "Unknown HOURS_SOURCE"; exit 1 ;;
-              esac
- 
- 
+
+      - name: Generate ci-hours.csv
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TOGGL_API_TOKEN: ${{ secrets.TOGGL_API_TOKEN }}
+          HOURS_SOURCE: ${{ vars.HOURS_SOURCE || 'github' }}
+        run: |
+          case "$HOURS_SOURCE" in
+            github) bash ./ci/roi/gen_ci_hours.sh github ;;
+            toggl)  bash ./ci/roi/gen_ci_hours.sh toggl ;;
+            manual) bash ./ci/roi/gen_ci_hours.sh manual ;;
+            *)      echo "Unknown HOURS_SOURCE"; exit 1 ;;
+          esac
 
       - uses: actions/upload-artifact@v4
         with:
