@@ -22,9 +22,6 @@ jobs:
       #   run: |
       #     SINCE=$(date -u -d "14 days ago" +%FT%TZ)
       #     gh api "/repos/${{ github.repository }}/actions/runs?per_page=100&created>=$SINCE" > runs.json
-
-
-
       #     # Sum duration by day in hours
       #     jq -r '
       #       (.workflow_runs // .runs // [])
@@ -34,7 +31,6 @@ jobs:
       #       | (["date","hours"], (.[] | [.date, (.hours//0)]))
       #       | @csv
       #     ' runs.json > ci-hours.csv
-
       - uses: actions/checkout@v4
         - name: Generate ci-hours.csv
             env:
