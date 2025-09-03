@@ -14,6 +14,7 @@ dir: ./system/
 dir: ./system/exit-codes/
 dir: ./system/make/
 dir: ./test/
+dir: ./test/acceptance/
 dir: ./test/bin-tests/
 dir: ./test/e2e/
 dir: ./test/e2e/features/
@@ -35,6 +36,7 @@ dir: ./tools/release/
 dir: ./tools/structure/
 dir: ./util/
 file: ./.github/pull_request_template.md
+file: ./.github/workflows/acceptance.yml
 file: ./.github/workflows/check-purity.yml
 file: ./.github/workflows/churn-pr.yml
 file: ./.github/workflows/maat-coupling.yml
@@ -155,6 +157,12 @@ file: ./system/structure_spec_validator.sh
 file: ./system/structure_validator.rf.sh
 file: ./system/structure_validator.sh
 file: ./system/validate_structure.sh
+file: ./test/acceptance/acceptance.bats
+file: ./test/acceptance/assert_upper.sh
+file: ./test/acceptance/domain.log.jsonl
+file: ./test/acceptance/domain_probe.sh
+file: ./test/acceptance/env_from_probe.sh
+file: ./test/acceptance/run_acceptance.sh
 file: ./test/bin-tests/main-context-check-mock.bats
 file: ./test/bin-tests/main-preflight.bats
 file: ./test/bin-tests/main-structure-validator-mock.bats
