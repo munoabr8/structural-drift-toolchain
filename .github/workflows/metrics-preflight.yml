@@ -1,28 +1,33 @@
 # .github/workflows/metrics-preflight.yml
 name: Metrics Preflight
-on: { workflow_dispatch: {} }
-permissions: { contents: read }
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
 jobs:
   preflight:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Install jq and gh
         run: sudo apt-get update && sudo apt-get install -y jq gh
-      - name: Set 14d window (portable)
-        run: |
-          echo "CUTOFF=$(date -u -d '14 days ago' +%FT%TZ 2>/dev/null || \
-                 python3 - <<'PY'
-import datetime;print((datetime.datetime.utcnow()-datetime.timedelta(days=14)).isoformat(timespec="seconds")+"Z")
-PY
-)" >> $GITHUB_ENV
+
+      - name: Set 14d window (UTC)
+        run: echo "CUTOFF=$(date -u -d '14 days ago' +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
+
       - name: Probe GitHub Actions data
-        env: { GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}, REPO: ${{ github.repository }} }
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
         run: |
+          set -euo pipefail
           pr=$(gh api --paginate "/repos/$REPO/actions/runs?event=pull_request&per_page=100")
           ps=$(gh api --paginate "/repos/$REPO/actions/runs?event=push&per_page=100")
           pr_n=$(jq -r --arg c "$CUTOFF" '.workflow_runs|map(select(.created_at>=$c))|length' <<<"$pr")
           ps_n=$(jq -r --arg c "$CUTOFF" '.workflow_runs|map(select(.created_at>=$c))|length' <<<"$ps")
-          echo "## Metrics preflight" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Window start: $CUTOFF" >> "$GITHUB_STEP_SUMMARY"
-          echo "- PR runs: $pr_n"        >> "$GITHUB_STEP_SUMMARY"
-          echo "- Push runs: $ps_n"      >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "## Metrics preflight"
+            echo "- Window start (UTC): $CUTOFF"
+            echo "- PR runs: $pr_n"
+            echo "- Push runs: $ps_n"
+          } >> "$GITHUB_STEP_SUMMARY"
