@@ -16,21 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: sudo apt-get update && sudo apt-get install -y jq gh
-      # - name: ci-hours.csv (last 14d)
-      #   env:
-      #     GH_TOKEN: ${{ github.token }}
-      #   run: |
-      #     SINCE=$(date -u -d "14 days ago" +%FT%TZ)
-      #     gh api "/repos/${{ github.repository }}/actions/runs?per_page=100&created>=$SINCE" > runs.json
-      #     # Sum duration by day in hours
-      #     jq -r '
-      #       (.workflow_runs // .runs // [])
-      #       | map({d: (.run_started_at // .created_at)[0:10],
-      #              h: ((.run_duration_ms // 0) / 3600000)})
-      #       | group_by(.d) | map({date: .[0].d, hours: (map(.h)|add)})
-      #       | (["date","hours"], (.[] | [.date, (.hours//0)]))
-      #       | @csv
-      #     ' runs.json > ci-hours.csv
+ 
       - uses: actions/checkout@v4
         - name: Generate ci-hours.csv
             env:
