@@ -9,14 +9,12 @@ dir: ./docs/
 dir: ./lib/
 dir: ./lib/policy/
 dir: ./lib/queries/
-<<<<<<< HEAD
-=======
 dir: ./lib/testdata/
->>>>>>> a3cc64d (Fix/snapshot generator ignore (#50))
 dir: ./system/
 dir: ./system/exit-codes/
 dir: ./system/make/
 dir: ./test/
+dir: ./test/acceptance/
 dir: ./test/bin-tests/
 dir: ./test/e2e/
 dir: ./test/e2e/features/
@@ -38,6 +36,7 @@ dir: ./tools/release/
 dir: ./tools/structure/
 dir: ./util/
 file: ./.github/pull_request_template.md
+file: ./.github/workflows/acceptance.yml
 file: ./.github/workflows/check-purity.yml
 file: ./.github/workflows/churn-pr.yml
 file: ./.github/workflows/maat-coupling.yml
@@ -53,20 +52,15 @@ file: ./attn/context-status.rf.sh
 file: ./attn/context-status.sh
 file: ./bin/emit-env
 file: ./bin/main.sh
-<<<<<<< HEAD
-file: ./ci/check_layering.sh
 file: ./ci/check-env-shape.sh
 file: ./ci/check_contracts.sh
 file: ./ci/check_frames.sh
+file: ./ci/check_layering.sh
 file: ./ci/check_predicates.sh
 file: ./ci/check_queries.sh
 file: ./ci/checklib.sh
 file: ./ci/env-shape.baseline
 file: ./ci/lib.sh
-=======
-file: ./ci/check-env-shape.sh
-file: ./ci/env-shape.baseline
->>>>>>> a3cc64d (Fix/snapshot generator ignore (#50))
 file: ./config/policy.rules.yml
 file: ./config/runtime.cfg
 file: ./config/runtime_flags.sh
@@ -92,8 +86,6 @@ file: ./lib/environment.contract.sh
 file: ./lib/evaluate.contract.sh
 file: ./lib/evaluate.frame.sh
 file: ./lib/evaluate.sh
-<<<<<<< HEAD
-file: ./lib/evidence.json
 file: ./lib/file.sh
 file: ./lib/findings.json
 file: ./lib/frame.rf.sh
@@ -101,14 +93,6 @@ file: ./lib/frame.sh
 file: ./lib/load-frame.sh
 file: ./lib/main.sh
 file: ./lib/memory.sh
-file: ./lib/out.json
-=======
-file: ./lib/file.sh
-file: ./lib/findings.json
-file: ./lib/load-frame.sh
-file: ./lib/main.sh
-file: ./lib/memory.sh
->>>>>>> a3cc64d (Fix/snapshot generator ignore (#50))
 file: ./lib/parse.sh
 file: ./lib/pipe.sh
 file: ./lib/policy/enforce_policy_p3.sh
@@ -142,13 +126,9 @@ file: ./lib/primitive_checks.bats
 file: ./lib/purity.sh
 file: ./lib/queries.sh
 file: ./lib/queries/darwin_memory.sh
-<<<<<<< HEAD
 file: ./lib/queries/queries.rules.sh
 file: ./lib/queries/rules.sh
 file: ./lib/queries/session.queries.sh
-=======
-file: ./lib/queries/rules.sh
->>>>>>> a3cc64d (Fix/snapshot generator ignore (#50))
 file: ./lib/queries/sha256.sh
 file: ./lib/rules.json
 file: ./lib/run-table.sh
@@ -179,6 +159,12 @@ file: ./system/structure_spec_validator.sh
 file: ./system/structure_validator.rf.sh
 file: ./system/structure_validator.sh
 file: ./system/validate_structure.sh
+file: ./test/acceptance/acceptance.bats
+file: ./test/acceptance/assert_upper.sh
+file: ./test/acceptance/domain.log.jsonl
+file: ./test/acceptance/domain_probe.sh
+file: ./test/acceptance/env_from_probe.sh
+file: ./test/acceptance/run_acceptance.sh
 file: ./test/bin-tests/main-context-check-mock.bats
 file: ./test/bin-tests/main-preflight.bats
 file: ./test/bin-tests/main-structure-validator-mock.bats
