@@ -66,6 +66,7 @@ file: ./ci/check_predicates.sh
 file: ./ci/check_queries.sh
 file: ./ci/checklib.sh
 file: ./ci/env-shape.baseline
+file: ./ci/gen_ci_hours.sh
 file: ./ci/lib.sh
 file: ./ci/roi/build_inputs.sh
 file: ./ci/roi/compute_roit.py
