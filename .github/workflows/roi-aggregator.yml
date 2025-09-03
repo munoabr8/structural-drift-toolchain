@@ -1,4 +1,3 @@
-# .github/workflows/roi-aggregator.yml
 name: ROI Aggregator (Artifacts Only)
 
 on:
