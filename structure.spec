@@ -40,11 +40,13 @@ file: ./.github/pull_request_template.md
 file: ./.github/workflows/acceptance.yml
 file: ./.github/workflows/check-purity.yml
 file: ./.github/workflows/churn-pr.yml
+file: ./.github/workflows/ci-hours.yml
 file: ./.github/workflows/first-pass.yml
 file: ./.github/workflows/maat-coupling.yml
 file: ./.github/workflows/metrics-preflight.yml
 file: ./.github/workflows/nightly-metrics.yml
 file: ./.github/workflows/roi-aggregator.yml
+file: ./.github/workflows/roi-baseline.yml
 file: ./.github/workflows/scope-guard.actions.yml
 file: ./.github/workflows/scope.yml
 file: ./.github/workflows/shellcheck.yml
