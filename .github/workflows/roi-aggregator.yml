@@ -4,6 +4,7 @@ name: ROI Aggregator (Artifacts Only)
 on:
   schedule: [{ cron: "37 02 * * *" }]  # UTC
   workflow_dispatch:
+ 
   push:
     paths:
       - ".github/workflows/roi-aggregator.yml"
@@ -11,7 +12,7 @@ on:
   workflow_run:
     workflows: ["Workflow Stats","PR First Pass","CI Hours","ROI Baseline"]
     types: [completed]
-
+  
 permissions:
   contents: read
   actions: read
