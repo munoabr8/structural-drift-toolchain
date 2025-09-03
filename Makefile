@@ -81,7 +81,8 @@ execute-main-init:
 execute-main-start:
 	@bash ./bin/main.sh start
 
- 
+test-accept:
+	bash ./test/acceptance/run_acceptance.sh 
 
 .DEFAULT_GOAL := help
 
