@@ -6,7 +6,6 @@ on:
       paths: [".github/workflows/metrics-preflight.yml"]
 permissions:
   contents: read
-
 jobs:
   preflight:
     runs-on: ubuntu-latest
