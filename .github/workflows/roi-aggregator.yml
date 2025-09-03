@@ -1,15 +1,20 @@
 name: ROI Aggregator (Artifacts Only)
 
 on:
-  schedule: [{ cron: "37 02 * * *" }]  # UTC
-  workflow_dispatch:
- 
-  push:
+  schedule:
+    - cron: "37 02 * * *"       # nightly (UTC)
+  workflow_dispatch: {}          # manual runs
+  pull_request:
     paths:
       - ".github/workflows/roi-aggregator.yml"
       - "./ci/roi/**"
+    branches: [dev, main]
   workflow_run:
-    workflows: ["Workflow Stats","PR First Pass","CI Hours","ROI Baseline"]
+    workflows:
+      - "Workflow Stats"
+      - "PR First Pass"
+      - "CI Hours"
+      - "ROI Baseline"
     types: [completed]
   
 permissions:
