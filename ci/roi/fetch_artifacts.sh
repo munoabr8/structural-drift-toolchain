@@ -1,5 +1,6 @@
-# scripts/roi/fetch_artifacts.sh
 #!/usr/bin/env bash
+# ./ci/roi/fetch_artifacts.sh
+
 set -euo pipefail
 
 : "${REPO:?REPO is required}"

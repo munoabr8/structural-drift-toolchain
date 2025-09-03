@@ -1,5 +1,5 @@
-# scripts/roi/build_inputs.sh
 #!/usr/bin/env bash
+# ./ci/roi/build_inputs.sh
 set -euo pipefail
 
 out="${GITHUB_OUTPUT:?GITHUB_OUTPUT not set}"
