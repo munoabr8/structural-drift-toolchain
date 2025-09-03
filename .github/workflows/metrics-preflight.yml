@@ -1,14 +1,17 @@
+# .github/workflows/metrics-preflight.yml
 name: Metrics Preflight
-
 on:
   workflow_dispatch:
-      push:
-      paths: [".github/workflows/metrics-preflight.yml"]
-      pull_request:
-      types: [opened, synchronize, reopened]
-      branches: [dev, main]      
+  push:
+    paths:
+      - .github/workflows/metrics-preflight.yml
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [dev, main]
+
 permissions:
   contents: read
+
 jobs:
   preflight:
     runs-on: ubuntu-latest
