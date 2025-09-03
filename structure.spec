@@ -4,6 +4,7 @@ dir: ./
 dir: ./attn/
 dir: ./bin/
 dir: ./ci/
+dir: ./ci/roi/
 dir: ./config/
 dir: ./docs/
 dir: ./lib/
@@ -43,6 +44,7 @@ file: ./.github/workflows/first-pass.yml
 file: ./.github/workflows/maat-coupling.yml
 file: ./.github/workflows/metrics-preflight.yml
 file: ./.github/workflows/nightly-metrics.yml
+file: ./.github/workflows/roi-aggregator.yml
 file: ./.github/workflows/scope-guard.actions.yml
 file: ./.github/workflows/scope.yml
 file: ./.github/workflows/shellcheck.yml
@@ -63,6 +65,9 @@ file: ./ci/check_queries.sh
 file: ./ci/checklib.sh
 file: ./ci/env-shape.baseline
 file: ./ci/lib.sh
+file: ./ci/roi/build_inputs.sh
+file: ./ci/roi/compute_roit.py
+file: ./ci/roi/fetch_artifacts.sh
 file: ./config/policy.rules.yml
 file: ./config/runtime.cfg
 file: ./config/runtime_flags.sh
