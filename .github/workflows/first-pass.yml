@@ -1,0 +1,41 @@
+# .github/workflows/first-pass.yml
+name: First-Pass PR Success
+on:
+  schedule: [{ cron: "27 02 * * *" }]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  first_pass:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Compute first-pass PR success (14d)
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const cutoff = new Date(Date.now()-14*24*3600*1000).toISOString();
+            const runs = await github.paginate(
+              github.rest.actions.listWorkflowRunsForRepo,
+              { owner: context.repo.owner, repo: context.repo.repo, event: 'pull_request', per_page: 100 }
+            );
+            const recent = runs.filter(r => r.created_at >= cutoff);
+            const firstBySha = new Map();
+            for (const r of recent) {
+              const k = r.head_sha, cur = firstBySha.get(k);
+              if (!cur || r.run_attempt < cur.run_attempt || (r.run_attempt === cur.run_attempt && r.created_at < cur.created_at))
+                firstBySha.set(k, r);
+            }
+            const first = [...firstBySha.values()];
+            const total = first.length;
+            const pass = first.filter(r => ['success','skipped'].includes(r.conclusion)).length;
+            const pct = total ? (100*pass/total).toFixed(1) : '0.0';
+            await core.summary.addHeading('CI Metrics')
+              .addRaw(`First-pass PR success (14d): **${pct}%** (${pass}/${total})`).write();
+            const fs = require('fs');
+            fs.writeFileSync('first_pass.json', JSON.stringify({ window_days:14, total, pass, pct:Number(pct) }, null, 2));
+      - name: Upload first-pass artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-first-pass
+          path: first_pass.json
