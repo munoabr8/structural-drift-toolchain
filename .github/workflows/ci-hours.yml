@@ -1,4 +1,4 @@
-# .github/workflows/ci-hours.yml
+# ./.github/workflows/ci-hours.yml
 name: CI Hours
 
 on:
