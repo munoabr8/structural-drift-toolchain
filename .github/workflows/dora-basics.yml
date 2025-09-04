@@ -1,0 +1,28 @@
+name: DORA Basics
+on:
+  schedule: [{ cron: "13 03 * * *" }]
+  workflow_dispatch: {}
+permissions:
+  contents: read
+jobs:
+  dora:
+    runs-on: ubuntu-latest
+    env:
+      WINDOW_DAYS: 14
+      DEPLOY_WORKFLOW_NAME: Deploy   # set to your deploy workflow's name
+      MAIN_BRANCH: main
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y jq
+      - name: Collect events
+        env:  
+              GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+              WINDOW_DAYS: ${{ vars.WINDOW_DAYS || 14 }}
+              DEPLOY_WORKFLOW_NAME: ${{ vars.DEPLOY_WORKFLOW_NAME || 'Deploy' }}
+              MAIN_BRANCH: ${{ vars.MAIN_BRANCH || 'main' }}
+
+        run: bash ./ci/dora/collect-events.sh events.ndjson
+      - name: Compute DORA
+        run: python3 ./ci/dora/compute-dora.py events.ndjson | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with: { name: dora-events, path: events.ndjson, retention-days: 14 }
