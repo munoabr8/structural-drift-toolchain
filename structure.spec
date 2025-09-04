@@ -68,6 +68,7 @@ file: ./ci/checklib.sh
 file: ./ci/env-shape.baseline
 file: ./ci/lib.sh
 file: ./ci/roi/build_inputs.sh
+file: ./ci/roi/build_inputs2.sh
 file: ./ci/roi/compute_roit.py
 file: ./ci/roi/fetch_artifacts.sh
 file: ./ci/roi/gen_ci_hours.sh
