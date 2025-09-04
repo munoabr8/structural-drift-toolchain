@@ -28,7 +28,6 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y jq gh
 
       - name: Collect events
-        env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash ./ci/dora/collect-events.sh events.ndjson
 
