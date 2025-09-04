@@ -5,36 +5,36 @@ set -euo pipefail
 out="${GITHUB_OUTPUT:?GITHUB_OUTPUT not set}"
 
 # ---------- runs + avg duration (sec) ----------
+
 RUNS=0
 AVG_SEC=0
 
 if [[ -f runs.json ]]; then
-  RUNS=$(jq -r '
-    ((.workflow_runs // .runs // .) // [])
-    | map(select((.status=="completed") or (.conclusion!=null)))
-    | length
-  ' runs.json)
+  read -r RUNS AVG_SEC <<EOF
+$(jq -r '
+  def ms(r):
+    if r.run_duration_ms != null then r.run_duration_ms
+    elif r.duration_ms != null    then r.duration_ms
+    elif (r.duration? != null)    then (r.duration * 1000)
+    elif (r.run_started_at? and ((r.run_completed_at? // r.updated_at?) != null)) then
+      (((r.run_completed_at // r.updated_at) | fromdateiso8601)
+       - (r.run_started_at | fromdateiso8601)) * 1000
+    elif (r.created_at? and r.updated_at?) then
+      ((r.updated_at | fromdateiso8601) - (r.created_at | fromdateiso8601)) * 1000
+    else 0 end;
 
-  AVG_SEC=$(jq -r '
-    ((.workflow_runs // .runs // .) // [])
-    | map(select((.status=="completed") or (.conclusion!=null)))
-    | map(
-        (
-          .run_duration_ms
-          // .duration_ms
-          // (.duration * 1000)
-          // (
-              (
-                ((.updated_at // .run_completed_at) | fromdateiso8601)
-                - ((.run_started_at // .created_at)  | fromdateiso8601)
-              ) * 1000
-            )
-        )
-      )
-    | map(select((type=="number") and (.>0)))
-    | if length==0 then 0 else (add/length/1000) end
-  ' runs.json)
+  (.workflow_runs // .runs // []) as $rs
+  | ($rs | map(select((.status=="completed") or (.conclusion!=null))) | length) as $runs
+  | ($rs
+     | [ .[] | ms(.) | select((type=="number") and (.>0)) ]
+     | if length==0 then 0 else ((add/length)/1000) end) as $avg
+  | [$runs, $avg] | @tsv
+' runs.json)
+EOF
 fi
+
+
+
 
 # Fallback to CSV if JSON missing/zero
 if [[ "$RUNS" = "0" || "$AVG_SEC" = "0" || "$AVG_SEC" = "0.0" ]]; then
