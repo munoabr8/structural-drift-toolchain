@@ -52,38 +52,49 @@ jobs:
 
       - name: Build inputs from artifacts
         id: inputs
-        run: bash ./ci/roi/build_inputs.sh
+        run: bash ci/roi/build_inputs.sh
 
-      # ----- old implementation -----
-      - name: ROI (old)
-        run: |
-          python3 ./ci/roi/compute_roit_old.py | tee -a "$GITHUB_STEP_SUMMARY"
-          mv roit.json roit_old.json
+      # # ----- old implementation -----
+      # - name: ROI (old)
+      #   run: |
+      #     python3 ci/roi/compute_roit_old.py | tee -a "$GITHUB_STEP_SUMMARY"
+      #     mv roit.json roit_old.json
 
       # ----- new implementation -----
-      - name: ROI (new)
+       - name: ROI (new)
+         env:
+          WINDOW_DAYS: ${{ env.WINDOW_DAYS }}
+          RUNS:  ${{ steps.inputs.outputs.runs }}
+          TA:    ${{ steps.inputs.outputs.avg_sec }}
+          PRS:   ${{ steps.inputs.outputs.total }}
+          PA:    ${{ steps.inputs.outputs.pa }}
+          TB:    ${{ steps.inputs.outputs.tb }}
+          PB:    ${{ steps.inputs.outputs.pb }}
+          R:     ${{ steps.inputs.outputs.r }}
+          H:     ${{ steps.inputs.outputs.hours }}
+
         run: |
-          python3 ./ci/roi/compute_roit.py | tee -a "$GITHUB_STEP_SUMMARY"
+          python3 ci/roi/compute_roit.py | tee -a "$GITHUB_STEP_SUMMARY"
           mv roit.json roit_new.json
 
-      - name: Compare old vs new
-        env:
-          SHADOW_TOL: ${{ env.SHADOW_TOL }}
-          MODE: warn                                           # warn|fail
-        run: |
-          python3 ./ci/roi/shadow_diff.py roit_old.json roit_new.json | tee -a "$GITHUB_STEP_SUMMARY"
+      # - name: Compare old vs new
+      #   env:
+      #     SHADOW_TOL: ${{ env.SHADOW_TOL }}
+      #     MODE: warn                                           # warn|fail
+      #   run: |
+      #     python3 roi/shadow_diff.py roit_old.json roit_new.json | tee -a "$GITHUB_STEP_SUMMARY"
 
-      - name: Select version to publish
-        id: choose
-        run: |
-          if [[ "${USE_NEW_ROI}" == "true" ]]; then
-            cp roit_new.json roit.json
-            echo "picked=new" >> "$GITHUB_OUTPUT"
-          else
-            cp roit_old.json roit.json
-            echo "picked=old" >> "$GITHUB_OUTPUT"
-          fi
-          echo "- Selected ROI: ${{ steps.choose.outputs.picked }}" >> "$GITHUB_STEP_SUMMARY"
+      # - name: Select version to publish
+      #   id: choose
+      #   run: |
+      #     if [[ "${USE_NEW_ROI}" == "true" ]]; then
+      #       cp roit_new.json roit.json
+      #       echo "picked=new" >> "$GITHUB_OUTPUT"
+      #     else
+      #       cp roit_old.json roit.json
+      #       echo "picked=old" >> "$GITHUB_OUTPUT"
+      #     fi
+      #     echo "- Selected ROI: ${{ steps.choose.outputs.picked }}" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload ROI artifacts
         uses: actions/upload-artifact@v4
