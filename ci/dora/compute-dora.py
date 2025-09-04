@@ -57,6 +57,11 @@ cfr = (failed / total_dep) if total_dep > 0 else None
 
 daily_df = {str(k): v["succ"] for k, v in sorted(deploy_all_by_day.items())}
 
+# after you build deploy_success_times
+from datetime import timedelta
+ANY_DEPLOY_TIMES = sorted(t for lst in deploy_success_times.values() for t in lst)
+MAX_FALLBACK_HOURS = float(os.environ.get("MAX_FALLBACK_HOURS", "168"))  # 7d
+
 # --------- lead time (PR merge -> first successful deploy of same SHA) ---------
 lead_hours = []
 for e in events:
@@ -66,7 +71,15 @@ for e in events:
     merged_at = parse_ts(e.get("merged_at"))
     if not sha or not merged_at:
         continue
+
+    # 1) exact SHA match
     times = [t for t in deploy_success_times.get(sha, []) if t >= merged_at]
+
+    # 2) fallback: any success deploy after merge (bounded window)
+    if not times:
+        upper = merged_at + timedelta(hours=MAX_FALLBACK_HOURS)
+        times = [t for t in ANY_DEPLOY_TIMES if merged_at <= t <= upper]
+
     if times:
         first = min(times)
         delta_h = (first - merged_at).total_seconds() / 3600.0
@@ -110,3 +123,6 @@ if n >= MIN_LEAD_SAMPLES:
     print(f"- Lead time (p{PCTL} hours): {pval:.2f}")
 else:
     print(f"- Lead time: NA (n={n} < {MIN_LEAD_SAMPLES}); collect more PR→deploy pairs")
+
+
+ 
