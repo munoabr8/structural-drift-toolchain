@@ -85,6 +85,9 @@ toggl)
     --data-urlencode "user_agent=${TOGGL_USER_AGENT_EMAIL}" \
     > toggl_report.json
 
+ 
+jq -r '.data[0]?' toggl_report.json | head -c 400 >&2
+
   # Debug
   echo "SINCE=$SINCE UNTIL=$UNTIL WS=$TOGGL_WORKSPACE_ID" >&2
   jq '{count: (.data|length // 0), total_count: (.total_count // null), error: (.error // null)}' toggl_report.json >&2
@@ -100,7 +103,7 @@ toggl)
     ' toggl_report.json
   } > ci-hours.csv
   ;;
-    
+
 
   manual)
     # Placeholder: copy manual ci-hours.csv from repo
