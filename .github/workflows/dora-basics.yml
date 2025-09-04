@@ -1,22 +1,18 @@
 name: DORA Basics
 
-# on:
-#   schedule: [{ cron: "13 03 * * *" }]
-#   push:
-#     paths: [".github/workflows/dora-basics.yml", "ci/dora/**"]
-#   workflow_dispatch:
-#     inputs:
-#       window_days:          { description: "Days", default: "14" }
-#       deploy_workflow_name: { description: "Deploy workflow", default: "Deploy" }
-#       main_branch:          { description: "Main branch", default: "main" }
 on:
   schedule: [{ cron: "13 03 * * *" }]
   workflow_dispatch: {}
   push:
     paths: [".github/workflows/dora-basics.yml", "ci/dora/**"]
   pull_request:
-    branches: [dev]               # runs for feature → dev PRs
-    types: [opened, synchronize, reopened, closed]  # or just [closed] if you only care on merge
+    branches: [dev]
+    types: [opened, synchronize, reopened, closed]
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
 
 jobs:
   dora:
@@ -27,12 +23,17 @@ jobs:
       MAIN_BRANCH: ${{ inputs.main_branch || vars.MAIN_BRANCH || 'main' }}
     steps:
       - uses: actions/checkout@v4
-        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Install deps
+        run: sudo apt-get update && sudo apt-get install -y jq gh
+
       - name: Collect events
-          env: { GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} }
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash ./ci/dora/collect-events.sh events.ndjson
+
       - name: Compute DORA
         env:
-          PCTL: '90'              # percentile to report
-          MIN_LEAD_SAMPLES: '20'  # required PR→deploy pairs
+          PCTL: '90'
+          MIN_LEAD_SAMPLES: '20'
         run: python3 ./ci/dora/compute-dora.py events.ndjson | tee -a "$GITHUB_STEP_SUMMARY"
