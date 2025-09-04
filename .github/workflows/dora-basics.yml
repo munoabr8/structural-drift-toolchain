@@ -27,6 +27,13 @@ jobs:
       - name: Install deps
         run: sudo apt-get update && sudo apt-get install -y jq gh
 
+      - name: Debug workflows
+        env: 
+          GH_TOKEN: ${{ github.token }}
+        run: |
+            gh api /repos/${GITHUB_REPOSITORY}/actions/workflows | jq -r '.workflows[].name'
+
+
       - name: Collect events
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
