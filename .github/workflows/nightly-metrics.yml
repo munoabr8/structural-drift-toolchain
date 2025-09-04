@@ -1,0 +1,49 @@
+# .github/workflows/nightly-metrics.yml
+name: Nightly Metrics
+ 
+
+on:
+  schedule: [{ cron: "17 02 * * *" }]
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [dev, main]
+
+ 
+permissions:
+  contents: read
+jobs:
+  metrics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set window (14 days, UTC)
+        run: |
+          echo "START_DATE=$(date -u -d '14 days ago' +%F)" >> "$GITHUB_ENV"
+          echo "END_DATE=$(date -u +%F)" >> "$GITHUB_ENV"
+          echo "REPO_NAME=${GITHUB_REPOSITORY#*/}" >> "$GITHUB_ENV"
+      - name: Workflow Metrics (CSV/JSON)
+        uses: kittychiu/workflow-metrics@v0.4.7
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER_NAME: ${{ github.repository_owner }}
+          REPO_NAME: ${{ env.REPO_NAME }}
+          START_DATE: ${{ env.START_DATE }}
+          END_DATE: ${{ env.END_DATE }}
+
+      - name: Wrap runs.json
+        run: |
+          if jq -e '.[0]' runs.json >/dev/null 2>&1; then
+          jq '{"workflow_runs": .}' runs.json > runs_tmp.json
+          mv runs_tmp.json runs.json
+          fi
+
+          
+      - name: Upload metrics artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: workflow-stats
+          path: |
+            workflow-stats.csv
+            runs.json
