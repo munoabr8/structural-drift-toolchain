@@ -32,26 +32,61 @@ while :; do
 done
 
 # --- Workflow runs (deploys) ---
-# Pull recent runs; filter to your deploy workflow + branch
+
+SINCE_ISO="$SINCE"
+
+# Resolve workflow ID by name if provided
+wf_id=""
+if [[ -n "${DEPLOY_WORKFLOW_ID:-}" ]]; then
+  wf_id="$DEPLOY_WORKFLOW_ID"
+elif [[ -n "${DEPLOY_WORKFLOW_NAME:-}" && "${DEPLOY_WORKFLOW_NAME}" != "ANY" ]]; then
+  wf_json="$(gh api /repos/${GITHUB_REPOSITORY}/actions/workflows)"
+  wf_id="$(jq -r --arg n "${DEPLOY_WORKFLOW_NAME}" '.workflows[] | select(.name==$n) | .id' <<<"$wf_json")"
+  if [[ -z "$wf_id" || "$wf_id" == "null" ]]; then
+    echo "Deploy workflow not found: ${DEPLOY_WORKFLOW_NAME}" >&2
+    echo "Available workflows:" >&2
+    jq -r '.workflows[].name' <<<"$wf_json" >&2
+    exit 1
+  fi
+fi
+
 page=1
 while :; do
-  runs="$(gh api -X GET \
-    "/repos/${GITHUB_REPOSITORY}/actions/runs?per_page=100&page=${page}&created>=${SINCE}")"
-  count="$(jq '(.workflow_runs // .runs // []) | length' <<<"$runs")"
-  [[ "$count" -eq 0 ]] && break
-  jq -cr --arg name "$DEPLOY_WORKFLOW_NAME" --arg branch "$MAIN_BRANCH" '
-    (.workflow_runs // .runs // [])
-    | map(select(.name == $name and .head_branch == $branch))
-    | .[]
-    | {
-        type: "deployment",
-        repo: .repository.full_name,
-        sha: .head_sha,
-        status: (.conclusion // "unknown"),
-        finished_at: (.run_completed_at // .updated_at)
-      }' <<<"$runs" >> "$OUT"
+  if [[ -n "$wf_id" ]]; then
+    runs="$(gh api -X GET "/repos/${GITHUB_REPOSITORY}/actions/workflows/${wf_id}/runs?per_page=100&page=${page}&created>=${SINCE_ISO}")"
+  else
+    runs="$(gh api -X GET "/repos/${GITHUB_REPOSITORY}/actions/runs?per_page=100&page=${page}&created>=${SINCE_ISO}")"
+  fi
+
+  all="$(jq -cr '(.workflow_runs // .runs // [])' <<<"$runs")"
+  n_all="$(jq 'length' <<<"$all")"
+  [[ "$n_all" -eq 0 ]] && break
+
+  # Optional filters
+  filtered="$all"
+  if [[ -n "${MAIN_BRANCH:-}" ]]; then
+    filtered="$(jq -cr --arg b "$MAIN_BRANCH" 'map(select(.head_branch==$b))' <<<"$filtered")"
+  fi
+  if [[ -z "$wf_id" && -n "${DEPLOY_WORKFLOW_NAME:-}" && "${DEPLOY_WORKFLOW_NAME}" != "ANY" ]]; then
+    filtered="$(jq -cr --arg n "$DEPLOY_WORKFLOW_NAME" 'map(select(.name==$n))' <<<"$filtered")"
+  fi
+  # Avoid counting this workflow and other obvious non-deploys (extend list if needed)
+  filtered="$(jq -cr 'map(select(.name != "DORA Basics" and .name != "CI Hours"))' <<<"$filtered")"
+
+  echo "batch_total=${n_all} filtered=$(jq 'length' <<<"$filtered")" >&2
+
+  echo "$filtered" | jq -cr '.[] | {
+      type: "deployment",
+      repo: .repository.full_name,
+      sha: .head_sha,
+      status: (.conclusion // "unknown"),
+      finished_at: (.run_completed_at // .updated_at)
+    }' >> "$OUT"
+
   page=$((page+1))
 done
+
+
 
 # --- (Optional) forward events to a sink ---
 if [[ -n "${EVENT_SINK_URL:-}" ]]; then
