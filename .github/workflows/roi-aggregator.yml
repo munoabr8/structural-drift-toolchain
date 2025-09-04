@@ -36,7 +36,10 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y jq gh unzip
 
       - name: Fetch required artifacts
-        env: { REPO: ${{ github.repository }} }
+
+        env: 
+          REPO: ${{ github.repository }}
+ 
         run: bash ./ci/roi/fetch_artifacts.sh
 
       - name: Freeze baseline (optional)
