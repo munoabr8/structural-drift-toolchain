@@ -42,6 +42,7 @@ file: ./.github/workflows/acceptance.yml
 file: ./.github/workflows/check-purity.yml
 file: ./.github/workflows/churn-pr.yml
 file: ./.github/workflows/ci-hours.yml
+file: ./.github/workflows/deploy.yml
 file: ./.github/workflows/dora-basics.yml
 file: ./.github/workflows/first-pass.yml
 file: ./.github/workflows/maat-coupling.yml

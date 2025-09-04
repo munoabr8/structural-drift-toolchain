@@ -18,7 +18,7 @@ jobs:
   dora:
     runs-on: ubuntu-latest
     env:
-      WINDOW_DAYS: ${{ inputs.window_days || vars.WINDOW_DAYS || '14' }}
+      WINDOW_DAYS: ${{ inputs.window_days || vars.WINDOW_DAYS || '60' }}
       DEPLOY_WORKFLOW_NAME: ${{ inputs.deploy_workflow_name || vars.DEPLOY_WORKFLOW_NAME || 'Deploy' }}
       MAIN_BRANCH: ${{ inputs.main_branch || vars.MAIN_BRANCH || 'main' }}
     steps:
@@ -42,5 +42,15 @@ jobs:
       - name: Compute DORA
         env:
           PCTL: '90'
-          MIN_LEAD_SAMPLES: '20'
+          MIN_LEAD_SAMPLES: '5'
         run: python3 ./ci/dora/compute-dora.py events.ndjson | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload leadtime.csv
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dora-leadtime
+          path: leadtime.csv
+          if-no-files-found: ignore
+          retention-days: 14
+
