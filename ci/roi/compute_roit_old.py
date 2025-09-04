@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # ./ci/roi/compute_roit.py
 import os, math
 
