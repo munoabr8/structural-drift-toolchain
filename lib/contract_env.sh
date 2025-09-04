@@ -199,6 +199,39 @@ run_with_env_guard() {
 }
 
 
+help() {
+  cat <<'USAGE'
+Usage: source contract_env.sh [options]
+
+Environment Contract Utilities:
+
+  begin_env_frame             # push current env snapshot
+  check_env_frame             # full check, show drift diff if any
+  check_env_frame_fast        # fast check, compares only SHAPE digest
+  run_with_env_guard CMD ...  # run CMD and check environment drift
+  contracts_env_selfcheck     # self-test of environment guard
+
+Options (before sourcing):
+  ENV_SNAPSHOT_STRATEGY=fixed|args   # choose snapshot strategy (default=fixed)
+  ENV_KEYS_CSV="K1,K2,..."           # override keys with CSV
+  ENV_KEYS_SPC="K1 K2 ..."           # override keys with space-separated list
+  RISK_LOG=path                      # log risky operations (default=risk.log)
+
+Return codes:
+  64   invalid configuration
+  $EC_NO_BEGIN   begin_env_frame missing
+  $EC_ENV_DRIFT  environment drift detected
+
+Examples:
+  source contract_env.sh
+  begin_env_frame
+  # ... make changes ...
+  check_env_frame
+
+  run_with_env_guard my_command --arg foo
+USAGE
+}
+
 
 contracts_env_selfcheck() {
   # cheap check

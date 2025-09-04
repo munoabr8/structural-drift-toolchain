@@ -71,5 +71,38 @@ _cf_dump(){
 }
 
 
+help() {
+  cat <<'USAGE'
+Usage: source contract_fs.sh
+
+File System Contract Utilities:
+
+  begin_fs_frame [DIR]       # begin a frame at DIR (default=$PWD)
+  declare_write PATH         # allow PATH (file or dir) as valid write target
+  check_fs_frame             # check for drift vs. start; returns 200 on drift
+  contracts_reset_fs         # reset frame paths (FS_PATHS=())
+  declare_frame PATH...      # add paths to current frame
+
+Options:
+  FRAME_IGNORE_DIR_RE=regex  # optional ignore regex for snapshot scanning
+
+Return codes:
+  0    no drift
+  200  unexpected file-system drift detected
+  >0   other errors
+
+Examples:
+  source contract_fs.sh
+  begin_fs_frame ./project
+  declare_write ./project/logs
+  # run some command...
+  check_fs_frame
+
+  contracts_reset_fs
+  declare_frame ./src ./lib
+USAGE
+}
+
+
 
  

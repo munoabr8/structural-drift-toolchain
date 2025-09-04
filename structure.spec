@@ -65,6 +65,7 @@ file: ./bin/main.sh
 file: ./ci/check-env-shape.sh
 file: ./ci/check_contracts.sh
 file: ./ci/check_frames.sh
+file: ./ci/check_layering.sh
 file: ./ci/check_predicates.sh
 file: ./ci/check_queries.sh
 file: ./ci/checklib.sh
@@ -144,6 +145,7 @@ file: ./lib/queries.sh
 file: ./lib/queries/darwin_memory.sh
 file: ./lib/queries/queries.rules.sh
 file: ./lib/queries/rules.sh
+file: ./lib/queries/session.queries.sh
 file: ./lib/queries/sha256.sh
 file: ./lib/rules.json
 file: ./lib/run-table.sh
@@ -230,8 +232,11 @@ file: ./tools/scan_duplicate_targets.sh
 file: ./tools/scope-guard.sh
 file: ./tools/setup.sh
 file: ./tools/smoke-scope-guard.sh
+file: ./tools/structure/io-wrap.sh
 file: ./tools/structure/negative.bats
+file: ./tools/structure/refactor-wrapper.sh
 file: ./tools/structure/snapshot.bats
+file: ./tools/structure/structure_snapshot_gen.rf.sh
 file: ./tools/structure/structure_snapshot_gen.sh
 file: ./tools/structure_compare.sh
 file: ./tools/utili-sourcing.sh
