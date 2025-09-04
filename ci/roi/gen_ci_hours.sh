@@ -48,26 +48,27 @@ case "$SOURCE" in
   # Ensure the required variables are available
   : "${TOGGL_API_TOKEN:?TOGGL_API_TOKEN must be set}"
   : "${TOGGL_WORKSPACE_ID:?TOGGL_WORKSPACE_ID must be set}"
-  USER_AGENT="ci-metrics-pipeline@example.com"
+  : "${TOGGL_USER_AGENT_EMAIL:?TOGGL_USER_AGENT_EMAIL must be set}"
+
   SINCE=$(date -u -d "14 days ago" +%F)
   UNTIL=$(date -u +%F)
 
   # Call the Toggl details report. The API token is the username and 'api_token'
   # is the password:contentReference[oaicite:3]{index=3}.
-  curl -s -u "${TOGGL_API_TOKEN}:api_token" \
-    "https://api.track.toggl.com/reports/api/v2/details?workspace_id=${TOGGL_WORKSPACE_ID}&since=${SINCE}&until=${UNTIL}&user_agent=${USER_AGENT}" \
-    > toggl_report.json
+ curl -s -u "${TOGGL_API_TOKEN}:api_token" \
+  "https://api.track.toggl.com/reports/api/v2/details?workspace_id=${TOGGL_WORKSPACE_ID}&since=${SINCE}&until=${UNTIL}&user_agent=${TOGGL_USER_AGENT_EMAIL}" \
+  > toggl_report.json
 
-  # Convert the JSON response into a date,hours CSV.
-  jq -r '
-    .data
-    | group_by(.start[0:10])               # group entries by start date
-    | map({date: .[0].start[0:10],
-           hours: (map(.dur) | add) / 3600000})  # sum durations (ms → hours)
-    | (["date","hours"], (.[] | [.date, (.hours // 0)]))
-    | @csv
-  ' toggl_report.json > ci-hours.csv
-  
+jq -r -f - toggl_report.json > ci-hours.csv <<'JQ'
+.data
+| group_by(.start[0:10])
+| map({
+    date:  .[0].start[0:10],
+    hours: ((map(.dur) | add) / 3600000)
+  })
+| (["date","hours"], (.[] | [.date, (.hours // 0)]))
+| @csv
+JQ
     ;;
 
   manual)
