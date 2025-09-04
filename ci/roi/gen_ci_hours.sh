@@ -59,16 +59,14 @@ case "$SOURCE" in
   "https://api.track.toggl.com/reports/api/v2/details?workspace_id=${TOGGL_WORKSPACE_ID}&since=${SINCE}&until=${UNTIL}&user_agent=${TOGGL_USER_AGENT_EMAIL}" \
   > toggl_report.json
 
-jq -r -f - toggl_report.json > ci-hours.csv <<'JQ'
-.data
+jq -r -f /dev/stdin toggl_report.json > ci-hours.csv <<'JQ'
+(.data // [])
 | group_by(.start[0:10])
-| map({
-    date:  .[0].start[0:10],
-    hours: ((map(.dur) | add) / 3600000)
-  })
+| map({date: (.[0].start[0:10]), hours: ((map(.dur) | add) / 3600000)})
 | (["date","hours"], (.[] | [.date, (.hours // 0)]))
 | @csv
 JQ
+
     ;;
 
   manual)
