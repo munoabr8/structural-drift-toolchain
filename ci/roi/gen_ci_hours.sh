@@ -44,31 +44,6 @@ case "$SOURCE" in
     ' runs.json > ci-hours.csv
     ;;
 
-#   toggl)
-#   # Ensure the required variables are available
-#   : "${TOGGL_API_TOKEN:?TOGGL_API_TOKEN must be set}"
-#   : "${TOGGL_WORKSPACE_ID:?TOGGL_WORKSPACE_ID must be set}"
-#   : "${TOGGL_USER_AGENT_EMAIL:?TOGGL_USER_AGENT_EMAIL must be set}"
-
-#   SINCE=$(date -u -d "14 days ago" +%F)
-#   UNTIL=$(date -u +%F)
-
-#   # Call the Toggl details report. The API token is the username and 'api_token'
-#   # is the password:contentReference[oaicite:3]{index=3}.
-#  curl -s -u "${TOGGL_API_TOKEN}:api_token" \
-#   "https://api.track.toggl.com/reports/api/v2/details?workspace_id=${TOGGL_WORKSPACE_ID}&since=${SINCE}&until=${UNTIL}&user_agent=${TOGGL_USER_AGENT_EMAIL}" \
-#   > toggl_report.json
-
-# jq -r -f /dev/stdin toggl_report.json > ci-hours.csv <<'JQ'
-# (.data // [])
-# | group_by(.start[0:10])
-# | map({date: (.[0].start[0:10]), hours: ((map(.dur) | add) / 3600000)})
-# | (["date","hours"], (.[] | [.date, (.hours // 0)]))
-# | @csv
-# JQ
-
-#     ;;
-
 toggl)
   : "${TOGGL_API_TOKEN:?TOGGL_API_TOKEN must be set}"
   : "${TOGGL_WORKSPACE_ID:?TOGGL_WORKSPACE_ID must be set}"
