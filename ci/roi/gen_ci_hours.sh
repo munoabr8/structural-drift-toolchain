@@ -44,12 +44,41 @@ case "$SOURCE" in
     ' runs.json > ci-hours.csv
     ;;
 
-  toggl)
-    # Placeholder: implement Toggl integration here
-    # Requires TOGGL_API_TOKEN and toggl workspace ID
-    echo "date,hours" > ci-hours.csv
-    echo "# TODO: implement Toggl Reports API logic" >&2
-    ;;
+toggl)
+  : "${TOGGL_API_TOKEN:?TOGGL_API_TOKEN must be set}"
+  : "${TOGGL_WORKSPACE_ID:?TOGGL_WORKSPACE_ID must be set}"
+  : "${TOGGL_USER_AGENT_EMAIL:?TOGGL_USER_AGENT_EMAIL must be set}"
+
+  SINCE=$(date -u -d "14 days ago" +%F)
+  UNTIL=$(date -u +%F)
+
+  curl -s -u "${TOGGL_API_TOKEN}:api_token" --get \
+    'https://api.track.toggl.com/reports/api/v2/details' \
+    --data-urlencode "workspace_id=${TOGGL_WORKSPACE_ID}" \
+    --data-urlencode "since=${SINCE}" \
+    --data-urlencode "until=${UNTIL}" \
+    --data-urlencode "user_agent=${TOGGL_USER_AGENT_EMAIL}" \
+    > toggl_report.json
+
+ 
+jq -r '.data[0]?' toggl_report.json | head -c 400 >&2
+
+  # Debug
+  echo "SINCE=$SINCE UNTIL=$UNTIL WS=$TOGGL_WORKSPACE_ID" >&2
+  jq '{count: (.data|length // 0), total_count: (.total_count // null), error: (.error // null)}' toggl_report.json >&2
+
+  # Build CSV
+  {
+    echo "date,hours"
+    jq -r '
+      (.data // []) 
+      | group_by(.start[0:10])
+      | map({date: (.[0].start[0:10]), hours: ((map(.dur) | add) / 3600000)})
+      | .[] | "\(.date),\(.hours)"
+    ' toggl_report.json
+  } > ci-hours.csv
+  ;;
+
 
   manual)
     # Placeholder: copy manual ci-hours.csv from repo

@@ -4,6 +4,7 @@ dir: ./
 dir: ./attn/
 dir: ./bin/
 dir: ./ci/
+dir: ./ci/dora/
 dir: ./ci/roi/
 dir: ./config/
 dir: ./docs/
@@ -41,6 +42,8 @@ file: ./.github/workflows/acceptance.yml
 file: ./.github/workflows/check-purity.yml
 file: ./.github/workflows/churn-pr.yml
 file: ./.github/workflows/ci-hours.yml
+file: ./.github/workflows/deploy.yml
+file: ./.github/workflows/dora-basics.yml
 file: ./.github/workflows/first-pass.yml
 file: ./.github/workflows/maat-coupling.yml
 file: ./.github/workflows/metrics-preflight.yml
@@ -65,9 +68,12 @@ file: ./ci/check_frames.sh
 file: ./ci/check_predicates.sh
 file: ./ci/check_queries.sh
 file: ./ci/checklib.sh
+file: ./ci/dora/collect-events.sh
+file: ./ci/dora/compute-dora.py
 file: ./ci/env-shape.baseline
 file: ./ci/lib.sh
 file: ./ci/roi/build_inputs.sh
+file: ./ci/roi/build_inputs2.sh
 file: ./ci/roi/compute_roit.py
 file: ./ci/roi/fetch_artifacts.sh
 file: ./ci/roi/gen_ci_hours.sh
