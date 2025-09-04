@@ -22,7 +22,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TOGGL_API_TOKEN: ${{ secrets.TOGGL_API_TOKEN }}
           TOGGL_WORKSPACE_ID: ${{ secrets.TOGGL_WORKSPACE_ID }}
-          USER_AGENT: ${{ secrets.TOGGL_USER_AGENT_EMAIL }}
+          TOGGL_USER_AGENT_EMAIL: ${{ secrets.TOGGL_USER_AGENT_EMAIL }}
           HOURS_SOURCE: ${{ vars.HOURS_SOURCE || 'toggl' }}
 
         run: |
