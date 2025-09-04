@@ -1,0 +1,27 @@
+name: DORA Basics
+
+on:
+  schedule: [{ cron: "13 03 * * *" }]
+  push:
+    paths: [".github/workflows/dora-basics.yml", "ci/dora/**"]
+  workflow_dispatch:
+    inputs:
+      window_days:          { description: "Days", default: "14" }
+      deploy_workflow_name: { description: "Deploy workflow", default: "Deploy" }
+      main_branch:          { description: "Main branch", default: "main" }
+
+jobs:
+  dora:
+    runs-on: ubuntu-latest
+    env:
+      WINDOW_DAYS: ${{ inputs.window_days || vars.WINDOW_DAYS || '14' }}
+      DEPLOY_WORKFLOW_NAME: ${{ inputs.deploy_workflow_name || vars.DEPLOY_WORKFLOW_NAME || 'Deploy' }}
+      MAIN_BRANCH: ${{ inputs.main_branch || vars.MAIN_BRANCH || 'main' }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y jq
+      - name: Collect events
+        env: { GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} }
+        run: bash ./ci/dora/collect-events.sh events.ndjson
+      - name: Compute DORA
+        run: python3 ./ci/dora/compute-dora.py events.ndjson | tee -a "$GITHUB_STEP_SUMMARY"
