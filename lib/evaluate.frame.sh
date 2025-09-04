@@ -8,36 +8,30 @@
 #declare_mutable_env TMPDIR
 #declare_frame ./rules.json
 
-<<<<<<< HEAD
  
- 
-pure_eval8() { ! ls /tmp/eval_* 2>/dev/null; }
-
-
-# clean, pinned jq caller
-jq_sane8() {
-=======
-
  
  # rules_schema_valid [path] [root_type]
 # root_type: object|array (optional). Returns:
 # 0=ok, 1=file missing/empty, 2=invalid JSON, 3=wrong root type
 rules_schema_valid() {
  
-
+  # shellcheck disable=SC2317 
   local f=${1:-${RULES_FILE:-}}
+  # shellcheck disable=SC2317 
   local want=${2:-}  # optional: object|array
  
+ # shellcheck disable=SC2317  # reachable when sourced; ShellCheck can't see call sites
   [[ -n $f && -s $f && -r $f ]] || { echo "rules file missing/empty: $f" >&2; return 1; }
  
   # Validate JSON with Python (stable, no segfaults)
+  # shellcheck disable=SC2317  # reachable at runtime (used when sourced/callback)
   if ! python3 -m json.tool "$f" >/dev/null 2>&1; then
     echo "invalid JSON: $f" >&2
     return 2
   fi
-               echo "----------- --------------------"
 
   # Optional root-type check via Python to avoid jq
+  # shellcheck disable=SC2317  # reachable at runtime (used when sourced/callback)
   if [[ -n $want ]]; then
     python3 - "$f" "$want" >/dev/null <<'PY' || { echo "wrong root type: expected $2 in $1" >&2; exit 3; }
 import json,sys
@@ -48,7 +42,7 @@ ok=(w=="object" and t is dict) or (w=="array" and t is list)
 sys.exit(0 if ok else 3)
 PY
   fi
- 
+ # shellcheck disable=SC2317  # reachable at runtime (used when sourced/callback)
   return 0
 }
 
@@ -58,18 +52,13 @@ pure_eval() { ! ls /tmp/eval_* 2>/dev/null; }
 
 # clean, pinned jq caller
 jq_sane() {
->>>>>>> a3cc64d (Fix/snapshot generator ignore (#50))
+
   env -i PATH="/opt/homebrew/bin:/usr/bin:/bin" LC_ALL=C HOME="$HOME" \
     /opt/homebrew/bin/jq "$@"
 }
 
  
-<<<<<<< HEAD
  
- 
-
-rules_valid_json8() {
-=======
  rules_have_unique_ids() {
   local f=${1:-${RULES_FILE:?missing}}
   jq -e '
@@ -82,10 +71,7 @@ rules_valid_json8() {
 }
 
  
- 
-
-rules_valid_json() {
->>>>>>> a3cc64d (Fix/snapshot generator ignore (#50))
+ rules_valid_json() {
   local f=${1:-$rules}
 
    [[ -f $f && -r $f && -s $f ]] || { echo "rules file missing/empty: $f" >&2; return 1; }
@@ -97,12 +83,7 @@ rules_valid_json() {
 
 }
 
-<<<<<<< HEAD
- 
 
-# findings_valid_json: fail fast if $findings missing/empty/invalid JSON
-findings_valid_json8() {
-=======
 # rules_schema_valid [path] [root_type]
 # root_type optional: object|array
 rules_schema_valid() {
@@ -142,7 +123,7 @@ PY
 
 # findings_valid_json: fail fast if $findings missing/empty/invalid JSON
 findings_valid_json() {
->>>>>>> a3cc64d (Fix/snapshot generator ignore (#50))
+ 
   [[ -n "${findings-}" ]] || { echo "findings path not set" >&2; return 1; }
   [[ -s "$findings"     ]] || { echo "findings missing/empty: $findings" >&2; return 1; }
   jq -e 'type' "$findings" >/dev/null 2>&1 || { echo "findings not valid JSON: $findings" >&2; return 1; }
@@ -154,19 +135,19 @@ findings_valid_json() {
  
 
  
-# evaluate_rules [file|uses $RULES_FILE]
-# Accepts: [ {...}, ... ]  or  {"rules":[...]}
-<<<<<<< HEAD
-evaluate_rules8() {
-=======
+ 
 evaluate_rules() {
->>>>>>> a3cc64d (Fix/snapshot generator ignore (#50))
+ 
 
    local src=${1:-${RULES_FILE:?RULES_FILE missing}}
   local jqbin=${JQ_BIN:-jq}
   local yqbin=${YQ_BIN:-yq}
 
-  [[ $src != "-" ]] && [[ -r $src && -s $src ]] || { echo "missing/empty: $src" >&2; return 1; }
+ 
+if [[ $src != "-" && ( ! -r $src || ! -s $src ) ]]; then
+  echo "missing/empty: $src" >&2
+  return 66
+fi
 
   # Convert YAML → JSON when needed, then apply one jq pass
   if [[ $src =~ \.ya?ml$ ]]; then
@@ -181,9 +162,7 @@ evaluate_rules() {
   fi
 }
  
-<<<<<<< HEAD
  
-=======
 rules_declare_reads_writes() {
   local f=${1:-${RULES_FILE:?RULES_FILE missing}}
   [[ -r $f && -s $f ]] || { echo "rules file missing/empty: $f" >&2; return 2; }
@@ -199,12 +178,11 @@ rules_declare_reads_writes() {
 }
 
 
->>>>>>> a3cc64d (Fix/snapshot generator ignore (#50))
+ 
 
 
 
-
-COMMAND=(./evaluate.sh)
+#COMMAND=(./evaluate.sh)
 
 # declare_frame_env PATH LANG LC_ALL TZ
 # declare_mutable_env TMPDIR
