@@ -24,4 +24,7 @@ jobs:
         env: { GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} }
         run: bash ./ci/dora/collect-events.sh events.ndjson
       - name: Compute DORA
+        env:
+        PCTL: '90'              # percentile to report
+        MIN_LEAD_SAMPLES: '20'  # required PR→deploy pairs
         run: python3 ./ci/dora/compute-dora.py events.ndjson | tee -a "$GITHUB_STEP_SUMMARY"
