@@ -48,7 +48,7 @@ file: ./.github/workflows/first-pass.yml
 file: ./.github/workflows/maat-coupling.yml
 file: ./.github/workflows/metrics-preflight.yml
 file: ./.github/workflows/nightly-metrics.yml
-file: ./.github/workflows/roi-aggregator.yml
+file: ./.github/workflows/roi-aggregator-shadow.yml
 file: ./.github/workflows/roi-baseline.yml
 file: ./.github/workflows/scope-guard.actions.yml
 file: ./.github/workflows/scope.yml
@@ -76,8 +76,10 @@ file: ./ci/lib.sh
 file: ./ci/roi/build_inputs.sh
 file: ./ci/roi/build_inputs2.sh
 file: ./ci/roi/compute_roit.py
+file: ./ci/roi/compute_roit_old.py
 file: ./ci/roi/fetch_artifacts.sh
 file: ./ci/roi/gen_ci_hours.sh
+file: ./ci/roi/shadow_diff.py
 file: ./config/policy.rules.yml
 file: ./config/runtime.cfg
 file: ./config/runtime_flags.sh
