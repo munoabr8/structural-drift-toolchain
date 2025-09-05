@@ -1,65 +1,96 @@
-name: ROI Aggregator (Artifacts Only)
+# .github/workflows/roi-aggregator.yml
+name: ROI Aggregator
 
 on:
-  schedule:
-    - cron: "37 02 * * *"       # nightly (UTC)
-  workflow_dispatch: {}          # manual runs
-  pull_request:
+  schedule: [{ cron: "37 02 * * *" }]
+  workflow_dispatch: {}
+  push:
     paths:
-      - ".github/workflows/roi-aggregator.yml"
-      - "./ci/roi/**"
-    branches: [dev, main]
-  workflow_run:
-    workflows:
-      - "Workflow Stats"
-      - "PR First Pass"
-      - "CI Hours"
-      - "ROI Baseline"
-    types: [completed]
-  
+      - .github/workflows/roi-aggregator.yml
+      - ci/roi/**
+
 permissions:
   contents: read
   actions: read
+  pull-requests: read
+  checks: read
 
 concurrency:
-  group: roi-aggregator
+  group: roi-aggregator-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+
+
 
 jobs:
   roi:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
     env:
       WINDOW_DAYS: "14"
+      HEAD_BRANCH: "main"
+      RUN_NAME_REGEX: "(?i)(accept|purity|structure|shellcheck)"
+      DURATION_METRIC: "p50"
+      ROIT_MODE: human
       GH_TOKEN: ${{ github.token }}
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install tools
+      - name: Install deps
+        run: sudo apt-get update && sudo apt-get install -y jq gh unzip
+      - name: Ensure jq (conditional)
         run: |
-          set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install -y jq gh unzip
+          command -v jq >/dev/null || (sudo apt-get update && sudo apt-get install -y jq)
+
+
+      - name: GH sanity
+        run: |
+          set -euxo pipefail
+          echo "REPO=$GITHUB_REPOSITORY"
+          gh --version
+          gh api -i "repos/$GITHUB_REPOSITORY" -q .full_name
 
       - name: Fetch required artifacts
         env:
           REPO: ${{ github.repository }}
-        run: bash ./ci/roi/fetch_artifacts.sh
+        run: bash ci/roi/fetch_artifacts.sh
 
       - name: Build inputs from artifacts
         id: inputs
-        run: bash ./ci/roi/build_inputs.sh
+        run: bash ci/roi/build_inputs.sh
 
-      - name: Compute ROIT
-        run: python3 ./ci/roi/compute_roit.py | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Show config
+        run: |
+          echo "HEAD_BRANCH=$HEAD_BRANCH"
+          echo "RUN_NAME_REGEX=$RUN_NAME_REGEX"
+          echo "DURATION_METRIC=$DURATION_METRIC"
+
+ 
+      - name: First pass (PR-level, 14d--)
+        id: firstpass
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUIRED_WORKFLOWS: ${{ vars.FIRST_PASS_WORKFLOWS }}
+        run: |
+          chmod +x ci/roi/first-pass.sh
+          GH_DEBUG=api bash ci/roi/first-pass.sh "${GITHUB_REPOSITORY}"
+
+      - name: Compute ROIT (human)
         env:
           WINDOW_DAYS: ${{ env.WINDOW_DAYS }}
           RUNS:  ${{ steps.inputs.outputs.runs }}
           TA:    ${{ steps.inputs.outputs.avg_sec }}
-          PRS:   ${{ steps.inputs.outputs.total }}
-          PA:    ${{ steps.inputs.outputs.pa }}
+          PRS:   ${{ steps.firstpass.outputs.prs }}
+          PA:    ${{ steps.firstpass.outputs.pa }}
           TB:    ${{ steps.inputs.outputs.tb }}
           PB:    ${{ steps.inputs.outputs.pb }}
           R:     ${{ steps.inputs.outputs.r }}
           H:     ${{ steps.inputs.outputs.hours }}
+          ROIT_MODE: ${{ env.ROIT_MODE }}
+        run: python3 ci/roi/compute_roit.py | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload ROI
+        uses: actions/upload-artifact@v4
+        with:
+          name: roi-outputs
+          path: roit.json
+          retention-days: 30

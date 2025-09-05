@@ -37,6 +37,7 @@ dir: ./tools/providers/terraform/
 dir: ./tools/release/
 dir: ./tools/structure/
 dir: ./util/
+file: ./.github/CODEOWNERS
 file: ./.github/pull_request_template.md
 file: ./.github/workflows/acceptance.yml
 file: ./.github/workflows/check-purity.yml
@@ -76,8 +77,17 @@ file: ./ci/lib.sh
 file: ./ci/roi/build_inputs.sh
 file: ./ci/roi/build_inputs2.sh
 file: ./ci/roi/compute_roit.py
+file: ./ci/roi/compute_roit_old.py
+file: ./ci/roi/emit_ci_hours.py
+file: ./ci/roi/extract_run_stats.sh
 file: ./ci/roi/fetch_artifacts.sh
+file: ./ci/roi/first-pass.sh
 file: ./ci/roi/gen_ci_hours.sh
+file: ./ci/roi/parsers.py
+file: ./ci/roi/run_stats.jq
+file: ./ci/roi/shadow_diff.py
+file: ./ci/test_github_timings.py
+file: ./ci/test_toggl_parser.py
 file: ./config/policy.rules.yml
 file: ./config/runtime.cfg
 file: ./config/runtime_flags.sh
