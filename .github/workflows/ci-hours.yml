@@ -1,4 +1,4 @@
-# ./.github/workflows/ci-hours.yml
+# .github/workflows/ci-hours.yml
 name: CI Hours
 
 on:
@@ -6,35 +6,93 @@ on:
     workflows: ["Workflow Stats", "PR First Pass", "ROI Baseline"]
     types: [completed]
   pull_request:
-    branches: [dev, main]   # run for PRs targeting these branches
-  workflow_dispatch: {}     # allow manual runs
+    branches: [dev, main]
+  workflow_dispatch:
+    inputs:
+      hours_source:
+        description: Source of hours
+        type: choice
+        options: [toggl, github, manual]
+        default: toggl
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: ci-hours
+  cancel-in-progress: true
 
 jobs:
-  build:
+  ci-hours:
     runs-on: ubuntu-latest
-    steps:
-      - run: sudo apt-get update && sudo apt-get install -y jq gh
+    env:
+      # precedence: manual input > repo/org var > default
+      HOURS_SOURCE: ${{ github.event.inputs.hours_source || vars.HOURS_SOURCE || 'toggl' }}
+      HOURS_ENGINE: ${{ vars.HOURS_ENGINE || 'python' }} # python|jq
+      TZ: America/New_York
 
+    steps:
       - uses: actions/checkout@v4
 
-      - name: Generate ci-hours.csv
+      # Python always available (parser path). Safe no-op for jq engine.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      # Only install gh/jq when using the GitHub source
+      - name: Install deps for GitHub source
+        if: ${{ env.HOURS_SOURCE == 'github' }}
+        run: sudo apt-get update && sudo apt-get install -y jq gh
+
+      # Validate Toggl secrets only when needed
+      - name: Validate Toggl secrets
+        if: ${{ env.HOURS_SOURCE == 'toggl' }}
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TOGGL_API_TOKEN: ${{ secrets.TOGGL_API_TOKEN }}
           TOGGL_WORKSPACE_ID: ${{ secrets.TOGGL_WORKSPACE_ID }}
           TOGGL_USER_AGENT_EMAIL: ${{ secrets.TOGGL_USER_AGENT_EMAIL }}
-          HOURS_SOURCE: ${{ vars.HOURS_SOURCE || 'toggl' }}
-
         run: |
-          case "$HOURS_SOURCE" in
-            github) bash ./ci/roi/gen_ci_hours.sh github ;;
-            toggl)  bash ./ci/roi/gen_ci_hours.sh toggl ;;
-            manual) bash ./ci/roi/gen_ci_hours.sh manual ;;
-            *)      echo "Unknown HOURS_SOURCE"; exit 1 ;;
-          esac
+          : "${TOGGL_API_TOKEN:?Missing TOGGL_API_TOKEN}"
+          : "${TOGGL_WORKSPACE_ID:?Missing TOGGL_WORKSPACE_ID}"
+          : "${TOGGL_USER_AGENT_EMAIL:?Missing TOGGL_USER_AGENT_EMAIL}"
+
+      # Generate via GitHub
+      - name: Generate ci-hours.csv (GitHub)
+        if: ${{ env.HOURS_SOURCE == 'github' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HOURS_ENGINE: ${{ env.HOURS_ENGINE }}
+        run: |
+          bash /ci/roi/gen_ci_hours.sh github
+          mkdir -p ci/roi/out
+          cp ci-hours.csv ci/roi/out/ci-hours.csv
+
+      # Generate via Toggl
+      - name: Generate ci-hours.csv (Toggl)
+        if: ${{ env.HOURS_SOURCE == 'toggl' }}
+        env:
+          TOGGL_API_TOKEN: ${{ secrets.TOGGL_API_TOKEN }}
+          TOGGL_WORKSPACE_ID: ${{ secrets.TOGGL_WORKSPACE_ID }}
+          TOGGL_USER_AGENT_EMAIL: ${{ secrets.TOGGL_USER_AGENT_EMAIL }}
+          HOURS_ENGINE: ${{ env.HOURS_ENGINE }}
+        run: |
+          bash ./ci/roi/gen_ci_hours.sh toggl
+          mkdir -p ci/roi/out
+          cp ci-hours.csv ci/roi/out/ci-hours.csv
+
+      # Generate via Manual file
+      - name: Generate ci-hours.csv (Manual)
+        if: ${{ env.HOURS_SOURCE == 'manual' }}
+        env:
+          HOURS_ENGINE: ${{ env.HOURS_ENGINE }}
+        run: |
+          bash /ci/roi/gen_ci_hours.sh manual
+          mkdir -p ci/roi/out
+          cp ci-hours.csv ci/roi/out/ci-hours.csv
 
       - uses: actions/upload-artifact@v4
         with:
           name: ci-hours
-          path: ci-hours.csv
-          retention-days: 30
+          path: ci/roi/out/ci-hours.csv
+          if-no-files-found: error
