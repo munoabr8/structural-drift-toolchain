@@ -61,8 +61,8 @@ jobs:
       #     mv roit.json roit_old.json
 
       # ----- new implementation -----
-       - name: ROI (new)
-         env:
+      - name: ROI (new)
+        env:
           WINDOW_DAYS: ${{ env.WINDOW_DAYS }}
           RUNS:  ${{ steps.inputs.outputs.runs }}
           TA:    ${{ steps.inputs.outputs.avg_sec }}
