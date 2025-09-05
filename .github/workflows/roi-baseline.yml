@@ -1,23 +1,61 @@
-# .github/workflows/roi-baseline.yml  (or keep baseline.json in repo)
-name: ROI Baseline Publisher
- 
+# .github/workflows/roi-baseline.yml
+name: ROI Baseline
+
 on:
-  schedule: [{cron: "17 02 * * *"}]
-  workflow_dispatch:
-  pull_request:
-    types: [opened, synchronize, reopened]
-    branches: [dev, main]
- 
+  schedule: [{ cron: "17 02 * * *" }]
+  workflow_dispatch: {}
+  push:
+    paths: [".github/workflows/roi-baseline.yml", "ci/roi/**", "scripts/roi/**"]
+
+permissions:
+  contents: read
+  actions: read
+
 jobs:
   publish:
     runs-on: ubuntu-latest
+    env:
+      BASELINE_DAYS: "90"                              # window to compute TB
+      HEAD_BRANCH: "main"                              # must match aggregator
+      RUN_NAME_REGEX: "(?i)(accept|purity|structure|shellcheck)"
+      DURATION_METRIC: "p50"                           # mean|p50; must match aggregator
+      PB_DEFAULT: ${{ vars.BASELINE_P_BEFORE || '0.70' }}
+      R_DEFAULT:  ${{ vars.BASELINE_REWORK_H_PER_FAIL || '2.0' }}
     steps:
-      - run: |
-          mkdir out
-          cat > out/baseline.json <<'JSON'
-          { "avg_duration_before_sec": 20,
-            "p_before": 0.70,
-            "rework_hours_per_failed_pr": 2.0 }
-          JSON
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y jq gh
+      
+      - name: Fetch runs (paginated)
+        env: 
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          SINCE=$(date -u -d "${BASELINE_DAYS} days ago" +%FT%TZ)
+          : > runs.jsonl
+          page=1
+          while :; do
+            resp="$(gh api "/repos/${GITHUB_REPOSITORY}/actions/runs?per_page=100&page=${page}&created>=${SINCE}")"
+            n="$(jq '(.workflow_runs // .runs // []) | length' <<<"$resp")"
+            [[ "$n" -eq 0 ]] && break
+            jq -c '(.workflow_runs // .runs // [])[]' <<<"$resp" >> runs.jsonl
+            page=$((page+1))
+          done
+          jq -s '{workflow_runs: .}' runs.jsonl > runs.json
+
+      - name: Extract run stats (filtered)
+        id: rs
+        run: bash ./ci/roi/extract_run_stats.sh runs.json   # emits runs/mean_sec/p50_sec/avg_sec
+
+      - name: Build baseline.json
+        run: |
+          TB='${{ steps.rs.outputs.avg_sec }}'     # respects DURATION_METRIC
+          PB='${{ env.PB_DEFAULT }}'
+          R='${{ env.R_DEFAULT }}'
+          jq -n --argjson tb "$TB" --argjson pb "$PB" --argjson r "$R" \
+            '{avg_duration_before_sec:$tb, p_before:$pb, rework_hours_per_failed_pr:$r}' > baseline.json
+          cat baseline.json
+
       - uses: actions/upload-artifact@v4
-        with: { name: roi-baseline, path: out/baseline.json, retention-days: 180 }
+        with:
+          name: roi-baseline
+          path: baseline.json
+          retention-days: 180

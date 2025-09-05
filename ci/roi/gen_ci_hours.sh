@@ -12,84 +12,81 @@
 
 set -euo pipefail
 
+#!/usr/bin/env bash
+set -euo pipefail
+
 SOURCE=${1:-github}
+ENGINE=${HOURS_ENGINE:-python}  # python|jq
 
 case "$SOURCE" in
   github)
-    # Ensure GH_TOKEN and GITHUB_REPOSITORY are available
     : "${GH_TOKEN:?GH_TOKEN environment variable must be set}"
     : "${GITHUB_REPOSITORY:?GITHUB_REPOSITORY environment variable must be set}"
-
-    # Define the time window (last 14 days)
     SINCE=$(date -u -d "14 days ago" +%FT%TZ)
+    gh api "/repos/${GITHUB_REPOSITORY}/actions/runs?per_page=100&created>=$SINCE" > runs.json
 
-    # Fetch workflow runs from GitHub Actions API via gh cli
-    # Note: we request 100 runs; adjust per_page if your repo has more daily runs
-    gh api \
-      "/repos/${GITHUB_REPOSITORY}/actions/runs?per_page=100&created>=$SINCE" \
-      > runs.json
-
-    # Convert the runs into a date,hours CSV
-    # Each run’s duration is in milliseconds; convert to hours
-    jq -r '
-      (.workflow_runs // .runs // [])
-      | map({
-          d: (.run_started_at // .created_at)[0:10],
-          h: ((.run_duration_ms // 0) / 3600000)
-        })
-      | group_by(.d)
-      | map({date: .[0].d, hours: (map(.h) | add)})
-      | (["date","hours"], (.[] | [.date, (.hours // 0)]))
-      | @csv
-    ' runs.json > ci-hours.csv
+    if [[ "$ENGINE" == python ]]; then
+      python3 roi/emit_ci_hours.py github runs.json > ci-hours.csv
+    else
+      # jq fallback (schema: workflow_runs[*].{run_started_at,updated_at,run_duration_ms?})
+      jq -r '
+        (.workflow_runs // [])
+        | map({
+            d: (.run_started_at // .created_at)[0:10],
+            h: (
+              if has("run_duration_ms") and .run_duration_ms != null
+              then (.run_duration_ms/3600000)
+              else ((.updated_at|fromdateiso8601) - (.run_started_at|fromdateiso8601))/3600
+              end
+            )
+          })
+        | group_by(.d)
+        | map({date: .[0].d, hours: (map(.h)|add)})
+        | (["date","hours"], (.[]|[.date, (.hours // 0)]))
+        | @csv
+      ' runs.json > ci-hours.csv
+    fi
     ;;
 
-toggl)
-  : "${TOGGL_API_TOKEN:?TOGGL_API_TOKEN must be set}"
-  : "${TOGGL_WORKSPACE_ID:?TOGGL_WORKSPACE_ID must be set}"
-  : "${TOGGL_USER_AGENT_EMAIL:?TOGGL_USER_AGENT_EMAIL must be set}"
+  toggl)
+    : "${TOGGL_API_TOKEN:?TOGGL_API_TOKEN must be set}"
+    : "${TOGGL_WORKSPACE_ID:?TOGGL_WORKSPACE_ID must be set}"
+    : "${TOGGL_USER_AGENT_EMAIL:?TOGGL_USER_AGENT_EMAIL must be set}"
 
-  SINCE=$(date -u -d "14 days ago" +%F)
-  UNTIL=$(date -u +%F)
+    SINCE=$(date -u -d "14 days ago" +%F)
+    UNTIL=$(date -u +%F)
 
-  curl -s -u "${TOGGL_API_TOKEN}:api_token" --get \
-    'https://api.track.toggl.com/reports/api/v2/details' \
-    --data-urlencode "workspace_id=${TOGGL_WORKSPACE_ID}" \
-    --data-urlencode "since=${SINCE}" \
-    --data-urlencode "until=${UNTIL}" \
-    --data-urlencode "user_agent=${TOGGL_USER_AGENT_EMAIL}" \
-    > toggl_report.json
+    curl -s -u "${TOGGL_API_TOKEN}:api_token" --get \
+      'https://api.track.toggl.com/reports/api/v2/details' \
+      --data-urlencode "workspace_id=${TOGGL_WORKSPACE_ID}" \
+      --data-urlencode "since=${SINCE}" \
+      --data-urlencode "until=${UNTIL}" \
+      --data-urlencode "user_agent=${TOGGL_USER_AGENT_EMAIL}" \
+      > toggl_report.json
 
- 
-jq -r '.data[0]?' toggl_report.json | head -c 400 >&2
-
-  # Debug
-  echo "SINCE=$SINCE UNTIL=$UNTIL WS=$TOGGL_WORKSPACE_ID" >&2
-  jq '{count: (.data|length // 0), total_count: (.total_count // null), error: (.error // null)}' toggl_report.json >&2
-
-  # Build CSV
-  {
-    echo "date,hours"
-    jq -r '
-      (.data // []) 
-      | group_by(.start[0:10])
-      | map({date: (.[0].start[0:10]), hours: ((map(.dur) | add) / 3600000)})
-      | .[] | "\(.date),\(.hours)"
-    ' toggl_report.json
-  } > ci-hours.csv
-  ;;
-
+    if [[ "$ENGINE" == python ]]; then
+      python3 ci/roi/emit_ci_hours.py toggl toggl_report.json > ci-hours.csv
+    else
+      # Debug
+      jq -r '.data[0]? // {}' toggl_report.json | head -c 400 >&2
+      jq '{count: (.data|length // 0), total_count: (.total_count // null), error: (.error // null)}' toggl_report.json >&2
+      # jq fallback
+      {
+        echo "date,hours"
+        jq -r '
+          (.data // [])
+          | group_by(.start[0:10])
+          | map({date: (.[0].start[0:10]), hours: ((map(.dur) | add) / 3600000)})
+          | .[] | "\(.date),\(.hours)"
+        ' toggl_report.json
+      } > ci-hours.csv
+    fi
+    ;;
 
   manual)
-    # Placeholder: copy manual ci-hours.csv from repo
-    # Adjust the path as needed; e.g. configs/roi/ci-hours.csv
     MANUAL_PATH="configs/roi/ci-hours.csv"
-    if [[ -f "$MANUAL_PATH" ]]; then
-      cp "$MANUAL_PATH" ci-hours.csv
-    else
-      echo "Manual CI hours file not found at $MANUAL_PATH" >&2
-      exit 1
-    fi
+    [[ -f "$MANUAL_PATH" ]] || { echo "Manual CI hours file not found at $MANUAL_PATH" >&2; exit 1; }
+    cp "$MANUAL_PATH" ci-hours.csv
     ;;
 
   *)
@@ -98,4 +95,3 @@ jq -r '.data[0]?' toggl_report.json | head -c 400 >&2
     exit 1
     ;;
 esac
-

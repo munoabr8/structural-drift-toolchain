@@ -118,11 +118,23 @@ def fmt(x):
     return str(x)
 
 # ---------- report ----------
+MIN_DEPLOYS = 5  # attempts threshold to show CFR; keep small or move to env
 print("## DORA (basics)")
-print(f"- Deployments (window): {deployments}")
-print(f"- Daily deployment frequency: {json.dumps(daily_df)}")
-print(f"- Change failure rate: {fmt(cfr)}")
 
+# Successful deploy count in window
+print(f"- Deployments (window): {deployments}")
+
+# Change Failure Rate (guarded)
+total_attempts = deployments + failed
+if total_attempts >= MIN_DEPLOYS:
+    cfr_val = failed / total_attempts
+    cfr_str = f"{cfr_val:.2f}"
+else:
+    cfr_str = f"NA (deploys<{MIN_DEPLOYS})"
+print(f"- Daily deployment frequency: {json.dumps(daily_df)}")
+print(f"- Change failure rate: {cfr_str}")
+
+# Lead time (guarded; uses env-driven MIN_LEAD_SAMPLES and PCTL defined above)
 n = len(lead_hours)
 if n >= MIN_LEAD_SAMPLES:
     med = statistics.median(lead_hours)
@@ -132,6 +144,7 @@ if n >= MIN_LEAD_SAMPLES:
     print(f"- Lead time (p{PCTL} hours): {pval:.2f}")
 else:
     print(f"- Lead time: NA (n={n} < {MIN_LEAD_SAMPLES}); collect more PR→deploy pairs")
+
 
 # ---------- optional detail export ----------
 if details:
