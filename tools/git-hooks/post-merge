@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+[[ "${DISABLE_HOOKS:-0}" == "1" ]] && exit 0
+cecho "post-merge: $(date -Is) branch=$(git rev-parse --abbrev-ref HEAD) ff=$1" >> .git/risk-log

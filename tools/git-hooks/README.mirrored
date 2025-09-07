@@ -1,0 +1,3 @@
+Never edit .git/hooks/ directly.
+Hooks are versioned in tools/git-hooks/.
+This repo prefers: git config --local core.hooksPath tools/git-hooks

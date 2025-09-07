@@ -1,0 +1,80 @@
+name: Risk Update
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch/PR/SHA (e.g., main, dev, refs/pull/123/merge, a1b2c3)"
+        required: false
+        default: "dev"
+      dry_run:
+        description: "Print plan only"
+        type: boolean
+        default: false
+
+  push:
+    paths:
+      - ".github/workflows/risk-update.yml"
+      - "./bin/risk_pull.sh"
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Choose ref
+        id: pick
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && -n "${{ inputs.ref }}" ]]; then
+            echo "ref=${{ inputs.ref }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "ref=${{ github.ref }}" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ steps.pick.outputs.ref }}
+
+      - name: Install hooks (idempotent)
+        run: bash tools/install-hooks.sh
+
+      - name: Prepare
+        id: prep
+        shell: bash
+        run: ci/git/prepare-ref.sh "${{ steps.pick.outputs.ref }}" "$GITHUB_OUTPUT"
+
+
+      - name: Run risk update
+        if: ${{ inputs.dry_run == false }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x ./bin/risk_pull.sh || true
+          DISABLE_HOOKS=0 bash ./bin/risk_pull.sh
+
+      - name: Dry-run plan
+        if: ${{ inputs.dry_run }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          . ci/git/lib-risk.sh || { echo "lib missing; cannot dry-run"; exit 66; }
+          risk_plan_print
+
+
+      - name: Show risk log
+        run: |
+          if [[ -f "$RISK_LOG_PATH" ]]; then
+            echo "--- risk log ---"
+            cat "$RISK_LOG_PATH"
+          else
+            echo "no risk log produced"
+          fi
+
+      - name: Upload risk log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: risk-log
+          path: ${{ env.RISK_LOG_PATH }}
+          if-no-files-found: warn          
+
+

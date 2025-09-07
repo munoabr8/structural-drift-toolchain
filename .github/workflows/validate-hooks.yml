@@ -1,0 +1,22 @@
+# .github/workflows/validate-hooks.yml
+name: Validate hooks config
+on: [push, pull_request]
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install hooks
+        run: bash tools/install-hooks.sh
+
+      - name: Activate hooks
+        run: |
+          git config --local core.hooksPath tools/git-hooks
+          chmod +x tools/git-hooks/* || true
+
+      - name: Ensure core.hooksPath points to tools/git-hooks
+        run: |
+          set -euo pipefail
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --local core.hooksPath | grep -qx "tools/git-hooks" || {
+            echo "core.hooksPath not set to tools/git-hooks"; exit 1; }

@@ -5,6 +5,7 @@ dir: ./attn/
 dir: ./bin/
 dir: ./ci/
 dir: ./ci/dora/
+dir: ./ci/git/
 dir: ./ci/roi/
 dir: ./config/
 dir: ./docs/
@@ -49,12 +50,14 @@ file: ./.github/workflows/first-pass.yml
 file: ./.github/workflows/maat-coupling.yml
 file: ./.github/workflows/metrics-preflight.yml
 file: ./.github/workflows/nightly-metrics.yml
+file: ./.github/workflows/risk-update.yml
 file: ./.github/workflows/roi-aggregator.yml
 file: ./.github/workflows/roi-baseline.yml
 file: ./.github/workflows/scope-guard.actions.yml
 file: ./.github/workflows/scope.yml
 file: ./.github/workflows/shellcheck.yml
 file: ./.github/workflows/structural_drift.yml
+file: ./.github/workflows/validate-hooks.yml
 file: ./.gitignore
 file: ./.structure.ignore
 file: ./Makefile
@@ -63,6 +66,7 @@ file: ./attn/context-status.rf.sh
 file: ./attn/context-status.sh
 file: ./bin/emit-env
 file: ./bin/main.sh
+file: ./bin/risk_pull.sh
 file: ./ci/check-env-shape.sh
 file: ./ci/check_contracts.sh
 file: ./ci/check_frames.sh
@@ -73,6 +77,8 @@ file: ./ci/checklib.sh
 file: ./ci/dora/collect-events.sh
 file: ./ci/dora/compute-dora.py
 file: ./ci/env-shape.baseline
+file: ./ci/git/lib-risk.sh
+file: ./ci/git/prepare-ref.sh
 file: ./ci/lib.sh
 file: ./ci/roi/build_inputs.sh
 file: ./ci/roi/build_inputs2.sh
@@ -229,9 +235,13 @@ file: ./tools/exit_codes_enforcer.sh
 file: ./tools/fix_missing_specs.sh
 file: ./tools/gen_readme.sh
 file: ./tools/gen_readme_updates.sh
+file: ./tools/git-hooks/README.mirrored
+file: ./tools/git-hooks/post-merge
+file: ./tools/git-hooks/post-rewrite
 file: ./tools/git-hooks/pre-commit
-file: ./tools/git-hooks/pre-merge-check.sh
+file: ./tools/git-hooks/pre-merge-commit
 file: ./tools/git-hooks/pre-push
+file: ./tools/git-hooks/pre-rebase
 file: ./tools/install-hooks.sh
 file: ./tools/pre-git-switch.sh
 file: ./tools/providers/.gitkeep

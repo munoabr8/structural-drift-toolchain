@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+. ./ci/git/lib-risk.sh
+[[ "${DISABLE_HOOKS:-0}" == "1" ]] && exit 0
+
+# Print context and enforce cleanliness before rebase begins
+risk_plan_print
+risk_guard_require_clean

@@ -58,6 +58,17 @@ jobs:
         id: inputs
         run: bash ci/roi/build_inputs.sh
 
+      - name: Echo outputs to logs
+        run: |
+          echo "runs=${{ steps.build.outputs.runs }}"
+          echo "avg_sec=${{ steps.build.outputs.avg_sec }}"
+          echo "total=${{ steps.build.outputs.total }}"
+          echo "pa=${{ steps.build.outputs.pa }}"
+          echo "tb=${{ steps.build.outputs.tb }}"
+          echo "pb=${{ steps.build.outputs.pb }}"
+          echo "r=${{ steps.build.outputs.r }}"
+          echo "hours=${{ steps.build.outputs.hours }}"
+
       - name: Show config
         run: |
           echo "HEAD_BRANCH=$HEAD_BRANCH"

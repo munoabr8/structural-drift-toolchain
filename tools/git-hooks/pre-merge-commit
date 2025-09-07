@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# ./tools/pre-merge-check.sh
+# ./tools/git-hooks/pre-merge-commit
 
 # Get current branch
 CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
