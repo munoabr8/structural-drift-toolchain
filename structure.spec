@@ -218,11 +218,13 @@ file: ./test/e2e/structure_validator/test-raw-path.bats
 file: ./test/e2e/structure_validator/test-valid-structure.bats
 file: ./test/e2e/structure_validator_queries.bats
 file: ./test/e2e/testing-setup.sh
+file: ./test/integration/hooks_install.bats
+file: ./test/integration/runner_hooks_test.sh
 file: ./test/integration/test_pre_git_switch.bats
 file: ./test/lib-tests/test_logger.bats
 file: ./test/lib-tests/test_logger_min.sh
 file: ./test/lib-tests/test_source_safe.bats
-file: ./test/toggle_module_contracts.bats
+file: ./test/toggle_module_contracts.sh
 file: ./test/unit/test_coverage_summary_real.bats
 file: ./tools/bats-guard.sh
 file: ./tools/check_git_trash.sh

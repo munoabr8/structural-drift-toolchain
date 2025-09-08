@@ -55,7 +55,7 @@ jobs:
         run: bash ci/roi/fetch_artifacts.sh
 
       - name: Build inputs from artifacts
-        id: inputs
+        id: build
         run: bash ci/roi/build_inputs.sh
 
       - name: Echo outputs to logs
@@ -88,14 +88,14 @@ jobs:
       - name: Compute ROIT (human)
         env:
           WINDOW_DAYS: ${{ env.WINDOW_DAYS }}
-          RUNS:  ${{ steps.inputs.outputs.runs }}
-          TA:    ${{ steps.inputs.outputs.avg_sec }}
+          RUNS:  ${{ steps.build.outputs.runs }}
+          TA:    ${{ steps.build.outputs.avg_sec }}
           PRS:   ${{ steps.firstpass.outputs.prs }}
           PA:    ${{ steps.firstpass.outputs.pa }}
-          TB:    ${{ steps.inputs.outputs.tb }}
-          PB:    ${{ steps.inputs.outputs.pb }}
-          R:     ${{ steps.inputs.outputs.r }}
-          H:     ${{ steps.inputs.outputs.hours }}
+          TB:    ${{ steps.build.outputs.tb }}
+          PB:    ${{ steps.build.outputs.pb }}
+          R:     ${{ steps.build.outputs.r }}
+          H:     ${{ steps.build.outputs.hours }}
           ROIT_MODE: ${{ env.ROIT_MODE }}
         run: python3 ci/roi/compute_roit.py | tee -a "$GITHUB_STEP_SUMMARY"
 
