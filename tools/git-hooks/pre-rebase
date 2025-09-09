@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
+
 set -euo pipefail
-. ./ci/git/lib-risk.sh
 [[ "${DISABLE_HOOKS:-0}" == "1" ]] && exit 0
+
+ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+# try repo lib first, then a copy next to hooks
+for L in "$ROOT/ci/git/lib-risk.sh" "$(dirname "$0")/lib-risk.sh"; do
+  if [ -f "$L" ]; then . "$L"; FOUND=1; break; fi
+done
+[ "${FOUND:-0}" -eq 1 ] || echo "warn: lib-risk.sh missing; continuing without it"
 
 # Print context and enforce cleanliness before rebase begins
 risk_plan_print
