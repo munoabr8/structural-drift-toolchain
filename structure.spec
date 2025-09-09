@@ -50,6 +50,7 @@ file: ./.github/workflows/first-pass.yml
 file: ./.github/workflows/maat-coupling.yml
 file: ./.github/workflows/metrics-preflight.yml
 file: ./.github/workflows/nightly-metrics.yml
+file: ./.github/workflows/pr-up-to-date.yml
 file: ./.github/workflows/risk-update.yml
 file: ./.github/workflows/roi-aggregator.yml
 file: ./.github/workflows/roi-baseline.yml
