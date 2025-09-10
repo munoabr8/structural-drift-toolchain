@@ -1,0 +1,8 @@
+ignore_roots: [docs, test, util, tools, lib, attn , bin , system]
+
+ignore_sub_roots: []
+
+
+add_roots: [ ]
+
+add_sub_roots: [ ]

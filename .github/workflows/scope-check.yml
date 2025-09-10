@@ -1,0 +1,29 @@
+# .github/workflows/scope-check.yml
+name: Scope check
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  scope:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      # yq for overrides parsing (skip if your script doesn't need it)
+      - name: Install yq
+        run: |
+          YQ_VER=v4.44.3
+          sudo wget -qO /usr/local/bin/yq \
+            "https://github.com/mikefarah/yq/releases/download/${YQ_VER}/yq_linux_amd64"
+          sudo chmod +x /usr/local/bin/yq
+          yq --version
+
+      - name: Generate and verify scope.yaml
+        run: |
+          chmod +x bin/gen-scope
+          bin/gen-scope --check
+ 
