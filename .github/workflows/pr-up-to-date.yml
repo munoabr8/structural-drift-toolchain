@@ -1,0 +1,21 @@
+# .github/workflows/pr-up-to-date.yml
+name: Up-to-date with main
+on:
+  pull_request:
+    branches: [main]   # PRs targeting main
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Verify head vs main
+        run: |
+          git fetch origin main --prune
+          # Count commits PR head is behind main
+          read behind ahead < <(git rev-list --left-right --count origin/main...HEAD)
+          if [ "$behind" -gt 0 ]; then
+            echo "Behind main by $behind. Rebase/merge main, then push."
+            exit 1
+          fi
+          echo "OK: up-to-date with main."

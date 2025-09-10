@@ -24,6 +24,6 @@ jobs:
 
       - name: Generate and verify scope.yaml
         run: |
-          chmod +x bin/gen-scope
-          bin/gen-scope --check
+          chmod +x bin/gen-scope.sh
+          bin/gen-scope.sh --check
  
