@@ -1,4 +1,4 @@
-
+#Action
 name: Scope Guard
 
 on:
@@ -54,5 +54,7 @@ jobs:
             BASE_COMMIT="$(git merge-base HEAD origin/main)"
           fi
           echo "Using base $BASE_COMMIT"
+
           BASE="$BASE_COMMIT" bash tools/scope-guard.sh          
 
+ 
