@@ -1,21 +1,41 @@
-# .github/workflows/pr-up-to-date.yml
-name: Up-to-date with main
+# .github/workflows/pr-sync.yml
+name: PR sync checks
 on:
   pull_request:
-    branches: [main]   # PRs targeting main
+    branches: [main]
+
 jobs:
-  gate:
+  # 1. Check if branch is up-to-date with main
+  up_to_date:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
-      - name: Verify head vs main
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Verify branch head vs main
         run: |
-          git fetch origin main --prune
-          # Count commits PR head is behind main
-          read behind ahead < <(git rev-list --left-right --count origin/main...HEAD)
+          git fetch origin ${{ github.base_ref }} --prune
+          read behind ahead < <(git rev-list --left-right --count origin/${{ github.base_ref }}...HEAD)
+          echo "behind=$behind ahead=$ahead"
           if [ "$behind" -gt 0 ]; then
-            echo "Behind main by $behind. Rebase/merge main, then push."
+            echo "❌ Branch is behind ${{ github.base_ref }} by $behind commit(s). Rebase/merge then push."
             exit 1
           fi
-          echo "OK: up-to-date with main."
+          echo "✅ Branch is up-to-date with ${{ github.base_ref }}"
+
+  # 2. Check merge ref (branch + main together)
+  merge_ref:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # default behavior: checkout the merge commit GitHub creates
+          fetch-depth: 0
+
+      - name: Verify merge build state
+        run: |
+          git log --oneline -n 3
+          echo "✅ Checked out merge ref of PR into ${{ github.base_ref }}"
+          # insert build/tests here
