@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Minimal example: propose new RULES_FILE and prepend a tool dir to PATH
+new_rules=${RULES_FILE:-./rules.json}
+new_path="/opt/tool/bin:${PATH}"
+
+# Emit shell-safe KEY=VALUE lines (no side effects)
+printf 'RULES_FILE=%q\n' "$new_rules"
+printf 'PATH=%q\n'       "$new_path"
+
+ 

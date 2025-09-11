@@ -1,0 +1,9 @@
+# templates/scope.tmpl.yaml
+precedence: [ignore, in_scope, out_of_scope]
+
+in_scope:
+{{IN_SCOPE}}
+
+layer_map:
+  filesystem:
+{{FS_LIST}}

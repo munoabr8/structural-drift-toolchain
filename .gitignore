@@ -7,15 +7,24 @@
 *.swp
 *.bak
 *~
- 
+
+foo.sh
+
+foo.sh
 
 # Temporary dirs created by tests
 /tmp/
+/.evidence
 
 # Python Virtual Environments
 .venv/
 env/
-__pycache__/
+
+/__pycache__
+
+*/__pycache__
+
+.pytest_cache
 *.pyc
 
 # Bash runtime/debug artifacts

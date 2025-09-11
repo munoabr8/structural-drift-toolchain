@@ -1,0 +1,62 @@
+# .github/workflows/churn-pr.yml
+name: churn-pr
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+concurrency:
+  group: churn-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  churn:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: mikefarah/yq@v4.44.3
+
+      - name: Run churn
+        id: run
+        run: |
+          set -Eeuo pipefail
+          out="$(tools/churn-by-layer.sh 30.days)"
+          echo "$out"
+          {
+            echo "table<<EOF"
+            echo "$out"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Comment churn
+        uses: actions/github-script@v7
+        env:
+          TABLE: ${{ steps.run.outputs.table }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const number = context.issue?.number ?? context.payload.pull_request?.number;
+            if (!number) { core.setFailed('No PR number found'); return; }
+            const body = [
+              '### Churn (30 days)',
+              '```',
+              process.env.TABLE || '(no data)',
+              '```'
+            ].join('\n');
+            const res = await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: number,
+              body
+            });
+            core.info(`comment id: ${res.data.id}`);

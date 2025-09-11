@@ -1,5 +1,19 @@
 tmp
 
+.txt
+
 .missing_module_specs
 
 .DS_Store
+
+
+/.evidence
+
+/.ci-seed
+
+/foo.sh
+
+.pytest_cache
+
+
+/__pycache__
