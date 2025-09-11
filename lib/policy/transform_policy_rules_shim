@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# lib/policy/transform_policy_rules_shim
+(
+  set -euo pipefail
+  REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
+ 
+SRC="${POLICY_SRC_TRANSFORM:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)/policy/transform_policy_p2.sh}"
+
+# guard against self-source
+[[ -e "$SRC" && ! "$SRC" -ef "$0" ]] || { echo "bad SRC (self-source): $SRC" >&2; exit 66; }
+
+#echo "SRC=$SRC" 
+
+  cd "$REPO_ROOT" || exit 70
+  set +e +u; set +o pipefail
+  # shellcheck source=/dev/null
+  source "$SRC" || exit 127
+  set -euo pipefail
+  transform_policy_rules2   # reads stdin, writes stdout
+)

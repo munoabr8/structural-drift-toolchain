@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "rules": [
+    { "id": "r001-init",     "reads": ["./"],           "writes": [] },
+    { "id": "r002-evaluate", "reads": ["./data","./lib"], "writes": ["out.json"] }
+  ]
+}
+

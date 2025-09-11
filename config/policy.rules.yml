@@ -51,8 +51,7 @@
 # 	--> {Parse file entirely then notify about violations | Parse up to first invariant or variant violation}
 # --> Compare expecations against (current?) {snapshot|specification} file. 
 # --> Trigger notification
-
-  
+ 
 
 - type: invariant
   path: bin
@@ -95,12 +94,11 @@
   action: error 
 
 - type: invariant
-  path: README.md
+  path: README.generated.md
   condition: must_exist
   action: error 
 
  
-
 - type: invariant
   path: bin/main.sh 
   condition: must_exist
@@ -109,8 +107,9 @@
 - type: invariant
   path: main.sh 
   condition: must_exist
-  action: error 
+  action: error   
 
+ 
 - type: invariant
   path: tools/structure/structure_snapshot_gen.sh  
   condition: must_exist
@@ -128,9 +127,5 @@
   action: error 
   
  
-- type: volatile
-  path: ^logs/
-  condition: ignore
-  action: ignore
-
+ 
 
