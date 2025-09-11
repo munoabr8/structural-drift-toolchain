@@ -1,0 +1,20 @@
+# ci/failure_taxonomy.yml
+rules:
+  - code: MERGE_DRIFT
+    match: ["Behind .* by [0-9]+ commit", "up-to-date gate failed"]
+  - code: LINT
+    match: ["black --check", "eslint", "shellcheck"]
+  # - code: GEN_TRACKED
+  #   match: ["structure.spec must not be tracked"]
+  - code: ENV_MISMATCH
+    match: ["python 3\\.", "node: not found", "jdk"]
+  - code: SECRET_PERM
+    match: ["Resource not accessible by integration", "Permission denied", "secrets."]
+  - code: CACHE_MISS
+    match: ["Cache not found", "Restoring cache failed"]
+  - code: FLAKE
+    match: ["ECONNRESET", "timed out", "rate limit", "5xx from"]
+  - code: EXT_INTEGRATION
+    match: ["API.*failed", "service unavailable"]
+  - code: TEST_LOGIC
+    match: ["AssertionError", "expected .* got .*"]

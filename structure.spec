@@ -51,6 +51,7 @@ file: ./.github/workflows/first-pass.yml
 file: ./.github/workflows/maat-coupling.yml
 file: ./.github/workflows/metrics-preflight.yml
 file: ./.github/workflows/nightly-metrics.yml
+file: ./.github/workflows/pr-tests.yml
 file: ./.github/workflows/pr-up-to-date.yml
 file: ./.github/workflows/risk-update.yml
 file: ./.github/workflows/roi-aggregator.yml
@@ -80,9 +81,12 @@ file: ./ci/checklib.sh
 file: ./ci/dora/collect-events.sh
 file: ./ci/dora/compute-dora.py
 file: ./ci/env-shape.baseline
+file: ./ci/failure_taxonomy.yml
 file: ./ci/git/lib-risk.sh
 file: ./ci/git/prepare-ref.sh
 file: ./ci/lib.sh
+file: ./ci/repro.sh
+file: ./ci/result.json
 file: ./ci/roi/build_inputs.sh
 file: ./ci/roi/build_inputs2.sh
 file: ./ci/roi/compute_roit.py
@@ -95,8 +99,12 @@ file: ./ci/roi/gen_ci_hours.sh
 file: ./ci/roi/parsers.py
 file: ./ci/roi/run_stats.jq
 file: ./ci/roi/shadow_diff.py
+file: ./ci/run.sh
+file: ./ci/test.sh
 file: ./ci/test_github_timings.py
 file: ./ci/test_toggl_parser.py
+file: ./ci/triage.json
+file: ./ci/triage.sh
 file: ./config/policy.rules.yml
 file: ./config/runtime.cfg
 file: ./config/runtime_flags.sh
