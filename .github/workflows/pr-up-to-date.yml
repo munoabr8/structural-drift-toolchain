@@ -3,7 +3,12 @@ name: PR sync checks
 on:
   pull_request:
     branches: [main]
-
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+  push:
+    branches: [main]
 jobs:
   # 1. Check if branch is up-to-date with main
   up_to_date:
