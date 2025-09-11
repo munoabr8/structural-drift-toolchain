@@ -1,0 +1,50 @@
+in_scope:
+  - structure.spec
+  - bin/**
+  - lib/**
+  - util/**
+
+precedence: [ignore, in_scope, out_of_scope]   # documented rule
+
+layer_map:
+  filesystem:
+    - structure.spec
+    - bin/**
+    - lib/**
+    - util/**
+  config:
+    - config/**
+    - system/**
+  ci:
+    - .github/**
+  scripts:
+    - scripts/**
+    - tools/**
+    - attn/**
+  modules:
+    - modules/**
+  system_test:
+    - system-test/**
+  docs:
+    - README.md
+    - README.generated.md
+    - docs/**
+    - CHANGELOG.md
+    - RELEASE_NOTES-*.md
+    - Focus.txt
+  build:
+    - Makefile
+    - Makefile.legacy
+    - toggle.sh
+    - smoke.sh
+  root_cmds:
+    - ./
+  tests:
+    - test/**
+    - "*.bats"
+  meta:
+    - ".gitignore"
+    - ".pre-commit-config.yaml"
+    - "LICENSE"
+  misc:
+    - "**"

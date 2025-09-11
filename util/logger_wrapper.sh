@@ -1,4 +1,4 @@
- #!/usr/bin/env bash
+#!/usr/bin/env bash
  #logger_wrapper.sh
 
 log_success() { log_json "SUCCESS" "$1" "" "0" return 0; }
