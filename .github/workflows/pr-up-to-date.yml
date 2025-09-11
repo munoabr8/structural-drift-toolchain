@@ -1,12 +1,8 @@
-# .github/workflows/pr-sync.yml
 name: PR sync checks
-
 on:
   pull_request:
     branches: [main]
-  workflow_dispatch: {}
-  push:
-    branches: [main]
+
 jobs:
   up_to_date:
     runs-on: ubuntu-latest
@@ -16,14 +12,15 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Verify branch head vs base
+      - name: Verify head vs base
         shell: bash
+        env:
+          BASE_REF: ${{ github.base_ref }}  # PR base only
         run: |
           set -euo pipefail
-          base="${{ github.base_ref }}"
+          base="${BASE_REF}"
           git fetch --no-tags --prune origin "+refs/heads/$base:refs/remotes/origin/$base"
 
-          # Up-to-date if base is ancestor of HEAD
           if git merge-base --is-ancestor "origin/$base" HEAD; then
             read left right < <(git rev-list --left-right --count "origin/$base...HEAD")
             echo "behind=$left ahead=$right"
