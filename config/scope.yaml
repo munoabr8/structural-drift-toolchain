@@ -1,0 +1,8 @@
+roots:
+  - ci
+  - config
+
+sub_roots:
+  - ci/dora
+  - ci/git
+  - ci/roi

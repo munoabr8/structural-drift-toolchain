@@ -1,0 +1,49 @@
+name: PR sync checks
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  up_to_date:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Verify head vs base
+        shell: bash
+        env:
+          BASE_REF: ${{ github.base_ref }}  # PR base only
+        run: |
+          set -euo pipefail
+          base="${BASE_REF}"
+          git fetch --no-tags --prune origin "+refs/heads/$base:refs/remotes/origin/$base"
+
+          if git merge-base --is-ancestor "origin/$base" HEAD; then
+            read left right < <(git rev-list --left-right --count "origin/$base...HEAD")
+            echo "behind=$left ahead=$right"
+            echo "✅ Up-to-date with $base"
+          else
+            read left right < <(git rev-list --left-right --count "origin/$base...HEAD")
+            echo "behind=$left ahead=$right"
+            echo "❌ Behind $base by $left commit(s). Rebase/merge then push."
+            exit 1
+          fi
+
+
+  # 2. Check merge ref (branch + main together)
+  merge_ref:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # default behavior: checkout the merge commit GitHub creates
+          fetch-depth: 0
+
+      - name: Verify merge build state
+        run: |
+          git log --oneline -n 3
+          echo "✅ Checked out merge ref of PR into ${{ github.base_ref }}"
+          # insert build/tests here

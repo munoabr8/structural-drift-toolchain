@@ -16,6 +16,7 @@ dir: ./lib/testdata/
 dir: ./system/
 dir: ./system/exit-codes/
 dir: ./system/make/
+dir: ./templates/
 dir: ./test/
 dir: ./test/acceptance/
 dir: ./test/bin-tests/
@@ -50,10 +51,11 @@ file: ./.github/workflows/first-pass.yml
 file: ./.github/workflows/maat-coupling.yml
 file: ./.github/workflows/metrics-preflight.yml
 file: ./.github/workflows/nightly-metrics.yml
+file: ./.github/workflows/pr-up-to-date.yml
 file: ./.github/workflows/risk-update.yml
 file: ./.github/workflows/roi-aggregator.yml
 file: ./.github/workflows/roi-baseline.yml
-file: ./.github/workflows/scope-guard.actions.yml
+file: ./.github/workflows/scope-check.yml
 file: ./.github/workflows/scope.yml
 file: ./.github/workflows/shellcheck.yml
 file: ./.github/workflows/structural_drift.yml
@@ -65,6 +67,7 @@ file: ./README.generated.md
 file: ./attn/context-status.rf.sh
 file: ./attn/context-status.sh
 file: ./bin/emit-env
+file: ./bin/gen-scope.sh
 file: ./bin/main.sh
 file: ./bin/risk_pull.sh
 file: ./ci/check-env-shape.sh
@@ -97,6 +100,8 @@ file: ./ci/test_toggl_parser.py
 file: ./config/policy.rules.yml
 file: ./config/runtime.cfg
 file: ./config/runtime_flags.sh
+file: ./config/scope.overrides.yaml
+file: ./config/scope.yaml
 file: ./darwin_memory.sh
 file: ./docs/CHANGELOG.md
 file: ./docs/README.generated.md
@@ -252,6 +257,7 @@ file: ./tools/providers/terraform/.gitkeep
 file: ./tools/release/gen_notes.sh
 file: ./tools/scan_duplicate_targets.sh
 file: ./tools/scope-guard.sh
+file: ./tools/scope2.yaml
 file: ./tools/setup.sh
 file: ./tools/smoke-scope-guard.sh
 file: ./tools/structure/io-wrap.sh
