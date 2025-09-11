@@ -8,7 +8,6 @@ on:
   push:
     branches: [main]
 jobs:
-  # 1. Check if branch is up-to-date with main
   up_to_date:
     runs-on: ubuntu-latest
     steps:
@@ -17,16 +16,25 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Verify branch head vs main
+      - name: Verify branch head vs base
+        shell: bash
         run: |
-          git fetch origin ${{ github.base_ref }} --prune
-          read behind ahead < <(git rev-list --left-right --count origin/${{ github.base_ref }}...HEAD)
-          echo "behind=$behind ahead=$ahead"
-          if [ "$behind" -gt 0 ]; then
-            echo "❌ Branch is behind ${{ github.base_ref }} by $behind commit(s). Rebase/merge then push."
+          set -euo pipefail
+          base="${{ github.base_ref }}"
+          git fetch --no-tags --prune origin "+refs/heads/$base:refs/remotes/origin/$base"
+
+          # Up-to-date if base is ancestor of HEAD
+          if git merge-base --is-ancestor "origin/$base" HEAD; then
+            read left right < <(git rev-list --left-right --count "origin/$base...HEAD")
+            echo "behind=$left ahead=$right"
+            echo "✅ Up-to-date with $base"
+          else
+            read left right < <(git rev-list --left-right --count "origin/$base...HEAD")
+            echo "behind=$left ahead=$right"
+            echo "❌ Behind $base by $left commit(s). Rebase/merge then push."
             exit 1
           fi
-          echo "✅ Branch is up-to-date with ${{ github.base_ref }}"
+
 
   # 2. Check merge ref (branch + main together)
   merge_ref:
