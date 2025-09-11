@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 
+
+# shellcheck shell=bash
+# shellcheck source-path=SCRIPTDIR
+# shellcheck source=./contracts_dsl.sh
  
 . "./contracts_dsl.sh"
+
+# shellcheck source=./evaluate.frame.sh
 
 . "./evaluate.frame.sh"
 
@@ -9,9 +15,10 @@
 
 # Always read files via -- "$VAR"
 
-
+# shellcheck disable=SC2317
 RULES_FILE="${rules:-${RULES_FILE:-./rules.json}}"
 
+# shellcheck disable=SC2317 
 findings_normalized()        { "$JQ_BIN" -e 'type=="array"' -- "$FINDINGS_FILE" >/dev/null; }
  
 
@@ -54,9 +61,13 @@ no_time_or_random_sources() {
 }
 
  
+rules_schema_valid() {
+  local file=$1
+  [[ -n $file ]] || { echo "missing schema file" >&2; return 66; }
+  "$JQ_BIN" -e 'type=="array"' -- "$file" >/dev/null
+}
 
-
-
+rules_valid_json() { "$JQ_BIN" -e . -- "$1" >/dev/null; }
 # --- deterministic env guard (read-only) ---
 nondet_env_clean() { [[ "${TZ-UTC}" == "UTC" && "${LANG-}" =~ ^(C|C\.UTF-8|en_US\.UTF-8)$ ]]; }
 
@@ -78,11 +89,10 @@ pre() {
  
   [[ -f "$rules" ]]                       || { echo "missing rules"; exit 103; }
  
-	rules_valid_json					|| exit 202
- 
- 
-  rules_schema_valid  # require array root
+rules_valid_json "$RULES_FILE" || exit 202
 
+
+rules_schema_valid "$RULES_SCHEMA_FILE" || exit 203
  
   rules_have_unique_ids "$rules"                  || exit 100
  

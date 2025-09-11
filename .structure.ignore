@@ -10,5 +10,11 @@ tmp
 /.evidence
 
 
+/.ci-seed
+
 /foo.sh
 
+.pytest_cache
+
+
+/__pycache__

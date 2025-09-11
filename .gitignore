@@ -19,7 +19,12 @@ foo.sh
 # Python Virtual Environments
 .venv/
 env/
-__pycache__/
+
+/__pycache__
+
+*/__pycache__
+
+.pytest_cache
 *.pyc
 
 # Bash runtime/debug artifacts

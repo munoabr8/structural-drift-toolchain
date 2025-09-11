@@ -4,6 +4,10 @@ in_scope:
   - lib/**
   - util/**
 
+ 
+=======
+precedence: [ignore, in_scope, out_of_scope]   # documented rule
+ 
 
 layer_map:
   filesystem:

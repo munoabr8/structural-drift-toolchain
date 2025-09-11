@@ -1,0 +1,33 @@
+# .github/workflows/deploy.yml
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      env:    { description: "Environment", default: "production" }
+      reason: { description: "Why/notes", required: false }
+  push:
+    branches: [main]   # change to your release branch (e.g., dev)
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.env || 'production' }}
+    steps:
+      - uses: actions/checkout@v4
+      # TODO: put real deploy steps here if/when you have them
+      - name: Deploy marker
+        run: |
+          echo "Deploying marker"
+          echo "branch=${GITHUB_REF#refs/heads/}"
+          echo "sha=$GITHUB_SHA"
+          echo "env=${{ inputs.env || 'production' }}"
