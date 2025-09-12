@@ -48,6 +48,7 @@ file: ./.github/workflows/ci-hours.yml
 file: ./.github/workflows/deploy.yml
 file: ./.github/workflows/dora-basics.yml
 file: ./.github/workflows/first-pass.yml
+file: ./.github/workflows/leadtime-dryrun.yml
 file: ./.github/workflows/maat-coupling.yml
 file: ./.github/workflows/metrics-preflight.yml
 file: ./.github/workflows/nightly-metrics.yml
@@ -81,11 +82,13 @@ file: ./ci/check_queries.sh
 file: ./ci/checklib.sh
 file: ./ci/dora/collect-events.sh
 file: ./ci/dora/compute-dora.py
+file: ./ci/dora/lt_from_sha.sh
 file: ./ci/env-shape.baseline
 file: ./ci/failure_taxonomy.yml
 file: ./ci/git/lib-risk.sh
 file: ./ci/git/prepare-ref.sh
 file: ./ci/lib.sh
+file: ./ci/probe.sh
 file: ./ci/repro.sh
 file: ./ci/roi/build_inputs.sh
 file: ./ci/roi/build_inputs2.sh

@@ -1,0 +1,56 @@
+# .github/workflows/leadtime-dryrun.yml
+name: LeadTime DryRun
+
+on:
+  workflow_dispatch:
+    inputs:
+      sha:  { description: "Commit SHA on base branch", required: true }
+      base: { description: "Base branch", default: "main" }
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: leadtime-dryrun-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure tools
+        run: |
+          set -euo pipefail
+          gh --version
+          command -v jq >/dev/null || (sudo apt-get update && sudo apt-get install -y jq)
+
+      - name: Assert base branch exists
+        env: { GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} }
+        run: gh api "repos/${{ github.repository }}/branches/${{ inputs.base }}" -q .name
+
+      - name: Emit lead time
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_BRANCH: ${{ inputs.base }}
+        run: |
+          chmod +x ci/dora/lt_from_sha.sh
+          bash ci/dora/lt_from_sha.sh "${{ inputs.sha }}" | tee dora_lt.ndjson
+
+      - name: Probe artifact
+        run: |
+          chmod +x ci/probe.sh
+          bash ci/probe.sh dora_lt.ndjson --kind dora_lt
+
+      - name: Summary
+        run: |
+          printf "## Lead time\n" >> "$GITHUB_STEP_SUMMARY"
+          jq -r 'fromjson | "- pr=\(.pr)\n- minutes=\(.minutes)\n- code=\(.code)\n- base=\(.base)\n- source=\(.source)"' dora_lt.ndjson >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dora-leadtime-dryrun
+          path: dora_lt.ndjson
+          retention-days: 7
