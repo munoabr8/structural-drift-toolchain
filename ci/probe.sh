@@ -76,6 +76,7 @@ assert_dora_lt(){
   ' "$file" | grep -qx true || die "dora_lt_invalid"
 }
 
+ 
 assert_events() {
   set -euo pipefail
   local file=${1:-events.ndjson}
