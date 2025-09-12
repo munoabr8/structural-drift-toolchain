@@ -6,6 +6,7 @@ dir: ./bin/
 dir: ./ci/
 dir: ./ci/dora/
 dir: ./ci/git/
+dir: ./ci/jq/
 dir: ./ci/roi/
 dir: ./config/
 dir: ./docs/
@@ -87,6 +88,7 @@ file: ./ci/env-shape.baseline
 file: ./ci/failure_taxonomy.yml
 file: ./ci/git/lib-risk.sh
 file: ./ci/git/prepare-ref.sh
+file: ./ci/jq/events_validate.jq
 file: ./ci/lib.sh
 file: ./ci/probe.sh
 file: ./ci/repro.sh

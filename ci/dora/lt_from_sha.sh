@@ -14,8 +14,8 @@ SCHEMA="dora/lead_time/v1"
 die()  { echo "ERR:$*" >&2; exit "${2:-1}"; }
 warn() { echo "WARN:$*" >&2; }
 need() { command -v "$1" >/dev/null 2>&1 || die "missing:$1" 70; }
-now_utc() { date -u +%Y-%m-%dT%H:%M:%SZ; }
-to_epoch() { date -u -d "$1" +%s 2>/dev/null || echo 0; }
+#now_utc() { date -u +%Y-%m-%dT%H:%M:%SZ; }
+#to_epoch() { date -u -d "$1" +%s 2>/dev/null || echo 0; }
 
 api() { gh api "$@" 2>/dev/null; }               # quiet gh wrapper
 jget() { jq -r "$1 // empty"; }                   # jq helper
@@ -50,13 +50,30 @@ extract_pr_fields() {
 }
 
 # ---------- time math ----------
-compute_minutes() {
-  # args: merged_at deploy_at  -> echo non-negative minutes
+# ---- portable time helpers (drop-in) ----
+have(){ command -v "$1" >/dev/null 2>&1; }
+_date(){ if have gdate; then gdate "$@"; else date "$@"; fi; }
+now_utc(){ _date -u +%Y-%m-%dT%H:%M:%SZ; }
+to_epoch(){  # ISO8601Z -> epoch
+  local ts="${1:?}"
+  if _date -u -d "$ts" +%s >/dev/null 2>&1; then
+    _date -u -d "$ts" +%s                      # GNU
+  elif _date -u -j -f "%Y-%m-%dT%H:%M:%SZ" "$ts" +%s >/dv 2>&1; then
+    _date -u -j -f "%Y-%m-%dT%H:%M:%SZ" "$ts" +%s  # BSD
+  else
+    python3 - "$ts" <<'PY'
+import sys,datetime
+dt=datetime.datetime.strptime(sys.argv[1],"%Y-%m-%dT%H:%M:%SZ")
+print(int(dt.replace(tzinfo=datetime.timezone.utc).timestamp()))
+PY
+  fi
+}
+
+compute_minutes(){  # merged_at, deploy_at
   local m="$1" d="$2"
   local mt dt
-  mt="$(to_epoch "$m")"; dt="$(to_epoch "$d")"
-  (( mt == 0 )) && die "bad_merged_at:$m" 65
-  (( mt > dt )) && warn "merged_after_deploy merged_at=$m deploy_at=$d"
+  mt="$(to_epoch "$m")" || exit 65
+  dt="$(to_epoch "$d")" || exit 65
   local mins=$(( (dt - mt) / 60 ))
   (( mins < 0 )) && mins=0
   echo "$mins"
@@ -64,18 +81,36 @@ compute_minutes() {
 
 # ---------- emit ----------
 emit_json() {
-  local repo="$1" sha="$2" base="$3" src="$4" prn="$5" pr_base="$6" merged_at="$7" deploy_at="$8" code="$9" mins="${10}"
-  jq -n --arg schema "$SCHEMA" \
-        --arg repo "$repo" --arg sha "$sha" --arg base "$base" \
-        --arg src "$src" --arg prn "$prn" --arg pr_base "$pr_base" \
-        --arg merged_at "$merged_at" --arg deploy_at "$deploy_at" \
-        --arg code "$code" --argjson minutes "$mins" '
-    { schema:$schema, repo:$repo, sha:$sha, base:$base,
-      pr: ( ($prn|length>0) ? ($prn|tonumber) : null ),
-      pr_base: ($pr_base // null),
-      merged_at:$merged_at, deploy_at:$deploy_at,
-      minutes:$minutes, code:$code, source:$src }'
+  local repo="$1" sha="$2" base="$3" src="$4" prn="$5" pr_base="$6" merged_at="$7" deploy_at="$8" code="$9" minutes="${10}"
+
+  # normalize fields for jq
+  local pr_json="null"
+  [[ -n "$prn" && "$prn" =~ ^[0-9]+$ ]] && pr_json="$prn"
+
+  local pr_base_json="null"
+  [[ -n "$pr_base" ]] && pr_base_json="$(printf '%s' "$pr_base" | jq -Rr @json)"
+
+  jq -n \
+    --arg schema "dora/lead_time/v1" \
+    --arg repo "$repo" \
+    --arg sha "$sha" \
+    --arg base "$base" \
+    --arg src "$src" \
+    --arg merged_at "$merged_at" \
+    --arg deploy_at "$deploy_at" \
+    --arg code "$code" \
+    --argjson minutes "$minutes" \
+    --argjson pr "$pr_json" \
+    --argjson pr_base "$pr_base_json" '
+  {
+    schema: $schema,
+    repo: $repo, sha: $sha, base: $base,
+    pr: $pr, pr_base: $pr_base,
+    merged_at: $merged_at, deploy_at: $deploy_at,
+    minutes: $minutes, code: $code, source: $src
+  }'
 }
+
 
 # ---------- main ----------
 main() {
