@@ -23,21 +23,22 @@ jget() { jq -r "$1 // empty"; }                   # jq helper
 # ---------- assertions ----------
 assert_sha_exists() {
   local repo="$1" sha="$2"
-  api "repos/$repo/commits/$sha" -q .sha >/dev/null \
-    || die "bad_sha:$sha repo:$repo" 64
+  gh api -X GET "repos/$repo/commits/$sha" -q .sha >/dev/null \
+    || { echo "ERR:bad_sha:$sha" >&2; exit 64; }
 }
 
 # ---------- PR discovery ----------
 pr_by_merge_commit() {
   local repo="$1" sha="$2" base="$3"
-  api "repos/$repo/pulls" -f state=closed -f base="$base" \
+  gh api -X GET \
+    "repos/$repo/pulls?state=closed&base=$base&per_page=100" \
     -q "[.[] | select(.merge_commit_sha==\"$sha\")][0]"
 }
 
 pr_by_commit_assoc() {
   local repo="$1" sha="$2"
-  api -H 'Accept: application/vnd.github.groot-preview+json' \
-      "repos/$repo/commits/$sha/pulls" -q '.[0]'
+  gh api -X GET -H 'Accept: application/vnd.github.groot-preview+json' \
+     "repos/$repo/commits/$sha/pulls" -q '.[0]'
 }
 
 extract_pr_fields() {
@@ -81,6 +82,18 @@ main() {
   need gh; need jq; need date
   local repo="${GITHUB_REPOSITORY:?GITHUB_REPOSITORY missing}"
   local sha="${1:?pass deployed SHA}"
+
+# before
+# sha="${1:?pass deployed SHA}"
+
+# after
+sha="${1:-${GITHUB_SHA:-}}"
+if [[ -z "$sha" ]]; then
+  sha="$(git rev-parse HEAD 2>/dev/null || true)"
+fi
+[[ -n "$sha" ]] || { echo "ERR:usage: $0 <sha> or set GITHUB_SHA" >&2; exit 2; }
+
+
 
   assert_sha_exists "$repo" "$sha"
 

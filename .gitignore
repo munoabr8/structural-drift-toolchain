@@ -32,6 +32,10 @@ env/
 *.tmp
 *.out
 
+/events.ndjson
+
+/dora_lt.ndjson
+
 # Spec snapshots / diffs (generated)
 structure.spec.auto
 .structure.snapshot

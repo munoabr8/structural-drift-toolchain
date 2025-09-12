@@ -30,19 +30,25 @@ guess_kind(){
 }
 
 parse_args(){
-  while (( $# )); do
+  file=""; kind=""
+  while (($#)); do
     case "$1" in
       --kind|-k) kind="${2:-}"; shift 2;;
       --kind=*)  kind="${1#*=}"; shift;;
       -h|--help) usage; exit 0;;
       -*)        die "unknown_option:$1" 2;;
-      *)         [[ -z "$file" ]] && file="$1" || die "extra_arg:$1" 2; shift;;
+      *)  if [[ -z "$file" ]]; then file="$1"
+          elif [[ -z "$kind" ]]; then kind="$1"
+          else die "extra_arg:$1" 2
+          fi
+          shift;;
     esac
   done
   [[ -n "$file" ]] || die "file_required" 2
   [[ -r "$file"  ]] || die "unreadable:$file" 2
   [[ -n "$kind"  ]] || kind="$(guess_kind)"
 }
+
 
 # ---------- assertions ----------
 assert_json(){ jq -e . "$file" >/dev/null; }
