@@ -86,7 +86,6 @@ file: ./ci/git/lib-risk.sh
 file: ./ci/git/prepare-ref.sh
 file: ./ci/lib.sh
 file: ./ci/repro.sh
-file: ./ci/result.json
 file: ./ci/roi/build_inputs.sh
 file: ./ci/roi/build_inputs2.sh
 file: ./ci/roi/compute_roit.py
@@ -103,7 +102,6 @@ file: ./ci/run.sh
 file: ./ci/test.sh
 file: ./ci/test_github_timings.py
 file: ./ci/test_toggl_parser.py
-file: ./ci/triage.json
 file: ./ci/triage.sh
 file: ./config/policy.rules.yml
 file: ./config/runtime.cfg
