@@ -7,11 +7,12 @@ on:
       env:    { description: "Environment", default: "production" }
       reason: { description: "Why/notes", required: false }
   push:
-    branches: [main]   # change to your release branch (e.g., dev)
+    branches: [main]
 
 permissions:
   contents: read
   actions: read
+  pull-requests: read
 
 concurrency:
   group: deploy-${{ github.ref }}
@@ -22,12 +23,38 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: ${{ inputs.env || 'production' }}
+    env:
+      HEAD_BRANCH: main   # base branch for lead-time calc
     steps:
       - uses: actions/checkout@v4
-      # TODO: put real deploy steps here if/when you have them
+
       - name: Deploy marker
         run: |
           echo "Deploying marker"
           echo "branch=${GITHUB_REF#refs/heads/}"
           echo "sha=$GITHUB_SHA"
           echo "env=${{ inputs.env || 'production' }}"
+
+      - name: Ensure tools
+        run: |
+          set -euo pipefail
+          gh --version
+          command -v jq >/dev/null || (sudo apt-get update && sudo apt-get install -y jq)
+
+      - name: Emit lead time (PR merge → deploy done)
+        if: ${{ success() }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          chmod +x ci/dora/lt_from_sha.sh
+          bash ci/dora/lt_from_sha.sh "$GITHUB_SHA" >> dora_lt.ndjson
+          tail -n1 dora_lt.ndjson
+
+      - name: Upload lead-time
+        if: ${{ success() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: dora-leadtime
+          path: dora_lt.ndjson
+          retention-days: 21
