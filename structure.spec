@@ -71,6 +71,7 @@ file: ./bin/emit-env
 file: ./bin/gen-scope.sh
 file: ./bin/main.sh
 file: ./bin/risk_pull.sh
+file: ./ci/build.sh
 file: ./ci/check-env-shape.sh
 file: ./ci/check_contracts.sh
 file: ./ci/check_frames.sh
@@ -99,6 +100,7 @@ file: ./ci/roi/parsers.py
 file: ./ci/roi/run_stats.jq
 file: ./ci/roi/shadow_diff.py
 file: ./ci/run.sh
+file: ./ci/setup.sh
 file: ./ci/test.sh
 file: ./ci/test_github_timings.py
 file: ./ci/test_toggl_parser.py
