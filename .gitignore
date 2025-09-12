@@ -40,6 +40,10 @@ spec.diff.txt
 
 .missing_module_specs
 
+/result.json
+
+/triage.json
+
 
 # Optional local config
 .env
