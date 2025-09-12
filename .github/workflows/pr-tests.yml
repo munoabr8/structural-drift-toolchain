@@ -16,9 +16,9 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  SETUP_CMD: bash scripts/setup.sh
-  BUILD_CMD: bash scripts/build.sh
-  TEST_CMD:  bash scripts/test.sh
+  SETUP_CMD: bash ./setup.sh
+  BUILD_CMD: bash ./build.sh
+  TEST_CMD:  bash ./test.sh
   REPORT_CMD: bash ci/triage.sh job.log
 
 jobs:
