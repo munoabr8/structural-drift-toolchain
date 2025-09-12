@@ -1,0 +1,45 @@
+# .github/workflows/pr-tests.yml
+name: PR Tests
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: pr-tests-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  SETUP_CMD: bash ./ci/setup.sh
+  BUILD_CMD: bash ./ci/build.sh
+  TEST_CMD:  bash ./ci/test.sh
+  REPORT_CMD: bash ci/triage.sh job.log
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # PR merge ref by default on pull_request
+
+      - name: Run pipeline (setup → build → test → report)
+        run: bash ci/run.sh
+
+      # Optional: include a tiny env snapshot in run.sh on failure so these exist.
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-artifacts
+          path: |
+            job.log
+            result.json
+            env.txt
+            triage.json

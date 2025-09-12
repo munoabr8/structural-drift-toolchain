@@ -15,5 +15,9 @@ tmp
 
 .pytest_cache
 
+triage.json
+
+result.json
+
 
 /__pycache__
