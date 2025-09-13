@@ -18,7 +18,7 @@ warn() { echo "WARN:$*" >&2; }
 need() { command -v "$1" >/dev/null 2>&1 || die "missing:$1" 70; }
 api()  { gh api "$@" 2>/dev/null; }  # quiet gh wrapper
 jqr()  { jq -cr "$@"; }
-since_ts() { date -u -d "${WINDOW_DAYS} days ago" +%FT%TZ; }
+
 
 # ---------- assertions ----------
 assert_env() {
@@ -99,6 +99,47 @@ collect_deploy_runs() {
     ' <<<"$filtered"
     page=$((page+1))
   done
+}
+
+
+
+_date(){
+  if command -v gdate >/dev/null 2>&1; then gdate "$@"
+  else date "$@"
+  fi
+}
+
+utc_now(){ _date -u +%Y-%m-%dT%H:%M:%SZ; }
+
+since_ts(){  # N days ago in UTC ISO8601
+  local days="${WINDOW_DAYS:-14}"
+  if _date -u -d '1 day ago' +%s >/dev/null 2>&1; then
+    _date -u -d "${days} days ago" +%FT%TZ        # GNU date
+  elif _date -u -v-1d +%s >/dev/null 2>&1; then
+    _date -u -v-"${days}"d +%FT%TZ                # BSD date
+  else
+    python3 - <<'PY'                               # Python fallback
+import os,datetime
+days=int(os.environ.get("WINDOW_DAYS","14"))
+print((datetime.datetime.utcnow()-datetime.timedelta(days=days)).strftime("%Y-%m-%dT%H:%M:%SZ"))
+PY
+  fi
+}
+
+to_epoch(){  # ISO8601 Z → epoch seconds
+  local ts="$1"
+  if _date -u -d "$ts" +%s >/dev/null 2>&1; then
+    _date -u -d "$ts" +%s                          # GNU
+  elif _date -u -j -f "%Y-%m-%dT%H:%M:%SZ" "$ts" +%s >/dev/null 2>&1; then
+    _date -u -j -f "%Y-%m-%dT%H:%M:%SZ" "$ts" +%s  # BSD
+  else
+    python3 - "$ts" <<'PY'                          # Python
+import sys,datetime
+ts=sys.argv[1]
+dt=datetime.datetime.strptime(ts,"%Y-%m-%dT%H:%M:%SZ")
+print(int(dt.replace(tzinfo=datetime.timezone.utc).timestamp()))
+PY
+  fi
 }
 
 # ---------- optional sink ----------

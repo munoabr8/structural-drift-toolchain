@@ -20,4 +20,16 @@ triage.json
 result.json
 
 
+events.ndjson
+
+dora_lt.ndjson
+
+*/events.ndjson
+
+*/dora_lt.ndjson
+
+/events.ndjson
+
+/dora_lt.ndjson
+
 /__pycache__

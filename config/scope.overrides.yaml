@@ -3,6 +3,6 @@ ignore_roots: [docs, test, util, tools, lib, attn , bin , system,templates]
 ignore_sub_roots: [ ]
 
 
-add_roots: [ ]
+add_roots: [ ci ]
 
 add_sub_roots: [ ]
