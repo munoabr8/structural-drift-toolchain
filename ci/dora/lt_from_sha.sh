@@ -12,15 +12,12 @@ SCHEMA="dora/lead_time/v1"
 
 # ---------- utils ----------
 die()  { echo "ERR:$*" >&2; exit "${2:-1}"; }
-#warn() { echo "WARN:$*" >&2; }
 warn() { printf 'WARN:%s\n' "$*" >&2; }
 
 need() { command -v "$1" >/dev/null 2>&1 || die "missing:$1" 70; }
-#now_utc() { date -u +%Y-%m-%dT%H:%M:%SZ; }
-#to_epoch() { date -u -d "$1" +%s 2>/dev/null || echo 0; }
 
 api() { gh api "$@" 2>/dev/null; }               # quiet gh wrapper
-jget() { jq -r "$1 // empty"; }                   # jq helper
+jget() { jq -r "$1 // empty"; }                  # jq helper
 
 # ---------- assertions ----------
 assert_sha_exists() {
@@ -43,16 +40,17 @@ pr_by_commit_assoc() {
      "repos/$repo/commits/$sha/pulls" -q '.[0]'
 }
 
+extract_pr_fields2() {
+  # stdin = PR JSON or null; output one TSV line: pr_number<TAB>merged_at<TAB>base_ref
+  jq -r '[.number, .merged_at, .base.ref] | @tsv'
+}
+
 extract_pr_fields() {
-  # stdin = PR JSON or null; outputs 3 lines: pr_number, merged_at, base_ref
-  local pr_json; pr_json="$(cat)"
-  echo "$pr_json" | jget '.number'
-  echo "$pr_json" | jget '.merged_at'
-  echo "$pr_json" | jget '.base.ref'
+  # stdin = PR JSON or null; output stable JSON keys
+  jq -c '{n:(.number//null), m:(.merged_at//null), b:(.base.ref//null)}'
 }
 
 # ---------- time math ----------
-# ---- portable time helpers (drop-in) ----
 have(){ command -v "$1" >/dev/null 2>&1; }
 _date(){ if have gdate; then gdate "$@"; else date "$@"; fi; }
 now_utc(){ _date -u +%Y-%m-%dT%H:%M:%SZ; }
@@ -60,7 +58,7 @@ to_epoch(){  # ISO8601Z -> epoch
   local ts="${1:?}"
   if _date -u -d "$ts" +%s >/dev/null 2>&1; then
     _date -u -d "$ts" +%s                      # GNU
-  elif _date -u -j -f "%Y-%m-%dT%H:%M:%SZ" "$ts" +%s >/dv 2>&1; then
+  elif _date -u -j -f "%Y-%m-%dT%H:%M:%SZ" "$ts" +%s >/dev/null 2>&1; then
     _date -u -j -f "%Y-%m-%dT%H:%M:%SZ" "$ts" +%s  # BSD
   else
     python3 - "$ts" <<'PY'
@@ -113,25 +111,17 @@ emit_json() {
   }'
 }
 
-warn(){ printf 'WARN:%s\n' "$*" >&2; }  # send warnings to stderr only
-
 # ---------- main ----------
 main() {
   need gh; need jq; need date
   local repo="${GITHUB_REPOSITORY:?GITHUB_REPOSITORY missing}"
-  local sha="${1:?pass deployed SHA}"
+  local sha
 
-# before
-# sha="${1:?pass deployed SHA}"
-
-# after
-sha="${1:-${GITHUB_SHA:-}}"
-if [[ -z "$sha" ]]; then
-  sha="$(git rev-parse HEAD 2>/dev/null || true)"
-fi
-[[ -n "$sha" ]] || { echo "ERR:usage: $0 <sha> or set GITHUB_SHA" >&2; exit 2; }
-
-
+  sha="${1:-${GITHUB_SHA:-}}"
+  if [[ -z "$sha" ]]; then
+    sha="$(git rev-parse HEAD 2>/dev/null || true)"
+  fi
+  [[ -n "$sha" ]] || { echo "ERR:usage: $0 <sha> or set GITHUB_SHA" >&2; exit 2; }
 
   assert_sha_exists "$repo" "$sha"
 
@@ -144,14 +134,25 @@ fi
     pr_json="$(pr_by_commit_assoc "$repo" "$sha" || true)"
   fi
 
-  read -r prn merged_at pr_base < <(echo "${pr_json:-null}" | extract_pr_fields)
+###################
+  #IFS=$'\t' read -r prn merged_at pr_base < <(printf '%s' "${pr_json:-null}" | extract_pr_fields)
 
+
+  prn=$(printf '%s' "${pr_json:-null}" | extract_pr_fields | jq -r '.n // empty')
+  merged_at=$(printf '%s' "${pr_json:-null}" | extract_pr_fields | jq -r '.m // empty')
+  pr_base=$(printf '%s' "${pr_json:-null}" | extract_pr_fields | jq -r '.b // empty')
+
+###################
   [[ -n "$prn" && -n "$pr_base" && "$pr_base" != "$BASE_BRANCH" ]] \
     && warn "pr_base_mismatch pr#$prn base_ref=$pr_base expected=$BASE_BRANCH"
 
   local code deploy_at minutes
   deploy_at="$(now_utc)"
-  if [[ -z "$merged_at" ]]; then
+  ###################
+  #if [[ -z "$merged_at" ]]; then
+    if [[ -z "$merged_at" || ! "$merged_at" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}T ]]; then
+  ###################
+
     code="NO_PR"
     warn "no_pr_or_merged_at sha=$sha base=$BASE_BRANCH src=$src"
     merged_at="$(api "repos/$repo/commits/$sha" -q '.commit.author.date' || true)"
