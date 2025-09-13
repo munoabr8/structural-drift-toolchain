@@ -12,7 +12,9 @@ SCHEMA="dora/lead_time/v1"
 
 # ---------- utils ----------
 die()  { echo "ERR:$*" >&2; exit "${2:-1}"; }
-warn() { echo "WARN:$*" >&2; }
+#warn() { echo "WARN:$*" >&2; }
+warn() { printf 'WARN:%s\n' "$*" >&2; }
+
 need() { command -v "$1" >/dev/null 2>&1 || die "missing:$1" 70; }
 #now_utc() { date -u +%Y-%m-%dT%H:%M:%SZ; }
 #to_epoch() { date -u -d "$1" +%s 2>/dev/null || echo 0; }
@@ -111,6 +113,7 @@ emit_json() {
   }'
 }
 
+warn(){ printf 'WARN:%s\n' "$*" >&2; }  # send warnings to stderr only
 
 # ---------- main ----------
 main() {

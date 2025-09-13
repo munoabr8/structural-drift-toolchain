@@ -34,6 +34,9 @@ jobs:
             gh api /repos/${GITHUB_REPOSITORY}/actions/workflows | jq -r '.workflows[].name'
 
 
+
+
+
       - name: Collect events
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

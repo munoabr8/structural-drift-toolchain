@@ -5,4 +5,5 @@ roots:
 sub_roots:
   - ci/dora
   - ci/git
+  - ci/jq
   - ci/roi

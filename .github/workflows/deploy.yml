@@ -51,6 +51,27 @@ jobs:
           bash ci/dora/lt_from_sha.sh "$GITHUB_SHA" >> dora_lt.ndjson
           tail -n1 dora_lt.ndjson
 
+      - name: Emit lead time
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_BRANCH: ${{ github.ref_name }}   # or 'main' if fixed
+        run: |
+          bash ci/dora/lt_from_sha.sh "${{ github.sha }}" 2>dora_lt.warn | jq -c . > dora_lt.ndjson
+
+      - name: Probe artifact
+        env:
+          DORA_LT_VALIDATOR_JQ: ci/jq/dora_lt_validate.jq
+        run: bash ci/probe.sh dora_lt.ndjson --kind dora_lt
+
+
+
+      # - name: Emit lead time
+      #   run: bash ci/dora/lt_from_sha.sh "$GITHUB_SHA" > dora_lt.ndjson
+      # - name: Probe lead time
+      #   run: bash ci/probe.sh dora_lt.ndjson --kind dora_lt
+      #   - uses: actions/upload-artifact@v4
+      #     with: { name: dora-leadtime, path: dora_lt.ndjson }   
+
       - name: Upload lead-time
         if: ${{ success() }}
         uses: actions/upload-artifact@v4

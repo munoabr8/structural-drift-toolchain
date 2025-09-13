@@ -88,6 +88,7 @@ file: ./ci/env-shape.baseline
 file: ./ci/failure_taxonomy.yml
 file: ./ci/git/lib-risk.sh
 file: ./ci/git/prepare-ref.sh
+file: ./ci/jq/dora_lt_validate.jq
 file: ./ci/jq/events_validate.jq
 file: ./ci/lib.sh
 file: ./ci/probe.sh

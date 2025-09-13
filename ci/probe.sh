@@ -63,17 +63,21 @@ assert_ndjson(){
   done
 }
 
-assert_dora_lt(){
-  # NDJSON, schema dora/lead_time/*, minutes>=0, merged_at<=deploy_at (UTC)
-  jq -s '
-    def t: strptime("%Y-%m-%dT%H:%M:%SZ") | mktime;
-    length>0 and
-    all(.[]; (.schema|startswith("dora/lead_time/"))
-         and (.minutes|type=="number" and .minutes>=0)
-         and (.merged_at|type=="string")
-         and (.deploy_at|type=="string")
-         and ((.merged_at|t) <= (.deploy_at|t)))
-  ' "$file" | grep -qx true || die "dora_lt_invalid"
+ 
+
+assert_dora_lt() {
+  local jf="${DORA_LT_VALIDATOR_JQ:-../jq/dora_lt_validate.jq}"
+
+  [[ -s "$file" ]] || die "empty_file:$file"
+  jq -c . "$file" >/dev/null || die "bad_json_line"
+
+  # fail if any line is not an object
+  if jq -s 'any(.[]; type!="object")' "$file" | grep -qx true; then
+    die "non_object_line"
+  fi
+
+  [[ -r "$jf" ]] || die "missing_validator:$jf"
+  jq -e -s -f "$jf" "$file" >/dev/null || die "dora_lt_invalid"
 }
 
  
