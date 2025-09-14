@@ -16,10 +16,6 @@ dir: ./lib/queries/
 dir: ./lib/testdata/
 dir: ./roi/
 dir: ./roi/artifacts/
-dir: ./roi/artifacts/ci-hours/
-dir: ./roi/artifacts/pr-first-pass/
-dir: ./roi/artifacts/roi-baseline/
-dir: ./roi/artifacts/workflow-stats/
 dir: ./system/
 dir: ./system/exit-codes/
 dir: ./system/make/
@@ -199,11 +195,6 @@ file: ./lib/tty.sh
 file: ./lib/vmmapframe.sh
 file: ./lib/with_contract_env.sh
 file: ./lib/with_contracts.sh
-file: ./roi/artifacts/ci-hours/ci-hours.csv
-file: ./roi/artifacts/pr-first-pass/first_pass.json
-file: ./roi/artifacts/roi-baseline/baseline.json
-file: ./roi/artifacts/workflow-stats/runs.json
-file: ./roi/artifacts/workflow-stats/workflow-stats.csv
 file: ./roi/missing
 file: ./scope.yaml
 file: ./system/exit-codes/exit_codes_validator.sh

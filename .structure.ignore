@@ -19,7 +19,7 @@ triage.json
 
 result.json
 
-
+/artifacts/
 events.ndjson
 
 dora_lt.ndjson
