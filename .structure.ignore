@@ -21,12 +21,10 @@ result.json
 
 
  
-
 ./roi/artifacts
 ./roi/missing
 
-
-
+ 
  events.ndjson
 
 dora_lt.ndjson
