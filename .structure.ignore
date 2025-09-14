@@ -19,9 +19,15 @@ triage.json
 
 result.json
 
-./roi/artifacts/
-*/artifacts
-events.ndjson
+
+ 
+
+./roi/artifacts
+./roi/missing
+
+
+
+ events.ndjson
 
 dora_lt.ndjson
 

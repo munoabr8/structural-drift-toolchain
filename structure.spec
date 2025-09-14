@@ -15,7 +15,6 @@ dir: ./lib/policy/
 dir: ./lib/queries/
 dir: ./lib/testdata/
 dir: ./roi/
-dir: ./roi/artifacts/
 dir: ./system/
 dir: ./system/exit-codes/
 dir: ./system/make/
@@ -195,7 +194,6 @@ file: ./lib/tty.sh
 file: ./lib/vmmapframe.sh
 file: ./lib/with_contract_env.sh
 file: ./lib/with_contracts.sh
-file: ./roi/missing
 file: ./scope.yaml
 file: ./system/exit-codes/exit_codes_validator.sh
 file: ./system/make/garbage.mk
