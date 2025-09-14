@@ -24,7 +24,11 @@ env/
 
 */__pycache__
 
-.pytest_cache
+ 
+*/artifacts/*
+ 
+
+ .pytest_cache
 *.pyc
 
 # Bash runtime/debug artifacts

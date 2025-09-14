@@ -14,6 +14,7 @@ dir: ./lib/
 dir: ./lib/policy/
 dir: ./lib/queries/
 dir: ./lib/testdata/
+dir: ./roi/
 dir: ./system/
 dir: ./system/exit-codes/
 dir: ./system/make/
@@ -97,9 +98,7 @@ file: ./ci/lib.sh
 file: ./ci/probe.sh
 file: ./ci/repro.sh
 file: ./ci/roi/build_inputs.sh
-file: ./ci/roi/build_inputs2.sh
 file: ./ci/roi/compute_roit.py
-file: ./ci/roi/compute_roit_old.py
 file: ./ci/roi/emit_ci_hours.py
 file: ./ci/roi/extract_run_stats.sh
 file: ./ci/roi/fetch_artifacts.sh
