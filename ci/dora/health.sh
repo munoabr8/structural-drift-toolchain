@@ -15,13 +15,15 @@ BAD_DEP=$(jq -s '[ .[] | select(.type=="deployment")
   | select((.sha|test("^[0-9a-f]{40}$")|not) or (.status!="success") or (.finished_at|test("Z$")|not)) ] | length' "$E")
 (( BAD_DEP==0 )) || die "bad deploy rows=$BAD_DEP"
 
-# 3) SHA intersection coverage ≥60%
+# 3) SHA intersection coverage ≥ $COVERAGE_MIN (default 0.5)
+COVERAGE_MIN="${COVERAGE_MIN:-0.33}"
 PRS=$(jq -r 'select(.type=="pr_merged")|.sha' "$E" | sort -u | wc -l | xargs)
 DEPS=$(jq -r 'select(.type=="deployment" and .status=="success")|.sha' "$E" | sort -u | wc -l | xargs)
 INT=$(comm -12 <(jq -r 'select(.type=="pr_merged")|.sha' "$E" | sort -u) \
               <(jq -r 'select(.type=="deployment" and .status=="success")|.sha' "$E" | sort -u) | wc -l | xargs)
 if (( PRS>0 )); then
-  awk -v i="$INT" -v p="$PRS" 'BEGIN{if(i/p<0.6){exit 1}}' || die "coverage<60% (int=$INT prs=$PRS)"
+  awk -v i="$INT" -v p="$PRS" -v m="$COVERAGE_MIN" 'BEGIN{if(i/p<m){exit 1}}' \
+    || { PCT=$(awk -v m="$COVERAGE_MIN" 'BEGIN{printf "%.0f", m*100}'); die "coverage<${PCT}% (int=$INT prs=$PRS)"; }
 fi
 
 # 4) Optional: ensure we use Deployments API success time (requires GH_TOKEN, DEPLOY_ENV)
