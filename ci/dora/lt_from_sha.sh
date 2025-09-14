@@ -40,10 +40,7 @@ pr_by_commit_assoc() {
      "repos/$repo/commits/$sha/pulls" -q '.[0]'
 }
 
-extract_pr_fields2() {
-  # stdin = PR JSON or null; output one TSV line: pr_number<TAB>merged_at<TAB>base_ref
-  jq -r '[.number, .merged_at, .base.ref] | @tsv'
-}
+ 
 
 extract_pr_fields() {
   # stdin = PR JSON or null; output stable JSON keys
@@ -69,14 +66,16 @@ PY
   fi
 }
 
-compute_minutes(){  # merged_at, deploy_at
-  local m="$1" d="$2"
-  local mt dt
+ 
+
+
+ MIN_LEAD_SECONDS="${MIN_LEAD_SECONDS:-300}"   # ignore tiny gaps
+ MINUTE_MODE="${MINUTE_MODE:-ceil}"            # ceil|float|floor
+compute_delta_sec(){  # merged_at, deploy_at → seconds
+  local m="$1" d="$2" mt dt
   mt="$(to_epoch "$m")" || exit 65
   dt="$(to_epoch "$d")" || exit 65
-  local mins=$(( (dt - mt) / 60 ))
-  (( mins < 0 )) && mins=0
-  echo "$mins"
+  local s=$((dt - mt)); (( s<0 )) && s=0; echo "$s"
 }
 
 # ---------- emit ----------
@@ -160,7 +159,17 @@ main() {
     code="PR_FOUND"
   fi
 
-  minutes="$(compute_minutes "$merged_at" "$deploy_at")"
+
+ delta_s="$(compute_delta_sec "$merged_at" "$deploy_at")"
+  if (( delta_s>0 && delta_s<MIN_LEAD_SECONDS )); then
+    warn "lt_below_floor seconds=$delta_s floor=$MIN_LEAD_SECONDS"
+  fi
+  case "$MINUTE_MODE" in
+    float) minutes="$(awk -v s="$delta_s" 'BEGIN{printf "%.2f", s/60}')" ;;
+    ceil)  minutes=$(( (delta_s + 59) / 60 )) ;;
+    *)     minutes=$(( delta_s / 60 )) ;;
+  esac
+
   emit_json "$repo" "$sha" "$BASE_BRANCH" "$src" "${prn:-}" "${pr_base:-}" "$merged_at" "$deploy_at" "$code" "$minutes"
 }
 
