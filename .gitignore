@@ -23,7 +23,8 @@ env/
 /__pycache__
 
 */__pycache__
-
+/artifacts/
+*/artifacts 
 .pytest_cache
 *.pyc
 
