@@ -59,43 +59,49 @@ cfr = (failed / total_dep) if total_dep > 0 else None
 daily_df = {str(k): v["succ"] for k, v in sorted(deploy_all_by_day.items())}
 
 # ---------- lead time ----------
-def compute_lead(evts, success_times_by_sha, max_fallback_hours=168.0):
+def compute_lead(events, success_times_by_sha, max_fallback_hours=168.0,
+                 allow_fallback=False, min_lead_seconds=60):
     """Return (lead_hours:list[float], details:list[dict])."""
-    any_times = sorted(t for lst in success_times_by_sha.values() for t in lst)
-    lead_hours, details = [], []
-    for e in evts:
+    norm = {k: sorted(set(t for t in v if t)) for k, v in (success_times_by_sha or {}).items()}
+    any_times = sorted(t for lst in norm.values() for t in lst)
+    lead, details = [], []
+    for e in events:
         if e.get("type") != "pr_merged":
             continue
         sha = e.get("sha")
-        merged_at = parse_ts(e.get("merged_at"))
-        if not sha or not merged_at:
+        m = parse_ts(e.get("merged_at"))
+        if not sha or not m:
             continue
-
-        exact = [t for t in success_times_by_sha.get(sha, []) if t >= merged_at]
-        times = exact
-        match = "sha" if exact else "fallback"
-
+        exact = [t for t in norm.get(sha, []) if (t - m).total_seconds() > min_lead_seconds]
+        times, match = exact, "sha"
+        if not times and allow_fallback:
+            upper = m + timedelta(hours=max_fallback_hours)
+            times = [t for t in any_times
+                     if m < t <= upper and (t - m).total_seconds() > min_lead_seconds]
+            match = "fallback" if times else match
         if not times:
-            upper = merged_at + timedelta(hours=max_fallback_hours)
-            times = [t for t in any_times if merged_at <= t <= upper]
+            continue
+        first = min(times)
+        delta_h = (first - m).total_seconds() / 3600.0
+        if delta_h <= 0:
+            continue
+        lead.append(delta_h)
+        details.append({
+            "pr": e.get("pr"),
+            "sha": sha,
+            "merged_at": e.get("merged_at"),
+            "deployed_at": first.isoformat().replace("+00:00", "Z"),
+            "lead_hours": round(delta_h, 2),
+            "match": match,
+        })
+    return lead, details
 
-        if times:
-            first = min(times)
-            delta_h = (first - merged_at).total_seconds() / 3600.0
-            if delta_h >= 0:
-                lead_hours.append(delta_h)
-                details.append({
-                    "pr": e.get("pr"),
-                    "sha": sha,
-                    "merged_at": e.get("merged_at"),
-                    "deployed_at": first.isoformat(),
-                    "lead_hours": round(delta_h, 2),
-                    "match": match
-                })
-    return lead_hours, details
-
-lead_hours, details = compute_lead(events, deploy_success_times, MAX_FALLBACK_HOURS)
-
+LT_ALLOW_FALLBACK = os.getenv("LT_ALLOW_FALLBACK", "false").lower() in {"1","true","yes","y"}
+LT_MIN_LEAD_SECONDS = int(os.environ.get("LT_MIN_LEAD_SECONDS", "400"))
+lead_hours, details = compute_lead(
+    events, deploy_success_times, MAX_FALLBACK_HOURS,
+    allow_fallback=LT_ALLOW_FALLBACK, min_lead_seconds=LT_MIN_LEAD_SECONDS
+)
 # ---------- percentile helper ----------
 def percentile(data, p):  # p in [0,100]
     if not data:

@@ -34,6 +34,9 @@ jobs:
             gh api /repos/${GITHUB_REPOSITORY}/actions/workflows | jq -r '.workflows[].name'
 
 
+
+
+
       - name: Collect events
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -45,7 +48,10 @@ jobs:
       - name: Compute DORA
         env:
           PCTL: '90'
-          MIN_LEAD_SAMPLES: '5'
+          LT_ALLOW_FALLBACK: 'true'        # set to 'false' after DEPLOYED_SHA is wired
+          LT_MIN_LEAD_SECONDS: '400'
+          MIN_LEAD_SAMPLES: '10'
+
         run: python3 ./ci/dora/compute-dora.py events.ndjson | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Upload leadtime.csv

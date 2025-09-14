@@ -4,6 +4,7 @@
 #   bash ci/probe.sh <file> [--kind <dora_lt|events|triage|result|json|ndjson>]
 #   bash ci/probe.sh --kind=events events.ndjson
 
+#echo "PROBE_VERSION=events-slurp-guard" >&2git rev-parse HEAD && md5sum ../probe.sh
 set -euo pipefail
 export LC_ALL=C
 trap 'echo "FAIL: $0 line $LINENO" >&2' ERR
@@ -30,19 +31,25 @@ guess_kind(){
 }
 
 parse_args(){
-  while (( $# )); do
+  file=""; kind=""
+  while (($#)); do
     case "$1" in
       --kind|-k) kind="${2:-}"; shift 2;;
       --kind=*)  kind="${1#*=}"; shift;;
       -h|--help) usage; exit 0;;
       -*)        die "unknown_option:$1" 2;;
-      *)         [[ -z "$file" ]] && file="$1" || die "extra_arg:$1" 2; shift;;
+      *)  if [[ -z "$file" ]]; then file="$1"
+          elif [[ -z "$kind" ]]; then kind="$1"
+          else die "extra_arg:$1" 2
+          fi
+          shift;;
     esac
   done
   [[ -n "$file" ]] || die "file_required" 2
   [[ -r "$file"  ]] || die "unreadable:$file" 2
   [[ -n "$kind"  ]] || kind="$(guess_kind)"
 }
+
 
 # ---------- assertions ----------
 assert_json(){ jq -e . "$file" >/dev/null; }
@@ -56,36 +63,47 @@ assert_ndjson(){
   done
 }
 
-assert_dora_lt(){
-  # NDJSON, schema dora/lead_time/*, minutes>=0, merged_at<=deploy_at (UTC)
-  jq -s '
-    def t: strptime("%Y-%m-%dT%H:%M:%SZ") | mktime;
-    length>0 and
-    all(.[]; (.schema|startswith("dora/lead_time/"))
-         and (.minutes|type=="number" and .minutes>=0)
-         and (.merged_at|type=="string")
-         and (.deploy_at|type=="string")
-         and ((.merged_at|t) <= (.deploy_at|t)))
-  ' "$file" | grep -qx true || die "dora_lt_invalid"
+ 
+
+assert_dora_lt() {
+  local jf="${DORA_LT_VALIDATOR_JQ:-../jq/dora_lt_validate.jq}"
+
+  [[ -s "$file" ]] || die "empty_file:$file"
+  jq -c . "$file" >/dev/null || die "bad_json_line"
+
+  # fail if any line is not an object
+  if jq -s 'any(.[]; type!="object")' "$file" | grep -qx true; then
+    die "non_object_line"
+  fi
+
+  [[ -r "$jf" ]] || die "missing_validator:$jf"
+  jq -e -s -f "$jf" "$file" >/dev/null || die "dora_lt_invalid"
 }
 
-assert_events(){
-  # NDJSON with pr_merged/deployment shapes and ISO timestamps
-  jq -s '
-    def t: strptime("%Y-%m-%dT%H:%M:%SZ") | mktime;
-    length>0 and
-    all(.[]; 
-      ( .type=="pr_merged"
-        and (.pr|type=="number")
-        and (.sha|type=="string" and (.sha|length)>0)
-        and (.merged_at|type=="string") and ((.merged_at|t)|tonumber >= 0) )
-      or
-      ( .type=="deployment"
-        and (.sha|type=="string" and (.sha|length)>0)
-        and (.finished_at|type=="string") and ((.finished_at|t)|tonumber >= 0) )
-    )
-  ' "$file" | grep -qx true || die "events_invalid"
+ 
+assert_events() {
+  set -euo pipefail
+  local file=${1:-events.ndjson}
+
+  # script dir and repo root
+  local SCRIPT_DIR
+  SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+  local REPO_ROOT="${SCRIPT_DIR%/ci}"
+
+  # default validator next to repo jq/
+  local DEFAULT_JQ="${REPO_ROOT}/ci/jq/events_validate.jq"
+  local jf="${EVENTS_VALIDATOR_JQ:-$DEFAULT_JQ}"
+
+  [[ -r "$jf" ]] || die "missing_validator:$jf"
+
+  jq -s -f "$jf" "$file" | grep -qx true || die "events_invalid"
 }
+
+
+
+
+ 
+
 
 assert_triage(){
   jq -e '
