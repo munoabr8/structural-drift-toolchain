@@ -48,6 +48,7 @@ file: ./.github/workflows/churn-pr.yml
 file: ./.github/workflows/ci-hours.yml
 file: ./.github/workflows/deploy.yml
 file: ./.github/workflows/dora-basics.yml
+file: ./.github/workflows/dora-health.yml
 file: ./.github/workflows/first-pass.yml
 file: ./.github/workflows/leadtime-dryrun.yml
 file: ./.github/workflows/maat-coupling.yml
@@ -83,7 +84,9 @@ file: ./ci/check_queries.sh
 file: ./ci/checklib.sh
 file: ./ci/dora/collect-events.sh
 file: ./ci/dora/compute-dora.py
+file: ./ci/dora/health.sh
 file: ./ci/dora/lt_from_sha.sh
+file: ./ci/dora/test-lead.py
 file: ./ci/env-shape.baseline
 file: ./ci/failure_taxonomy.yml
 file: ./ci/git/lib-risk.sh
