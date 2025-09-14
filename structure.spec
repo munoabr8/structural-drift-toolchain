@@ -14,6 +14,12 @@ dir: ./lib/
 dir: ./lib/policy/
 dir: ./lib/queries/
 dir: ./lib/testdata/
+dir: ./roi/
+dir: ./roi/artifacts/
+dir: ./roi/artifacts/ci-hours/
+dir: ./roi/artifacts/pr-first-pass/
+dir: ./roi/artifacts/roi-baseline/
+dir: ./roi/artifacts/workflow-stats/
 dir: ./system/
 dir: ./system/exit-codes/
 dir: ./system/make/
@@ -97,9 +103,7 @@ file: ./ci/lib.sh
 file: ./ci/probe.sh
 file: ./ci/repro.sh
 file: ./ci/roi/build_inputs.sh
-file: ./ci/roi/build_inputs2.sh
 file: ./ci/roi/compute_roit.py
-file: ./ci/roi/compute_roit_old.py
 file: ./ci/roi/emit_ci_hours.py
 file: ./ci/roi/extract_run_stats.sh
 file: ./ci/roi/fetch_artifacts.sh
@@ -195,6 +199,12 @@ file: ./lib/tty.sh
 file: ./lib/vmmapframe.sh
 file: ./lib/with_contract_env.sh
 file: ./lib/with_contracts.sh
+file: ./roi/artifacts/ci-hours/ci-hours.csv
+file: ./roi/artifacts/pr-first-pass/first_pass.json
+file: ./roi/artifacts/roi-baseline/baseline.json
+file: ./roi/artifacts/workflow-stats/runs.json
+file: ./roi/artifacts/workflow-stats/workflow-stats.csv
+file: ./roi/missing
 file: ./scope.yaml
 file: ./system/exit-codes/exit_codes_validator.sh
 file: ./system/make/garbage.mk
