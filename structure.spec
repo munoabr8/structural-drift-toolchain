@@ -14,7 +14,6 @@ dir: ./lib/
 dir: ./lib/policy/
 dir: ./lib/queries/
 dir: ./lib/testdata/
-dir: ./roi/
 dir: ./system/
 dir: ./system/exit-codes/
 dir: ./system/make/

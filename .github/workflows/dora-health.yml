@@ -14,12 +14,23 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           MAIN_BRANCH: main
-          WINDOW_DAYS: '30'
-          DEPLOY_SOURCE: deployments
-          DEPLOY_ENV: production   # or dev
-          LT_ALLOW_FALLBACK: 'false'   # set 'true' only while migrating
-          LT_MIN_LEAD_SECONDS: '300'
-          MIN_LEAD_SAMPLES: '10'
+
+
+          WINDOW_DAYS: '30' #Collect-events.sh
+
+          DEPLOY_SOURCE: deployments #Collect-events.sh
+
+
+
+          DEPLOY_ENV: production   # or dev  #Health.sh
+
+
+          LT_ALLOW_FALLBACK: 'false'   # set 'true' only while migrating , used in compute DORA
+          LT_MIN_LEAD_SECONDS: '300'    # used in compute DORA
+
+
+
+          MIN_LEAD_SAMPLES: '10'  # used in compute DORA
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
