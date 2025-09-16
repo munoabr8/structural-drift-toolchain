@@ -9,7 +9,7 @@ tmp
 
 /.evidence
 
-/.ci-seed
+./.ci-seed
 
 /foo.sh
 
@@ -19,6 +19,9 @@ triage.json
 
 result.json
 
+events.ndjson
+
+leadtime.csv
 
  
 ./roi/artifacts

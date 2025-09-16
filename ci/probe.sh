@@ -81,26 +81,29 @@ assert_dora_lt() {
 }
 
  
+ 
+
 assert_events() {
-  set -euo pipefail
-  local file=${1:-events.ndjson}
-
-  # script dir and repo root
-  local SCRIPT_DIR
+  local file="${1:?events_file_required}"
+  local SCRIPT_DIR REPO_ROOT DEFAULT_JQ jf
   SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
-  local REPO_ROOT="${SCRIPT_DIR%/ci}"
-
-  # default validator next to repo jq/
-  local DEFAULT_JQ="${REPO_ROOT}/ci/jq/events_validate.jq"
-  local jf="${EVENTS_VALIDATOR_JQ:-$DEFAULT_JQ}"
-
+  REPO_ROOT="${SCRIPT_DIR%/ci}"
+  DEFAULT_JQ="${REPO_ROOT}/ci/jq/events_validate.jq"   # expects PARSED array, no split()
+  jf="${EVENTS_VALIDATOR_JQ:-$DEFAULT_JQ}"
   [[ -r "$jf" ]] || die "missing_validator:$jf"
-
-  jq -s -f "$jf" "$file" | grep -qx true || die "events_invalid"
+  jq -R -s -f "$jf" "$file" | grep -qx true || die "events_invalid"
 }
 
-
-
+# ---------- normalize: path -> compact NDJSON on stdout ----------
+normalize_events() {
+  local path="${1:?path_required}"
+  jq -R -s '
+    def lines_to_objs: split("\n") | map(fromjson? // empty);
+    (fromjson? // lines_to_objs)
+    | (if type=="array" then . else [.] end)
+    | map(select(type=="object"))[]
+  ' "$path"
+}
 
  
 
@@ -122,10 +125,12 @@ assert_result(){
 }
 
 # ---------- runner ----------
+ 
+
 probe(){
   case "$kind" in
     dora_lt)  assert_ndjson; assert_dora_lt;;
-    events)   assert_ndjson; assert_events;;
+    events)   assert_events "$file";;
     triage)   assert_json;   assert_triage;;
     result)   assert_json;   assert_result;;
     ndjson)   assert_ndjson;;
@@ -133,15 +138,11 @@ probe(){
     *)        die "unknown_kind:$kind";;
   esac
 
-  # optional summaries
   case "$kind" in
-    dora_lt)
-      jq -s '[.[].minutes] | {samples:length, p50:(sort|.[(length*0.50|floor)]), p90:(sort|.[(length*0.90|floor)])}' "$file"
-      ;;
-    events)
-      jq -s '{pr_merged: (map(select(.type=="pr_merged"))|length),
-              deployments:(map(select(.type=="deployment"))|length)}' "$file"
-      ;;
+   events)
+  jq -s '{pr_merged:(map(select(.type=="pr_merged"))|length),
+          deployments:(map(select(.type=="deployment"))|length)}' "$file"
+  ;;
     *) :;;
   esac
 }

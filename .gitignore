@@ -40,6 +40,14 @@ env/
 
 /dora_lt.ndjson
 
+events.ndjson
+
+leadtime.csv
+
+*/events.ndjson
+
+*/leadtime.csv
+
 # Spec snapshots / diffs (generated)
 structure.spec.auto
 .structure.snapshot
