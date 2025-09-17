@@ -1,81 +1,43 @@
-# .github/workflows/deploy.yml
 name: Deploy
-
 on:
   workflow_dispatch:
     inputs:
-      env:    { description: "Environment", default: "production" }
-      reason: { description: "Why/notes", required: false }
-  push:
-    branches: [main]
+      env: { default: production }
+      sha: { description: "Commit SHA", required: false }
+
 
 permissions:
   contents: read
-  actions: read
-  pull-requests: read
+  actions: write   # needed for gh workflow run
 
-concurrency:
-  group: deploy-${{ github.ref }}
-  cancel-in-progress: false
-
+ 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: ${{ inputs.env || 'production' }}
-    env:
-      HEAD_BRANCH: main   # base branch for lead-time calc
     steps:
       - uses: actions/checkout@v4
-
-      - name: Deploy marker
-        run: |
-          echo "Deploying marker"
-          echo "branch=${GITHUB_REF#refs/heads/}"
-          echo "sha=$GITHUB_SHA"
-          echo "env=${{ inputs.env || 'production' }}"
+        with:
+          ref: ${{ inputs.sha || github.sha }}
 
       - name: Ensure tools
         run: |
-          set -euo pipefail
-          gh --version
-          command -v jq >/dev/null || (sudo apt-get update && sudo apt-get install -y jq)
+          gh --version || sudo apt-get update && sudo apt-get install -y gh
+          jq --version || sudo apt-get install -y jq
 
-      - name: Emit lead time (PR merge → deploy done)
-        if: ${{ success() }}
+      - name: Run deploy with polling + assert
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -euo pipefail
-          chmod +x ci/dora/lt_from_sha.sh
-          bash ci/dora/lt_from_sha.sh "$GITHUB_SHA" >> dora_lt.ndjson
-          tail -n1 dora_lt.ndjson
+          chmod +x bin/deploy.sh
+          bin/deploy.sh "${{ inputs.env || 'production' }}"
 
-      - name: Emit lead time
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HEAD_BRANCH: ${{ github.ref_name }}   # or 'main' if fixed
-        run: |
-          bash ci/dora/lt_from_sha.sh "${{ github.sha }}" 2>dora_lt.warn | jq -c . > dora_lt.ndjson
-
-      - name: Probe artifact
-        env:
-          DORA_LT_VALIDATOR_JQ: ci/jq/dora_lt_validate.jq
-        run: bash ci/probe.sh dora_lt.ndjson --kind dora_lt
-
-
-
-      # - name: Emit lead time
-      #   run: bash ci/dora/lt_from_sha.sh "$GITHUB_SHA" > dora_lt.ndjson
-      # - name: Probe lead time
-      #   run: bash ci/probe.sh dora_lt.ndjson --kind dora_lt
-      #   - uses: actions/upload-artifact@v4
-      #     with: { name: dora-leadtime, path: dora_lt.ndjson }   
-
-      - name: Upload lead-time
+      - name: Upload events
         if: ${{ success() }}
         uses: actions/upload-artifact@v4
         with:
-          name: dora-leadtime
-          path: dora_lt.ndjson
+          name: events-ndjson
+          path: events.ndjson
           retention-days: 21
+
+
+

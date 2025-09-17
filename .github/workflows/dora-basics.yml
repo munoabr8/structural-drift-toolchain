@@ -1,65 +1,50 @@
-name: DORA Basics
-
+name: DORA
 on:
-  schedule: [{ cron: "13 03 * * *" }]
+  schedule: [{ cron: "0 * * * *" }]   # hourly; tune as needed
   workflow_dispatch: {}
-  push:
-    paths: [".github/workflows/dora-basics.yml", "ci/dora/**"]
-  pull_request:
-    branches: [main]
-    types: [opened, synchronize, reopened, closed]
 
 permissions:
   contents: read
-  actions: read
-  pull-requests: read
 
 jobs:
   dora:
     runs-on: ubuntu-latest
     env:
-      WINDOW_DAYS: ${{ inputs.window_days || vars.WINDOW_DAYS || '60' }}
-      DEPLOY_WORKFLOW_NAME: ${{ inputs.deploy_workflow_name || vars.DEPLOY_WORKFLOW_NAME || 'Deploy' }}
-      MAIN_BRANCH: ${{ inputs.main_branch || vars.MAIN_BRANCH || 'main' }}
+      WINDOW_DAYS: "14"
+      MAIN_BRANCH: "main"
+      PCTL: "90"
+      MIN_LEAD_SAMPLES: "1"
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install deps
-        run: sudo apt-get update && sudo apt-get install -y jq gh
-
-      - name: Debug workflows
-        env: 
-          GH_TOKEN: ${{ github.token }}
+      - name: Ensure tools
         run: |
-            gh api /repos/${GITHUB_REPOSITORY}/actions/workflows | jq -r '.workflows[].name'
+          sudo apt-get update
+          sudo apt-get install -y jq python3
 
+      - name: Download latest events (best-effort)
+        uses: actions/download-artifact@v4
+        with: { name: events-ndjson }
+        continue-on-error: true
 
-
-
-
-      - name: Collect events
+      - name: Collect PR merges
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bash ./ci/dora/collect-events.sh events.ndjson
- 
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          bash ci/dora/collect-events.sh pr.ndjson
+          test -s events.ndjson && cat pr.ndjson >> events.ndjson || mv pr.ndjson events.ndjson
+
       - name: Probe events
-        run: bash ci/probe.sh events.ndjson --kind events
+        run: bash ci/probe.sh --kind=events events.ndjson
 
       - name: Compute DORA
-        env:
-          PCTL: '90'
-          LT_ALLOW_FALLBACK: 'true'        # set to 'false' after DEPLOYED_SHA is wired
-          LT_MIN_LEAD_SECONDS: '400'
-          MIN_LEAD_SAMPLES: '10'
+        run: python3 ci/dora/compute-dora.py events.ndjson | tee dora.out.txt
 
-        run: python3 ./ci/dora/compute-dora.py events.ndjson | tee -a "$GITHUB_STEP_SUMMARY"
-
-      - name: Upload leadtime.csv
-        uses: actions/upload-artifact@v4
-        if: always()
+      - uses: actions/upload-artifact@v4
         with:
-          name: dora-leadtime
-          path: leadtime.csv
-          if-no-files-found: ignore
-          retention-days: 14
-
+          name: dora-artifacts
+          path: |
+            events.ndjson
+            leadtime.csv
+            dora.out.txt

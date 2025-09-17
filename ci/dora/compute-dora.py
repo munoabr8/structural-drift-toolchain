@@ -13,7 +13,7 @@ MAX_FALLBACK_HOURS = float(os.environ.get("MAX_FALLBACK_HOURS", "168"))  # 7d
 WINDOW_DAYS = int(os.environ.get("WINDOW_DAYS", "0"))            # 0 = no window filter
 LT_ALLOW_FALLBACK = os.getenv("LT_ALLOW_FALLBACK", "false").lower() in {"1","true","yes","y"}
 LT_MIN_LEAD_SECONDS = int(os.environ.get("LT_MIN_LEAD_SECONDS", "0"))    # min delta to count a pair
-LEAD_UNIT = os.environ.get("LEAD_UNIT", "minutes").lower()       # hours|minutes|seconds
+LEAD_UNIT = os.environ.get("LEAD_UNIT", "e").lower()       # hours|minutes|seconds
 
 # ---------- IO: tolerant loader for NDJSON, multi-line objects, or a single top-level array ----------
 def load_events(path: str):
@@ -103,29 +103,32 @@ def aggregate_deployments(events):
 deploy_success_times, daily_df, deployments, failed = aggregate_deployments(events)
 
 # ---------- lead time ----------
+import re
+
+HEX40 = re.compile(r"^[0-9a-f]{40}$")
+
 def compute_lead(events, success_times_by_sha, max_fallback_hours=168.0,
                  allow_fallback=False, min_lead_seconds=0):
-    """Return (lead_seconds:list[float], details:list[dict])."""
-    norm = {k: sorted(set(t for t in v if t)) for k, v in (success_times_by_sha or {}).items()}
+    # normalize deploy keys to lowercase
+    norm = {(k or "").lower(): sorted(set(t for t in v if t))
+            for k, v in (success_times_by_sha or {}).items()}
     any_times = sorted(t for lst in norm.values() for t in lst)
     lead_seconds, details = [], []
 
     for e in events:
         if e.get("type") != "pr_merged":
             continue
-        sha = e.get("sha")
+        sha = (e.get("merge_commit_sha") or e.get("sha") or e.get("head_sha") or "").lower()
         m = parse_ts(e.get("merged_at"))
-        if not sha or not m or not in_window(m):
+        if not sha or not m or not in_window(m) or not HEX40.fullmatch(sha):
             continue
 
         exact = [t for t in norm.get(sha, []) if (t - m).total_seconds() > min_lead_seconds]
         times, match = exact, "sha"
-
         if not times and allow_fallback:
             upper = m + timedelta(hours=max_fallback_hours)
             times = [t for t in any_times if m < t <= upper and (t - m).total_seconds() > min_lead_seconds]
-            match = "fallback" if times else match
-
+            if times: match = "fallback"
         if not times:
             continue
 
@@ -146,6 +149,7 @@ def compute_lead(events, success_times_by_sha, max_fallback_hours=168.0,
             "match": match,
         })
     return lead_seconds, details
+
 
 lead, details = compute_lead(
     events, deploy_success_times, MAX_FALLBACK_HOURS,
@@ -251,6 +255,34 @@ else:
             print(f"  median {unit}=" + fmt.format(statistics.median(ys)) +
                   f", p{PCTL}=" + fmt.format(percentile(ys, PCTL)))
 
+
+
+# --- assemble dora.json ---
+def safe_p50(xs):
+    if not xs: return None
+    xs = sorted(xs); n=len(xs)
+    return xs[n//2] if n%2 else 0.5*(xs[n//2-1]+xs[n//2])
+
+lead_hours = [s/3600.0 for s in lead]  # 'lead' is seconds list from your code
+dora = {
+  "schema": "dora/v1",
+  "window_days": WINDOW_DAYS or None,
+  "metrics": {
+    "deploys_total": deployments,
+    "deploy_failures": failed,
+    "deploys_per_day": round(sum(daily_df.values())/max(len(daily_df),1), 4),
+    "daily_histogram": daily_df
+  },
+  "lead_time": {
+    "samples": len(lead_hours),
+    "median_h": round(statistics.median(lead_hours), 4) if lead_hours else None,
+    "pctl_h": round(percentile(lead_hours, PCTL), 4) if lead_hours else None,
+    "pctl": PCTL
+  }
+}
+with open("dora.json","w",encoding="utf-8") as f:
+    json.dump(dora, f, indent=2)
+print("- Wrote dora.json")
 
 
 # ---------- CSV ----------
