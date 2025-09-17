@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.sha || github.sha }}
-
+ 
       - name: Ensure tools
         run: sudo apt-get update && sudo apt-get install -y jq
 
