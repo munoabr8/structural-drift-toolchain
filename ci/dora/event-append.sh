@@ -33,7 +33,7 @@ resolve_repo() {
 
 # ------------ validators ----------
  
-
+# shellcheck disable=SC2016
 jq_pr='
   .type=="pr_merged" and .schema==$s
   and (.pr|type=="number")
@@ -41,51 +41,15 @@ jq_pr='
   and (.head_sha|test("^[0-9a-f]{40}$"))
   and (.merged_at|test("^[0-9]{4}-[0-9]{2}-[0-9]{2}T.*Z$"))
 '
+# shellcheck disable=SC2016
 jq_dep='
   .type=="deployment" and .schema==$s
   and (.sha|test("^[0-9a-f]{40}$"))
   and (.status|test("^(success|failure|failed|cancelled|canceled)$"))
   and (.finished_at|test("^[0-9]{4}-[0-9]{2}-[0-9]{2}T.*Z$"))
-
+'
 # ------------ sink ---------------
-append2() {
-  local json="$1" pred="$2"
-  echo "$json" | jq -e . >/dev/null || die "invalid_json"
-  echo "$json" | jq -e --arg s "$SCHEMA" "$pred" >/dev/null || die "contract_failed"
-
-  # de-dupe against last 200 lines
-
-if [[ -f "$OUT" ]]; then
-  if jq -n -e --argjson j "$json" '
-    def eqstr(a;b): (a//"")==(b//"");
-    [ inputs
-      | fromjson?
-      | select(.)
-      | if ($j.type=="deployment") then
-          (.type=="deployment") and eqstr(.sha; $j.sha) and eqstr(.finished_at; $j.finished_at)
-        elif ($j.type=="pr_merged") then
-          (.type=="pr_merged") and (eqstr(.merge_commit_sha; $j.merge_commit_sha) or (.pr==$j.pr))
-        else false end
-      | select(.)
-    ] | length > 0
-  ' < <(tail -n200 "$OUT" 2>/dev/null) >/dev/null; then
-    return 0
-  fi
-fi
-
-  # simple mkdir lock
-  local lock="${OUT}.lockdir"
-  for _ in $(seq 1 100); do
-    if mkdir "$lock" 2>/dev/null; then
-      trap 'rmdir "$lock"' EXIT
-      printf '%s\n' "$json" >> "$OUT"
-      rmdir "$lock"; trap - EXIT
-      return 0
-    fi
-    sleep 0.1
-  done
-  die "lock_timeout"
-}
+#  
 
 append() {
   local json="$1" pred="$2"
@@ -171,10 +135,19 @@ resolve_pr_env_from_api() {
   [[ "$n" =~ ^[0-9]+$ ]] || die "bad_pr_number:$n" 64
   local pr; pr="$(api "/repos/$GITHUB_REPOSITORY/pulls/$n")" || die "pr_fetch_failed:$n"
   export PR_NUMBER="$n"
-  export PR_HEAD_SHA="$(jq -r '.head.sha' <<<"$pr")"
-  export PR_MERGE_SHA="$(jq -r '.merge_commit_sha' <<<"$pr")"
-  export PR_BASE="$(jq -r '.base.ref' <<<"$pr")"
-  export PR_MERGED_AT="$(jq -r '.merged_at' <<<"$pr")"
+
+PR_HEAD_SHA="$(jq -r '.head.sha' <<<"$pr")"
+export PR_HEAD_SHA
+
+PR_MERGE_SHA="$(jq -r '.merge_commit_sha' <<<"$pr")"
+export PR_MERGE_SHA
+
+PR_BASE="$(jq -r '.base.ref' <<<"$pr")"
+export PR_BASE
+
+PR_MERGED_AT="$(jq -r '.merged_at' <<<"$pr")"
+export PR_MERGED_AT
+
   if [[ "${TEST_MODE:-0}" != "1" ]]; then
     [[ "$PR_MERGED_AT" != "null" && -n "$PR_MERGE_SHA" ]] || die "pr_not_merged:$n"
   fi
