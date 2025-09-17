@@ -57,8 +57,7 @@ jobs:
         run: |
 
           python3 ci/dora/compute-dora.py events.ndjson | tee dora.out.txt
- 
-          {
+           {
             echo "## DORA"
             echo
             echo '```'
