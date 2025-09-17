@@ -38,7 +38,7 @@ jobs:
 
       - name: Compute DORA
         run: |
-          python3 ci/dora/compute_dora.py events.ndjson | tee dora.out.txt
+          python3 ci/dora/compute-dora.py events.ndjson | tee dora.out.txt
           { echo "## DORA Health"; echo '```'; cat dora.out.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Health checks
