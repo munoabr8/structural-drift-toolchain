@@ -8,6 +8,7 @@ dir: ./ci/dora/
 dir: ./ci/git/
 dir: ./ci/jq/
 dir: ./ci/roi/
+dir: ./ci/voi/
 dir: ./config/
 dir: ./docs/
 dir: ./lib/
@@ -70,6 +71,7 @@ file: ./Makefile
 file: ./README.generated.md
 file: ./attn/context-status.rf.sh
 file: ./attn/context-status.sh
+file: ./bin/deploy.sh
 file: ./bin/emit-env
 file: ./bin/gen-scope.sh
 file: ./bin/main.sh
@@ -84,6 +86,7 @@ file: ./ci/check_queries.sh
 file: ./ci/checklib.sh
 file: ./ci/dora/collect-events.sh
 file: ./ci/dora/compute-dora.py
+file: ./ci/dora/event-append.sh
 file: ./ci/dora/health.sh
 file: ./ci/dora/lt_from_sha.sh
 file: ./ci/dora/test-lead.py
@@ -92,6 +95,7 @@ file: ./ci/failure_taxonomy.yml
 file: ./ci/git/lib-risk.sh
 file: ./ci/git/prepare-ref.sh
 file: ./ci/jq/dora_lt_validate.jq
+file: ./ci/jq/events_summary.jq
 file: ./ci/jq/events_validate.jq
 file: ./ci/lib.sh
 file: ./ci/probe.sh
@@ -112,6 +116,7 @@ file: ./ci/test.sh
 file: ./ci/test_github_timings.py
 file: ./ci/test_toggl_parser.py
 file: ./ci/triage.sh
+file: ./ci/voi/void_from_dora.py
 file: ./config/policy.rules.yml
 file: ./config/runtime.cfg
 file: ./config/runtime_flags.sh

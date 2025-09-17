@@ -3,6 +3,11 @@
 # Emit DORA lead time JSON for a deployed SHA.
 # Behavior is encapsulated in small functions for clarity and testability.
 
+
+# Needed in .github/workflows/leadtime-dryrun.yml
+# Needed in .github/workflows/deploy.yml
+
+
 set -euo pipefail
 export LC_ALL=C
 
