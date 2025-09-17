@@ -7,3 +7,4 @@ sub_roots:
   - ci/git
   - ci/jq
   - ci/roi
+  - ci/voi

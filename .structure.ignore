@@ -23,6 +23,10 @@ events.ndjson
 
 leadtime.csv
 
+
+dora.json
+
+*/dora.json
  
 ./roi/artifacts
 ./roi/missing

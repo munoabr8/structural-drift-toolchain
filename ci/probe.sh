@@ -140,8 +140,8 @@ probe(){
 
   case "$kind" in
    events)
-  jq -s '{pr_merged:(map(select(.type=="pr_merged"))|length),
-          deployments:(map(select(.type=="deployment"))|length)}' "$file"
+
+jq -R -s -f ../jq/events_summary.jq "$file"
   ;;
     *) :;;
   esac
