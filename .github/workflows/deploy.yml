@@ -3,41 +3,35 @@ on:
   workflow_dispatch:
     inputs:
       env: { default: production }
-      sha: { description: "Commit SHA", required: false }
-
+      sha: { required: false }
 
 permissions:
   contents: read
-  actions: write   # needed for gh workflow run
 
- 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4g
         with:
           ref: ${{ inputs.sha || github.sha }}
-
+ 
       - name: Ensure tools
-        run: |
-          gh --version || sudo apt-get update && sudo apt-get install -y gh
-          jq --version || sudo apt-get install -y jq
+        run: sudo apt-get update && sudo apt-get install -y jq
 
-      - name: Run deploy with polling + assert
+      - name: Run deploy executor
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          chmod +x bin/deploy.sh
-          bin/deploy.sh "${{ inputs.env || 'production' }}"
+          chmod +x bin/deploy_exec.sh
+          bin/deploy_exec.sh "${{ inputs.env || 'production' }}"
 
-      - name: Upload events
-        if: ${{ success() }}
+      - name: Validate events.ndjson
+        run: bash ci/probe.sh --kind=events events.ndjson
+
+      - name: Upload events.ndjson
         uses: actions/upload-artifact@v4
         with:
           name: events-ndjson
           path: events.ndjson
           retention-days: 21
-
-
-

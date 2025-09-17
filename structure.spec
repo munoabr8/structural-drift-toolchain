@@ -72,6 +72,7 @@ file: ./README.generated.md
 file: ./attn/context-status.rf.sh
 file: ./attn/context-status.sh
 file: ./bin/deploy.sh
+file: ./bin/deploy_exec.sh
 file: ./bin/emit-env
 file: ./bin/gen-scope.sh
 file: ./bin/main.sh

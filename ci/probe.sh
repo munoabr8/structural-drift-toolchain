@@ -87,8 +87,8 @@ assert_events() {
   local file="${1:?events_file_required}"
   local SCRIPT_DIR REPO_ROOT DEFAULT_JQ jf
   SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
-  REPO_ROOT="${SCRIPT_DIR%/ci}"
-  DEFAULT_JQ="${REPO_ROOT}/ci/jq/events_validate.jq"   # expects PARSED array, no split()
+  REPO_ROOT="${SCRIPT_DIR%/ci/}"
+  DEFAULT_JQ="${REPO_ROOT}/jq/events_validate.jq"   # expects PARSED array, no split()
   jf="${EVENTS_VALIDATOR_JQ:-$DEFAULT_JQ}"
   [[ -r "$jf" ]] || die "missing_validator:$jf"
   jq -R -s -f "$jf" "$file" | grep -qx true || die "events_invalid"
@@ -141,7 +141,14 @@ probe(){
   case "$kind" in
    events)
 
-jq -R -s -f ../jq/events_summary.jq "$file"
+    local SCRIPT_DIR REPO_ROOT DEFAULT_JQ jf
+  SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+  REPO_ROOT="${SCRIPT_DIR%/ci/}"
+  DEFAULT_JQ="${REPO_ROOT}/jq/events_summary.jq"   # expects PARSED array, no split()
+  jf="${EVENTS_VALIDATOR_JQ:-$DEFAULT_JQ}"
+  [[ -r "$jf" ]] || die "missing events_summary:$jf"
+
+jq -R -s -f "$jf" "$file"
   ;;
     *) :;;
   esac

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # ci/dora/collect-events2.sh
+
+
 set -euo pipefail
 export LC_ALL=C
 
