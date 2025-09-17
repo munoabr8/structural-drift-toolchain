@@ -10,28 +10,26 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with: { ref: ${{ inputs.sha || github.sha }} }
-
-      # … your real deploy steps …
-
-      - name: Append deployment event
-        if: ${{ success() }}
-        run: |
+    - uses: actions/checkout@v4
+      with: 
+        ref: ${{ inputs.sha || github.sha }} 
+    - name: Append deployment event
+      if: ${{ success() }}
+      run: |
           TS="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           jq -c -n --arg schema "events/v1" --arg repo "$GITHUB_REPOSITORY" \
             --arg sha "$GITHUB_SHA" --arg fin "$TS" --arg status "success" \
             '{schema:$schema,type:"deployment",repo:$repo,sha:$sha,status:$status,finished_at:$fin}' \
             >> events.ndjson
 
-      - name: Validate events.ndjson
-        if: ${{ success() }}
-        run: |
+    - name: Validate events.ndjson
+      if: ${{ success() }}
+      run: |
           bash ci/probe.sh --kind=events events.ndjson
 
-      - name: Upload events.ndjson
-        if: ${{ success() }}
-        uses: actions/upload-artifact@v4
+    - name: Upload events.ndjson
+      if: ${{ success() }}
+      uses: actions/upload-artifact@v4
         with:
           name: events-ndjson
           path: events.ndjson
