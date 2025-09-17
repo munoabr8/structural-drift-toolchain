@@ -91,15 +91,8 @@ append() {
 }
 
 # ------------ emitters -----------
-# emit_deployment(){
-#   req DEPLOY_SHA; req DEPLOY_STATUS
-#   local finished="${DEPLOY_FINISHED_AT:-$(ts)}"
-#   local j
-#   j=$(jq -c -n --arg s "$SCHEMA" --arg sha "$DEPLOY_SHA" --arg st "$DEPLOY_STATUS" --arg at "$finished" '
-#         {schema:$s,type:"deployment",sha:$sha,status:($st|ascii_downcase),finished_at:$at}')
-#   append "$j" "$jq_dep"
-# }
-
+ 
+ 
 
 emit_deployment(){
   req DEPLOY_SHA; req DEPLOY_STATUS
@@ -111,23 +104,41 @@ emit_deployment(){
         --arg st  "$(printf '%s' "$DEPLOY_STATUS" | tr '[:upper:]' '[:lower:]')" \
         --arg at "$finished" \
         '{schema:$s,type:"deployment",sha:$sha,status:$st,finished_at:$at}')"
-
-  # optional: keep your contract check
-  # append "$j" "$jq_dep"   # <- replace this call:
-
-  upsert_event "$j"        # <- keyed de-dupe by (type, sha)
+  upsert_event "$j"        # keyed de-dupe by (type, sha[,env])
 }
 
 upsert_event() {
-  local json="$1" out="${OUT:-events.ndjson}"
-  local t s tmp
+  # Validate against schema-specific predicate, then replace any prior (type, sha[, env]).
+  local json="$1" out="${OUT:-events.ndjson}" lock="${OUT}.lockdir" tmp t s e
+  echo "$json" | jq -e . >/dev/null || die "invalid_json"
+  echo "$json" | jq -e --arg s "$SCHEMA" '
+    if .type=="deployment" then
+      '"$jq_dep"'
+    elif .type=="pr_merged" then
+      '"$jq_pr"'
+    else false end' >/dev/null || die "contract_failed"
+
   t="$(printf '%s\n' "$json" | jq -r '.type')"
   s="$(printf '%s\n' "$json" | jq -r '.sha // empty')"
-  tmp="$(mktemp)"
-  { jq -c --arg t "$t" --arg s "$s" 'select(.type!=$t or .sha!=$s)' "$out" 2>/dev/null || true
-    printf '%s\n' "$json"; } >"$tmp"
-  mv "$tmp" "$out"
+  e="$(printf '%s\n' "$json" | jq -r '(.env // "")')"
+  mkdir -p -- "$(dirname -- "$out")"
+
+  for _ in $(seq 1 100); do
+    if mkdir "$lock" 2>/dev/null; then
+      trap 'rmdir "$lock"' EXIT
+      tmp="$(mktemp)"
+      { jq -c --arg t "$t" --arg s "$s" --arg e "$e" '
+          select(.type!=$t or .sha!=$s or ((.env//"")!=$e))' "$out" 2>/dev/null || true
+        printf '%s\n' "$json"; } >"$tmp"
+      mv "$tmp" "$out"
+      rmdir "$lock"; trap - EXIT
+      return 0
+    fi
+    sleep 0.1
+  done
+  die "lock_timeout"
 }
+
 
  
 
