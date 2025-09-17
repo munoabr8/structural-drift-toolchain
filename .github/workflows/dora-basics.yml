@@ -15,6 +15,7 @@ jobs:
       MAIN_BRANCH: "main"
       PCTL: "90"
       MIN_LEAD_SAMPLES: "1"
+      MIN_LEAD_SECONDS: "0"
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GITHUB_REPOSITORY: ${{ github.repository }}
     steps:
