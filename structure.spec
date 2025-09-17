@@ -55,6 +55,7 @@ file: ./.github/workflows/leadtime-dryrun.yml
 file: ./.github/workflows/maat-coupling.yml
 file: ./.github/workflows/metrics-preflight.yml
 file: ./.github/workflows/nightly-metrics.yml
+file: ./.github/workflows/pr-merged.yml
 file: ./.github/workflows/pr-tests.yml
 file: ./.github/workflows/pr-up-to-date.yml
 file: ./.github/workflows/risk-update.yml
