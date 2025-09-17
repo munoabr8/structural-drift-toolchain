@@ -91,28 +91,46 @@ append() {
 }
 
 # ------------ emitters -----------
+# emit_deployment(){
+#   req DEPLOY_SHA; req DEPLOY_STATUS
+#   local finished="${DEPLOY_FINISHED_AT:-$(ts)}"
+#   local j
+#   j=$(jq -c -n --arg s "$SCHEMA" --arg sha "$DEPLOY_SHA" --arg st "$DEPLOY_STATUS" --arg at "$finished" '
+#         {schema:$s,type:"deployment",sha:$sha,status:($st|ascii_downcase),finished_at:$at}')
+#   append "$j" "$jq_dep"
+# }
+
+
 emit_deployment(){
   req DEPLOY_SHA; req DEPLOY_STATUS
   local finished="${DEPLOY_FINISHED_AT:-$(ts)}"
   local j
-  j=$(jq -c -n --arg s "$SCHEMA" --arg sha "$DEPLOY_SHA" --arg st "$DEPLOY_STATUS" --arg at "$finished" '
-        {schema:$s,type:"deployment",sha:$sha,status:($st|ascii_downcase),finished_at:$at}')
-  append "$j" "$jq_dep"
+  j="$(jq -c -n \
+        --arg s "$SCHEMA" \
+        --arg sha "$DEPLOY_SHA" \
+        --arg st  "$(printf '%s' "$DEPLOY_STATUS" | tr '[:upper:]' '[:lower:]')" \
+        --arg at "$finished" \
+        '{schema:$s,type:"deployment",sha:$sha,status:$st,finished_at:$at}')"
+
+  # optional: keep your contract check
+  # append "$j" "$jq_dep"   # <- replace this call:
+
+  upsert_event "$j"        # <- keyed de-dupe by (type, sha)
 }
 
-emit_pr_merged2(){
-  # Either envs are pre-set, or we resolved them already.
-  req PR_NUMBER; req PR_HEAD_SHA; req PR_MERGE_SHA; req PR_BASE; req PR_MERGED_AT
-  local j
-  j=$(jq -c -n --arg s "$SCHEMA" --arg pr "$PR_NUMBER" \
-        --arg head "$PR_HEAD_SHA" --arg merge "$PR_MERGE_SHA" \
-        --arg base "$PR_BASE" --arg at "$PR_MERGED_AT" '
-        {schema:$s,type:"pr_merged",
-         pr:($pr|tonumber),
-         head_sha:$head,merge_commit_sha:$merge,
-         base_branch:$base,merged_at:$at}')
-  append "$j" "$jq_pr"
+upsert_event() {
+  local json="$1" out="${OUT:-events.ndjson}"
+  local t s tmp
+  t="$(printf '%s\n' "$json" | jq -r '.type')"
+  s="$(printf '%s\n' "$json" | jq -r '.sha // empty')"
+  tmp="$(mktemp)"
+  { jq -c --arg t "$t" --arg s "$s" 'select(.type!=$t or .sha!=$s)' "$out" 2>/dev/null || true
+    printf '%s\n' "$json"; } >"$tmp"
+  mv "$tmp" "$out"
 }
+
+ 
+
 emit_pr_merged(){
   req PR_NUMBER; req PR_HEAD_SHA; req PR_MERGE_SHA; req PR_BASE; req PR_MERGED_AT
   local j
@@ -160,6 +178,7 @@ maybe_resolve_pr_from_event() {
     export PR_NUMBER
   fi
 }
+
 
 # -------------- main -------------
 resolve_repo
