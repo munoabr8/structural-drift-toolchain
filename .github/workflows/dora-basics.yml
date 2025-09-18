@@ -36,6 +36,12 @@ jobs:
             gh run download "$RUN_ID" -n events-ndjson -D artifacts || true
           fi
 
+      - name: Probe events
+        run: bash ci/probe.sh --kind=events events.ndjson
+
+      - name: Prepare events
+        run: bash ci/dora/prepare-events.sh  
+
       # Always collect fresh PR merges, then merge with any downloaded artifact
       - name: Collect PR merges (only)
         run: |
@@ -51,11 +57,6 @@ jobs:
             echo "no events" >&2; exit 2
           fi
 
-      - name: Probe events
-        run: bash ci/probe.sh --kind=events events.ndjson
-
-      - name: Prepare events
-        run: bash ci/dora/prepare-events.sh  
 
       - name: Compute DORA
         run: |

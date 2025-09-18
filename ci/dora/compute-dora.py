@@ -138,6 +138,7 @@ def compute_lead(events, success_times_by_sha, max_fallback_hours=168.0,
         if e.get("type") != "pr_merged":
             continue
         sha = (e.get("merge_commit_sha") or e.get("sha") or e.get("head_sha") or "").lower()
+        
         m = parse_ts(e.get("merged_at"))
         if not sha or not m or not in_window(m) or not HEX40.fullmatch(sha):
             continue
