@@ -36,6 +36,26 @@ jobs:
             gh run download "$RUN_ID" -n events-ndjson -D artifacts || true
           fi
 
+      - name: Download latest events artifact
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+            set -euo pipefail
+            RUN_ID="$(gh run list --workflow 'Deploy' --json databaseId,conclusion,createdAt \
+                -q 'sort_by(.createdAt)|reverse|map(select(.conclusion=="success"))|.[0].databaseId' || true)"
+              if [[ -n "${RUN_ID:-}" ]]; then
+                gh run download "$RUN_ID" -n events-ndjson -D artifacts || true
+              fi
+
+            p="$(find artifacts -type f -name 'events.ndjson' -print -quit || true)"
+            if [[ -n "${p:-}" ]]; then
+              cp "$p" ./events.ndjson
+              echo "Using events file: $p"
+            else
+              echo "No events.ndjson found in artifacts"
+            fi
+
+
       - name: Probe events
         run: bash ci/probe.sh --kind=events events.ndjson
 
