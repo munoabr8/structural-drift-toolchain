@@ -5,6 +5,7 @@ dir: ./attn/
 dir: ./bin/
 dir: ./ci/
 dir: ./ci/dora/
+dir: ./ci/dora/artifacts/
 dir: ./ci/git/
 dir: ./ci/jq/
 dir: ./ci/roi/
@@ -91,6 +92,8 @@ file: ./ci/dora/compute-dora.py
 file: ./ci/dora/event-append.sh
 file: ./ci/dora/health.sh
 file: ./ci/dora/lt_from_sha.sh
+file: ./ci/dora/prepare-events.sh
+file: ./ci/dora/probe_pairs.sh
 file: ./ci/dora/test-lead.py
 file: ./ci/env-shape.baseline
 file: ./ci/failure_taxonomy.yml
