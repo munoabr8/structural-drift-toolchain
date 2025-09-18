@@ -79,27 +79,45 @@ collect_pr_merges() {
   while :; do
     local data; data="$(api "/repos/${GITHUB_REPOSITORY}/pulls?state=closed&base=${MAIN_BRANCH}&per_page=100&page=${page}")" || die "gh_pr_list_failed"
     local cnt; cnt="$(jq 'length' <<<"$data")"; [[ "$cnt" -eq 0 ]] && break
-    local bad; bad="$(jq '[.[] | select(.merged_at==null or (.merge_commit_sha//"")=="" )] | length' <<<"$data")"
-    (( bad==0 )) || warn "pr_merged_missing_sha_or_time:count=${bad}"
 
+    # --- diagnostics (optional) ---
+    if [[ "${VERBOSE:-0}" == "1" ]]; then
+      {
+        echo "== page:$page total:$cnt ==" 
+        echo "-- closed_not_merged --"
+        jq -r '.[] | select(.merged_at==null) | [.number,.state] | @tsv' <<<"$data"
+        echo "-- merged_but_no_merge_commit_sha (likely squash) --"
+        jq -r '.[] | select(.merged_at!=null and ((.merge_commit_sha//"")=="" )) | [.number,.merged_at, (.head.sha//"") ] | @tsv' <<<"$data"
+      } >&2 || true
+    fi
+
+    # warn only when merged but no usable sha at all
+    local bad; bad="$(jq '[.[] | select(.merged_at!=null and ((.merge_commit_sha//"")=="" and (.head.sha//"")=="" ))] | length' <<<"$data")"
+    (( bad==0 )) || warn "pr_merged_missing_sha_unusable:count=${bad}"
+
+    # emit only valid merged PRs since SINCE; accept squash by falling back to head.sha
     jqr --arg since "$SINCE" --arg s "$SCHEMA" '
       .[]
-      | select(.merged_at!=null and (.merge_commit_sha//"")!="" and .merged_at >= $since)
+      | select(.merged_at!=null and .merged_at >= $since)
+      | .sha = (.merge_commit_sha // .head.sha)
+      | select((.sha // "") != "")
       | {
           schema: $s,
           type: "pr_merged",
           repo: .base.repo.full_name,
           pr: .number,
           head_sha: (.head.sha // null),
-          merge_commit_sha: .merge_commit_sha,
-          sha: (.merge_commit_sha // .head.sha),
+          merge_commit_sha: (.merge_commit_sha // null),
+          sha: .sha,
           base_branch: .base.ref,
           merged_at: .merged_at
         }
     ' <<<"$data"
+
     page=$((page+1))
   done
 }
+
 
 # ---------- Resolve deploy workflow id (optional "runs" mode) ----------
 resolve_workflow_id() {
