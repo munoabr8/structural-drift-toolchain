@@ -5,7 +5,7 @@ on:
 
 permissions:
   contents: read
-  actions: read           # needed to list/download artifacts from other runs
+  actions: read
 
 jobs:
   dora:
@@ -23,66 +23,76 @@ jobs:
 
       - name: Ensure tools
         run: |
+          set -euo pipefail
           sudo apt-get update
           sudo apt-get install -y jq python3 gh
 
-      # Optional: pull the most recent events artifact from the latest successful Deploy run
-      - name: Download latest events artifact (best effort)
+      - name: Resolve latest successful Deploy run
+        id: pick
         run: |
           set -euo pipefail
-          RUN_ID="$(gh run list --workflow 'Deploy' --json databaseId,conclusion \
-                    -q '[.[]|select(.conclusion=="success")][0].databaseId' || true)"
-          if [ -n "${RUN_ID:-}" ]; then
-            gh run download "$RUN_ID" -n events-ndjson -D artifacts || true
+          RUN_ID="$(gh run list --workflow 'Deploy' --json databaseId,conclusion,createdAt \
+            -q 'sort_by(.createdAt)|reverse|map(select(.conclusion=="success"))|.[0].databaseId')"
+          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Skip if already processed
+        id: cachecheck
+        run: |
+          set -euo pipefail
+          mkdir -p .cache
+          if [[ -f .cache/events.last_run && "$(cat .cache/events.last_run)" == "${{ steps.pick.outputs.run_id }}" ]]; then
+            echo "fresh=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "fresh=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Download latest events artifact
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Download artifact for new run
+        if: steps.cachecheck.outputs.fresh == 'false'
         run: |
-            set -euo pipefail
-            RUN_ID="$(gh run list --workflow 'Deploy' --json databaseId,conclusion,createdAt \
-                -q 'sort_by(.createdAt)|reverse|map(select(.conclusion=="success"))|.[0].databaseId' || true)"
-              if [[ -n "${RUN_ID:-}" ]]; then
-                gh run download "$RUN_ID" -n events-ndjson -D artifacts || true
-              fi
-
-            p="$(find artifacts -type f -name 'events.ndjson' -print -quit || true)"
-            if [[ -n "${p:-}" ]]; then
-              cp "$p" ./events.ndjson
-              echo "Using events file: $p"
-            else
-              echo "No events.ndjson found in artifacts"
-            fi
-
+          set -euo pipefail
+          mkdir -p artifacts
+          tmpdir="$(mktemp -d)"
+          gh run download "${{ steps.pick.outputs.run_id }}" -n events-ndjson -D "$tmpdir"
+          # adjust path if the artifact unpacks into a subdir; common cases handled:
+          src=""
+          if [[ -f "$tmpdir/events.ndjson" ]]; then
+            src="$tmpdir/events.ndjson"
+          elif [[ -f "$tmpdir/events-ndjson/events.ndjson" ]]; then
+            src="$tmpdir/events-ndjson/events.ndjson"
+          else
+            echo "ERR: events.ndjson not found in downloaded artifact" >&2
+            exit 2
+          fi
+          jq -c . <"$src" >/dev/null
+          mv -f "$src" artifacts/events.ndjson
+          echo "${{ steps.pick.outputs.run_id }}" > .cache/events.last_run
 
       - name: Probe events
-        run: bash ci/probe.sh --kind=events events.ndjson
+        run: bash ci/probe.sh --kind=events artifacts/events.ndjson
 
       - name: Prepare events
-        run: bash ci/dora/prepare-events.sh  
+        run: bash ci/dora/prepare-events.sh
 
-      # Always collect fresh PR merges, then merge with any downloaded artifact
       - name: Collect PR merges (only)
         run: |
+          set -euo pipefail
           bash ci/dora/collect-events.sh pr.ndjson
-          # keep only PR records from the collector output
           jq -c 'select(.type=="pr_merged")' pr.ndjson > pr_only.ndjson
 
-          if [ -s artifacts/events.ndjson ]; then
+          if [[ -s artifacts/events.ndjson ]]; then
             cat artifacts/events.ndjson pr_only.ndjson > events.ndjson
-          elif [ -s pr_only.ndjson ]; then
+          elif [[ -s pr_only.ndjson ]]; then
             mv pr_only.ndjson events.ndjson
           else
-            echo "no events" >&2; exit 2
+            echo "no events" >&2
+            exit 2
           fi
-
 
       - name: Compute DORA
         run: |
-
+          set -euo pipefail
           python3 ci/dora/compute-dora.py events.ndjson | tee dora.out.txt
-           {
+          {
             echo "## DORA"
             echo
             echo '```'
