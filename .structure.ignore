@@ -32,6 +32,7 @@ dora.json
 ./roi/artifacts
 ./roi/missing
 
+./ci/dora/artifacts/
  
  events.ndjson
 
