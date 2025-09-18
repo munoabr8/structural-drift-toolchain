@@ -8,12 +8,31 @@ from json import JSONDecoder
 
 # ---------- env config ----------
 PCTL = int(os.environ.get("PCTL", "90"))                         # percentile to report
-MIN_LEAD_SAMPLES = int(os.environ.get("MIN_LEAD_SAMPLES", "10")) # min PR→deploy pairs to report
-MAX_FALLBACK_HOURS = float(os.environ.get("MAX_FALLBACK_HOURS", "168"))  # 7d
-WINDOW_DAYS = int(os.environ.get("WINDOW_DAYS", "0"))            # 0 = no window filter
+MIN_LEAD_SAMPLES = int(os.environ.get("MIN_LEAD_SAMPLES", "2")) # min PR→deploy pairs to report
+MAX_FALLBACK_HOURS = float(os.environ.get("MAX_FALLBACK_HOURS", "6"))  # 7d
+WINDOW_DAYS = int(os.environ.get("WINDOW_DAYS", "14"))            # 0 = no window filter
 LT_ALLOW_FALLBACK = os.getenv("LT_ALLOW_FALLBACK", "false").lower() in {"1","true","yes","y"}
-LT_MIN_LEAD_SECONDS = int(os.environ.get("LT_MIN_LEAD_SECONDS", "0"))    # min delta to count a pair
-LEAD_UNIT = os.environ.get("LEAD_UNIT", "e").lower()       # hours|minutes|seconds
+LT_MIN_LEAD_SECONDS = int(os.environ.get("LT_MIN_LEAD_SECONDS", "300"))    # min delta to count a pair
+LEAD_UNIT = os.environ.get("LEAD_UNIT", "hours").lower()       # hours|minutes|seconds
+
+# ---------- env dump ----------
+def dump_env():
+    envs = {
+        "PCTL": PCTL,
+        "MIN_LEAD_SAMPLES": MIN_LEAD_SAMPLES,
+        "MAX_FALLBACK_HOURS": MAX_FALLBACK_HOURS,
+        "WINDOW_DAYS": WINDOW_DAYS,
+        "LT_ALLOW_FALLBACK": LT_ALLOW_FALLBACK,
+        "LT_MIN_LEAD_SECONDS": LT_MIN_LEAD_SECONDS,
+        "LEAD_UNIT": LEAD_UNIT,
+    }
+    print("## ENV CONFIG")
+    for k, v in envs.items():
+        print(f"- {k}={v}")
+
+if __name__ == "__main__" and "--show-env" in sys.argv:
+    dump_env()
+    sys.exit(0)
 
 # ---------- IO: tolerant loader for NDJSON, multi-line objects, or a single top-level array ----------
 def load_events(path: str):

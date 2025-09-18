@@ -92,6 +92,7 @@ collect_pr_merges() {
           pr: .number,
           head_sha: (.head.sha // null),
           merge_commit_sha: .merge_commit_sha,
+          sha: (.merge_commit_sha // .head.sha),
           base_branch: .base.ref,
           merged_at: .merged_at
         }
