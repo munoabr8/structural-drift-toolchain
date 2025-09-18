@@ -19,7 +19,7 @@ if [[ -n "${RUN_ID:-}" ]]; then
 fi
 
 # --- collect PR merges only ---
-bash ./collect-events.sh pr.ndjson 1>&2
+bash ci/dora/collect-events.sh pr.ndjson 1>&2
 jq -c 'select(.type=="pr_merged")' pr.ndjson > pr_only.ndjson
 
 # --- merge sources into RAW (may contain noise) ---

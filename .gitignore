@@ -32,6 +32,10 @@ env/
  .pytest_cache
 *.pyc
 
+pr.ndjson
+pr_only.ndjson
+raw.ndjson
+
 # Bash runtime/debug artifacts
 *.log
 *.tmp

@@ -19,6 +19,10 @@ triage.json
 
 result.json
 
+pr.ndjson
+pr_only.ndjson
+raw.ndjson
+
 events.ndjson
 
 leadtime.csv
