@@ -69,7 +69,9 @@ spec.diff.txt
 
 /triage.json
 
-
+../ci/dora/pr.ndjson
+../ci/dora/pr_only.ndjson
+../ci/dora/raw.ndjson
 # Optional local config
 .env
 .envrc

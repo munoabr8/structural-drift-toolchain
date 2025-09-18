@@ -25,6 +25,10 @@ raw.ndjson
 
 events.ndjson
 
+../ci/dora/pr.ndjson
+../ci/dora/pr_only.ndjson
+../ci/dora/raw.ndjson
+
 leadtime.csv
 
 dora.out
