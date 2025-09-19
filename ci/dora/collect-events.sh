@@ -2,6 +2,53 @@
 # ci/dora/collect-events.sh
 # Collect DORA events (PR merges + successful deploys) into NDJSON, canonical schema.
 
+
+# CONTRACT-JSON-BEGIN
+# {
+#   "args": ["[OUT]"],
+#   "env": {
+#     "SCHEMA": "events/v1",
+#     "WINDOW_DAYS": "14",
+#     "MAIN_BRANCH": "main",
+#     "DEPLOY_SOURCE": "deployments | runs",
+#     "DEPLOY_ENV": "prod (used when DEPLOY_SOURCE=deployments)",
+#     "DEPLOY_WORKFLOW_NAME": "required when DEPLOY_SOURCE=runs and ID not provided",
+#     "DEPLOY_WORKFLOW_ID": "optional override for runs mode",
+#     "GITHUB_REPOSITORY": "owner/name (falls back to REPO or git remote)",
+#     "REPO": "owner/name fallback if GITHUB_REPOSITORY unset",
+#     "EVENT_SINK_URL": "optional HTTP endpoint; each NDJSON line POSTed",
+#     "VERBOSE": "1 enables extra diagnostics to stderr",
+#     "GH_TOKEN": "used by gh (or GITHUB_TOKEN)"
+#   },
+#   "reads": "GitHub REST via `gh api` (repo, branches, pulls, deployments, statuses, workflow runs); local git config for remote URL; the OUT file during de-dupe",
+#   "writes": [
+#     "OUT NDJSON file (truncated then populated; defaults to events.ndjson)",
+#     "stderr status lines (WARN/ERR/info)",
+#     "optional POSTs to EVENT_SINK_URL (one per event)"
+#   ],
+#   "tools": ["bash","gh","jq","git","sed","curl","date|gdate","python3","wc","mktemp"],
+#   "exit": {
+#     "ok": 0,
+#     "bad_source": 64,
+#     "workflow_name_missing_or_ambiguous": 66,
+#     "missing_tool": 70,
+#     "generic_error": 1
+#   },
+#   "emits": {
+#     "pr_merged": {
+#       "schema": "events/v1",
+#       "fields": ["schema","type","repo","pr","head_sha","merge_commit_sha","sha","base_branch","merged_at"]
+#     },
+#     "deployment": {
+#       "schema": "events/v1",
+#       "fields": ["schema","type","repo","sha","status","finished_at"]
+#     }
+#   },
+#   "notes": "DEPLOY_SOURCE=deployments uses Deployments API filtered by DEPLOY_ENV; runs mode requires DEPLOY_WORKFLOW_NAME or ID and emits last successful run per head_sha. WINDOW_DAYS limits both PR merges and deploys. De-dupe key: pr|<merge_commit_sha> and dep|<sha>|<finished_at>. Requires GitHub auth for private/repos and higher rate limits."
+# }
+# CONTRACT-JSON-END
+
+
 set -euo pipefail
 export LC_ALL=C
 
@@ -21,6 +68,8 @@ warn() { echo "WARN:$*" >&2; }
 need() { command -v "$1" >/dev/null 2>&1 || die "missing:$1" 70; }
 api()  { gh api "$@" 2>/dev/null; }             # quiet gh wrapper
 jqr()  { jq -cr "$@"; }
+
+emit(){ local j="$1"; echo "$j"; [[ -n "${EVENT_SINK_URL:-}" ]] && curl -fsS -X POST -H 'Content-Type: application/json' --data "$j" "$EVENT_SINK_URL" >/dev/null || true; }
 
 # ---------- repo/branch resolve (robust) ----------
 resolve_repo() {
@@ -130,7 +179,7 @@ resolve_workflow_id() {
 }
 
 # ---------- Deployments API (recommended) ----------
-collect_deployments_api() {
+collect_deployments_api2() {
   local page=1 SINCE; SINCE="$(since_ts)"
   while :; do
     local data; data="$(api "/repos/${GITHUB_REPOSITORY}/deployments?environment=${DEPLOY_ENV}&per_page=100&page=${page}")" || break
@@ -157,8 +206,37 @@ collect_deployments_api() {
   done
 }
 
+collect_deployments_api() {
+  need gh; need jq
+  local repo; repo="$(resolve_repo)"
+  local env="${DEPLOY_ENV:-prod}"
+  local since; since="$(ts_since)"
+
+  # paginate deployments in env, then pick last success per ref/sha occurrence
+  api --paginate "repos/$repo/deployments?environment=$env&per_page=100" \
+  | jq -r --arg since "$since" '
+      .[]?
+      | . as $d
+      | $d | {id:.id, sha:.sha, ref:.ref}
+      ' \
+  | while read -r line; do
+      id="$(jq -r .id <<<"$line")"; sha="$(jq -r .sha <<<"$line")"
+      # statuses for each deployment id, keep the latest success within window
+      api "repos/$repo/deployments/$id/statuses?per_page=100" \
+      | jq -r --arg since "$since" --arg sha "$sha" '
+          .[] | select((.state|ascii_downcase)=="success" and (.updated_at >= $since))
+          | {sha:$sha, finished_at:.updated_at}
+        ' \
+      | jq -c --arg repo "$repo" '
+          . | {schema:"events/v1",type:"deployment",repo:$repo,sha:.sha,status:"success",finished_at:.finished_at}
+        ' \
+      | while read -r ev; do emit "$ev"; done
+    done
+}
+
+
 # ---------- Deploy runs mode (optional) ----------
-collect_deploy_runs() {
+collect_deploy_runs2() {
   local wf_id="$1" page=1 SINCE; SINCE="$(since_ts)"
   while :; do
     local runs; runs="$(api "/repos/${GITHUB_REPOSITORY}/actions/workflows/${wf_id}/runs?per_page=100&page=${page}")" || true
@@ -195,6 +273,37 @@ collect_deploy_runs() {
   done
 }
 
+
+
+collect_deploy_runs() {
+  need gh; need jq
+  local repo; repo="$(resolve_repo)"
+  local since; since="$(ts_since)"
+
+  local wid=""
+  if [[ -n "${DEPLOY_WORKFLOW_ID:-}" ]]; then
+    wid="$DEPLOY_WORKFLOW_ID"
+  else
+    [[ -n "${DEPLOY_WORKFLOW_NAME:-}" ]] || { echo "ERR:workflow_name_missing" >&2; exit 66; }
+    wid="$(api "repos/$repo/actions/workflows" \
+          -q ".workflows[] | select((.name|ascii_downcase)==(\"$DEPLOY_WORKFLOW_NAME\"|ascii_downcase)) | .id" \
+          | head -1)"
+    [[ -n "$wid" ]] || { echo "ERR:workflow_name_ambiguous_or_not_found" >&2; exit 66; }
+  fi
+
+  # paginate all successful runs; emit one event per run within window
+  api --paginate "repos/$repo/actions/workflows/$wid/runs?status=success&per_page=100" \
+  | jq -r --arg since "$since" '
+      .workflow_runs[]?
+      | select(.updated_at >= $since)
+      | {sha:.head_sha, finished_at:.updated_at}
+    ' \
+  | jq -c --arg repo "$repo" '
+      . | {schema:"events/v1",type:"deployment",repo:$repo,sha:.sha,status:"success",finished_at:.finished_at}
+    ' \
+  | while read -r ev; do emit "$ev"; done
+}
+
 # ---------- optional sink ----------
 forward_events() {
   local file="$1"
@@ -219,21 +328,20 @@ dedupe_file() {
   rm -f "$tmp" 2>/dev/null || true
 }
 
+ 
+
 # ---------- main ----------
 main() {
   assert_env
-  : > "$OUT"
 
-  collect_pr_merges >> "$OUT"
+: > "$OUT"
+collect_pr_merges            >> "$OUT"   # your existing PR collector
+case "${DEPLOY_SOURCE:-runs}" in
+  deployments) collect_deployments_api >> "$OUT" ;;
+  runs)        collect_deploy_runs     >> "$OUT" ;;
+  *)           echo "ERR:bad_source:$DEPLOY_SOURCE" >&2; exit 64 ;;
+esac
 
-  case "$DEPLOY_SOURCE" in
-    deployments) collect_deployments_api >> "$OUT" ;;
-    runs)
-      local wf_id; wf_id="$(resolve_workflow_id)"
-      collect_deploy_runs "$wf_id" >> "$OUT"
-      ;;
-    *) die "bad DEPLOY_SOURCE:${DEPLOY_SOURCE}" 64 ;;
-  esac
 
   test -s "$OUT" || die "no_events_in_window"
   jq -s 'length>0' "$OUT" >/dev/null
