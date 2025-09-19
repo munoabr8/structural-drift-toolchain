@@ -1,4 +1,42 @@
 #!/usr/bin/env bash
+
+{
+  "schema": "ir/v1",
+  "args": [],
+  "env": {
+    "DEPLOY_WORKFLOW_NAME": "Deploy",
+    "MAIN_BRANCH": "main",
+    "ART": "events-ndjson"
+  },
+  "reads": "",
+  "writes": [
+    "events.ndjson",
+    "artifacts/events.ndjson",
+    "pr.ndjson",
+    "pr_only.ndjson",
+    "raw.ndjson"
+  ],
+  "tools": [
+    "bash",
+    "gh",
+    "jq",
+    "awk",
+    "mktemp"
+  ],
+  "exit": {
+    "0": "success; wrote events.ndjson; stderr: OK:events=<N>",
+    "2": "no events",
+    "3": "no_prs",
+    "4": "no_success_deploys",
+    "5": "no_pr_to_deploy_pairs"
+  },
+  "outputs": [
+    "events.ndjson"
+  ]
+}
+
+
+
 # ci/dora/prepare-events.sh
 set -euo pipefail
 
@@ -10,13 +48,21 @@ ART="events-ndjson"
 rm -f artifacts/events.ndjson raw.ndjson events.ndjson
 RUN_ID="$(
   gh run list --workflow "$WF" --branch "$MAIN_BRANCH" -L 50 \
-    --json databaseId,createdAt,conclusion \
-  | jq -r '[.[]|select(.conclusion=="success")]|sort_by(.createdAt)|last.databaseId // empty'
+    --json databaseId,createdAt,conclusion 2>/dev/null \
+  | jq -r '
+      try (
+        map(select(.conclusion=="success"))
+        | sort_by(.createdAt)
+        | (last // {})
+        | (.databaseId // .id // empty)
+      ) catch ""'
 )"
+
 if [[ -n "${RUN_ID:-}" ]]; then
   mkdir -p artifacts
   gh run download "$RUN_ID" -n "$ART" -D artifacts || true
 fi
+
 
 # --- collect PR merges only ---
 bash ci/dora/collect-events.sh pr.ndjson 1>&2
