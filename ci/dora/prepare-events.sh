@@ -44,18 +44,23 @@ WF="${DEPLOY_WORKFLOW_NAME:-Deploy}"
 MAIN_BRANCH="${MAIN_BRANCH:-main}"
 ART="events-ndjson"
 
+ 
+
 # --- fetch artifact (best effort) ---
 rm -f artifacts/events.ndjson raw.ndjson events.ndjson
+
+RUNS_JSON="$(gh run list --workflow "$WF" --branch "$MAIN_BRANCH" -L 50 \
+  --json databaseId,createdAt,conclusion 2>/dev/null || echo '[]')"
+
 RUN_ID="$(
-  gh run list --workflow "$WF" --branch "$MAIN_BRANCH" -L 50 \
-    --json databaseId,createdAt,conclusion 2>/dev/null \
-  | jq -r '
-      try (
-        map(select(.conclusion=="success"))
+  jq -r '
+    if type=="array" and length>0 then
+      ( map(select(.conclusion=="success"))
         | sort_by(.createdAt)
-        | (last // {})
-        | (.databaseId // .id // empty)
-      ) catch ""'
+        | (last? // {})
+        | (.databaseId? // .id? // empty) )
+    else empty end
+  ' <<<"$RUNS_JSON"
 )"
 
 if [[ -n "${RUN_ID:-}" ]]; then
