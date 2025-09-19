@@ -9,12 +9,54 @@ tmp
 
 /.evidence
 
+ 
 
 /.ci-seed
+
+./.ci-seed
+ 
 
 /foo.sh
 
 .pytest_cache
 
+triage.json
+
+result.json
+
+pr.ndjson
+pr_only.ndjson
+raw.ndjson
+
+events.ndjson
+
+../ci/dora/pr.ndjson
+../ci/dora/pr_only.ndjson
+../ci/dora/raw.ndjson
+
+leadtime.csv
+
+dora.out
+
+dora.json
+
+*/dora.json
+ 
+./roi/artifacts
+./roi/missing
+
+./ci/dora/artifacts/
+ 
+ events.ndjson
+
+dora_lt.ndjson
+
+*/events.ndjson
+
+*/dora_lt.ndjson
+
+/events.ndjson
+
+/dora_lt.ndjson
 
 /__pycache__
