@@ -1,56 +1,109 @@
-name: DORA Basics
-
+name: DORA
 on:
-  schedule: [{ cron: "13 03 * * *" }]
+  schedule: [{ cron: "0 * * * *" }]
   workflow_dispatch: {}
-  push:
-    paths: [".github/workflows/dora-basics.yml", "ci/dora/**"]
-  pull_request:
-    branches: [dev]
-    types: [opened, synchronize, reopened, closed]
 
 permissions:
   contents: read
   actions: read
-  pull-requests: read
 
 jobs:
   dora:
     runs-on: ubuntu-latest
     env:
-      WINDOW_DAYS: ${{ inputs.window_days || vars.WINDOW_DAYS || '60' }}
-      DEPLOY_WORKFLOW_NAME: ${{ inputs.deploy_workflow_name || vars.DEPLOY_WORKFLOW_NAME || 'Deploy' }}
-      MAIN_BRANCH: ${{ inputs.main_branch || vars.MAIN_BRANCH || 'main' }}
+      WINDOW_DAYS: "14"
+      MAIN_BRANCH: "main"
+      PCTL: "90"
+      MIN_LEAD_SAMPLES: "1"
+      MIN_LEAD_SECONDS: "0"
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_REPOSITORY: ${{ github.repository }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install deps
-        run: sudo apt-get update && sudo apt-get install -y jq gh
-
-      - name: Debug workflows
-        env: 
-          GH_TOKEN: ${{ github.token }}
+      - name: Ensure tools
         run: |
-            gh api /repos/${GITHUB_REPOSITORY}/actions/workflows | jq -r '.workflows[].name'
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y jq python3 gh
 
+      - name: Resolve latest successful Deploy run
+        id: pick
+        run: |
+          set -euo pipefail
+          RUN_ID="$(gh run list --workflow 'Deploy' --json databaseId,conclusion,createdAt \
+            -q 'sort_by(.createdAt)|reverse|map(select(.conclusion=="success"))|.[0].databaseId')"
+          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
 
-      - name: Collect events
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bash ./ci/dora/collect-events.sh events.ndjson
+      - name: Skip if already processed
+        id: cachecheck
+        run: |
+          set -euo pipefail
+          mkdir -p .cache
+          if [[ -f .cache/events.last_run && "$(cat .cache/events.last_run)" == "${{ steps.pick.outputs.run_id }}" ]]; then
+            echo "fresh=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "fresh=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download artifact for new run
+        if: steps.cachecheck.outputs.fresh == 'false'
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          tmpdir="$(mktemp -d)"
+          gh run download "${{ steps.pick.outputs.run_id }}" -n events-ndjson -D "$tmpdir"
+          # adjust path if the artifact unpacks into a subdir; common cases handled:
+          src=""
+          if [[ -f "$tmpdir/events.ndjson" ]]; then
+            src="$tmpdir/events.ndjson"
+          elif [[ -f "$tmpdir/events-ndjson/events.ndjson" ]]; then
+            src="$tmpdir/events-ndjson/events.ndjson"
+          else
+            echo "ERR: events.ndjson not found in downloaded artifact" >&2
+            exit 2
+          fi
+          jq -c . <"$src" >/dev/null
+          mv -f "$src" artifacts/events.ndjson
+          echo "${{ steps.pick.outputs.run_id }}" > .cache/events.last_run
+
+      - name: Probe events
+        run: bash ci/probe.sh --kind=events artifacts/events.ndjson
+
+      - name: Prepare events
+        run: bash ci/dora/prepare-events.sh
+
+      - name: Collect PR merges (only)
+        run: |
+          set -euo pipefail
+          bash ci/dora/collect-events.sh pr.ndjson
+          jq -c 'select(.type=="pr_merged")' pr.ndjson > pr_only.ndjson
+
+          if [[ -s artifacts/events.ndjson ]]; then
+            cat artifacts/events.ndjson pr_only.ndjson > events.ndjson
+          elif [[ -s pr_only.ndjson ]]; then
+            mv pr_only.ndjson events.ndjson
+          else
+            echo "no events" >&2
+            exit 2
+          fi
 
       - name: Compute DORA
-        env:
-          PCTL: '90'
-          MIN_LEAD_SAMPLES: '5'
-        run: python3 ./ci/dora/compute-dora.py events.ndjson | tee -a "$GITHUB_STEP_SUMMARY"
+        run: |
+          set -euo pipefail
+          python3 ci/dora/compute-dora.py events.ndjson | tee dora.out.txt
+          {
+            echo "## DORA"
+            echo
+            echo '```'
+            cat dora.out.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload leadtime.csv
-        uses: actions/upload-artifact@v4
-        if: always()
+      - uses: actions/upload-artifact@v4
         with:
-          name: dora-leadtime
-          path: leadtime.csv
-          if-no-files-found: ignore
-          retention-days: 14
-
+          name: dora-artifacts
+          path: |
+            events.ndjson
+            leadtime.csv
+            dora.out.txt
