@@ -1,39 +1,39 @@
 #!/usr/bin/env bash
 
-{
-  "schema": "ir/v1",
-  "args": [],
-  "env": {
-    "DEPLOY_WORKFLOW_NAME": "Deploy",
-    "MAIN_BRANCH": "main",
-    "ART": "events-ndjson"
-  },
-  "reads": "",
-  "writes": [
-    "events.ndjson",
-    "artifacts/events.ndjson",
-    "pr.ndjson",
-    "pr_only.ndjson",
-    "raw.ndjson"
-  ],
-  "tools": [
-    "bash",
-    "gh",
-    "jq",
-    "awk",
-    "mktemp"
-  ],
-  "exit": {
-    "0": "success; wrote events.ndjson; stderr: OK:events=<N>",
-    "2": "no events",
-    "3": "no_prs",
-    "4": "no_success_deploys",
-    "5": "no_pr_to_deploy_pairs"
-  },
-  "outputs": [
-    "events.ndjson"
-  ]
-}
+# {
+#   "schema": "ir/v1",
+#   "args": [],
+#   "env": {
+#     "DEPLOY_WORKFLOW_NAME": "Deploy",
+#     "MAIN_BRANCH": "main",
+#     "ART": "events-ndjson"
+#   },
+#   "reads": "",
+#   "writes": [
+#     "events.ndjson",
+#     "artifacts/events.ndjson",
+#     "pr.ndjson",
+#     "pr_only.ndjson",
+#     "raw.ndjson"
+#   ],
+#   "tools": [
+#     "bash",
+#     "gh",
+#     "jq",
+#     "awk",
+#     "mktemp"
+#   ],
+#   "exit": {
+#     "0": "success; wrote events.ndjson; stderr: OK:events=<N>",
+#     "2": "no events",
+#     "3": "no_prs",
+#     "4": "no_success_deploys",
+#     "5": "no_pr_to_deploy_pairs"
+#   },
+#   "outputs": [
+#     "events.ndjson"
+#   ]
+# }
 
 
 
