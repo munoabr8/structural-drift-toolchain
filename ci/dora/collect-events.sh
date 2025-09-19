@@ -122,6 +122,8 @@ PY
   fi
 }
 
+ 
+
 # ---------- PR merges (lead-time start) ----------
 collect_pr_merges() {
   local page=1 SINCE; SINCE="$(since_ts)"
@@ -210,7 +212,7 @@ collect_deployments_api() {
   need gh; need jq
   local repo; repo="$(resolve_repo)"
   local env="${DEPLOY_ENV:-prod}"
-  local since; since="$(ts_since)"
+  local since; since="$(since_ts)"
 
   # paginate deployments in env, then pick last success per ref/sha occurrence
   api --paginate "repos/$repo/deployments?environment=$env&per_page=100" \
@@ -278,7 +280,7 @@ collect_deploy_runs2() {
 collect_deploy_runs() {
   need gh; need jq
   local repo; repo="$(resolve_repo)"
-  local since; since="$(ts_since)"
+  local since; since="$(since_ts)"
 
   local wid=""
   if [[ -n "${DEPLOY_WORKFLOW_ID:-}" ]]; then
