@@ -9,10 +9,8 @@ need(){ command -v "$1" >/dev/null 2>&1 || { echo "ERR:missing:$1" >&2; exit 70;
 need jq; need awk; need find; need mktemp; need comm; need sed; need tr
 
 
-# option hook (early in main)
-[[ "${1:-}" == "--gen-contract" ]] && gen_contract && exit 0
-
-
+ 
+ 
 
 # --- extract CONTRACT-JSON from target (tolerant) ---
 CJ="$(tr -d '\r' < "$S" | awk '
