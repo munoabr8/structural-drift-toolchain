@@ -25,6 +25,10 @@ env/
 */__pycache__
 
  
+.tmp.dora/
+
+obs/
+ 
 */artifacts/*
  
  dora.out

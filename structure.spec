@@ -1,6 +1,8 @@
 # Auto-generated structure.spec
 
 dir: ./
+dir: ./artifacts/
+dir: ./artifacts/run-17882772287/
 dir: ./attn/
 dir: ./bin/
 dir: ./ci/
@@ -8,7 +10,6 @@ dir: ./ci/contract/
 dir: ./ci/contract/contracts-gen/
 dir: ./ci/contract/jq/
 dir: ./ci/dora/
-dir: ./ci/dora/artifacts/
 dir: ./ci/git/
 dir: ./ci/jq/
 dir: ./ci/roi/
@@ -19,9 +20,12 @@ dir: ./lib/
 dir: ./lib/policy/
 dir: ./lib/queries/
 dir: ./lib/testdata/
+dir: ./obs/
 dir: ./system/
 dir: ./system/exit-codes/
 dir: ./system/make/
+dir: ./t/
+dir: ./t/fixtures/
 dir: ./templates/
 dir: ./test/
 dir: ./test/acceptance/
@@ -115,6 +119,7 @@ file: ./ci/git/prepare-ref.sh
 file: ./ci/jq/dora_lt_validate.jq
 file: ./ci/jq/events_summary.jq
 file: ./ci/jq/events_validate.jq
+file: ./ci/jq/why_identify.jq
 file: ./ci/lib.sh
 file: ./ci/probe.sh
 file: ./ci/probe_coupling.sh
@@ -221,6 +226,7 @@ file: ./lib/with_contract_env.sh
 file: ./lib/with_contracts.sh
 file: ./scope.yaml
 file: ./system/exit-codes/exit_codes_validator.sh
+file: ./system/make/dora.mk
 file: ./system/make/garbage.mk
 file: ./system/make/guard_rails.mk
 file: ./system/make/guard_rails.sh
@@ -228,16 +234,21 @@ file: ./system/make/health.mk
 file: ./system/make/help.mk
 file: ./system/make/hooks.mk
 file: ./system/make/modules.mk
+file: ./system/make/obs.mk
+file: ./system/make/observe.pipeline.mk
+file: ./system/make/pipeline.mk
 file: ./system/make/preflight.mk
 file: ./system/make/preflight_shared.mk
 file: ./system/make/structure.mk
 file: ./system/make/test.mk
+file: ./system/make/workflows.mk
 file: ./system/smoke-structure-validator.sh
 file: ./system/structure
 file: ./system/structure_spec_validator.sh
 file: ./system/structure_validator.rf.sh
 file: ./system/structure_validator.sh
 file: ./system/validate_structure.sh
+file: ./t/fixtures/exact.ndjson
 file: ./test/acceptance/acceptance.bats
 file: ./test/acceptance/assert_upper.sh
 file: ./test/acceptance/domain.log.jsonl
@@ -264,6 +275,7 @@ file: ./test/e2e/structure_validator/test-raw-path.bats
 file: ./test/e2e/structure_validator/test-valid-structure.bats
 file: ./test/e2e/structure_validator_queries.bats
 file: ./test/e2e/testing-setup.sh
+file: ./test/exact.sh
 file: ./test/integration/hooks_install.bats
 file: ./test/integration/runner_hooks_test.sh
 file: ./test/integration/test_pre_git_switch.bats

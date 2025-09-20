@@ -19,6 +19,11 @@ triage.json
 
 result.json
 
+.tmp.dora/
+
+obs/
+
+
 pr.ndjson
 pr_only.ndjson
 raw.ndjson
