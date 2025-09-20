@@ -70,9 +70,6 @@ jobs:
       - name: Probe events
         run: bash ci/probe.sh --kind=events artifacts/events.ndjson
 
-      - name: Prepare events
-        run: bash ci/dora/prepare-events.sh
-
       - name: Collect PR merges (only)
         run: |
           set -euo pipefail
