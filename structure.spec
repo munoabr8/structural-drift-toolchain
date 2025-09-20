@@ -8,7 +8,6 @@ dir: ./ci/contract/
 dir: ./ci/contract/contracts-gen/
 dir: ./ci/contract/jq/
 dir: ./ci/dora/
-dir: ./ci/dora/artifacts/
 dir: ./ci/git/
 dir: ./ci/jq/
 dir: ./ci/roi/
@@ -107,8 +106,6 @@ file: ./ci/dora/probe-pairs2.sh
 file: ./ci/dora/probe_pairs.sh
 file: ./ci/dora/test-lead.py
 file: ./ci/enforce_contract.sh
-file: ./ci/env-shape.baseline
-file: ./ci/env-shape.latest
 file: ./ci/failure_taxonomy.yml
 file: ./ci/git/lib-risk.sh
 file: ./ci/git/prepare-ref.sh
