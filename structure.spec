@@ -154,7 +154,6 @@ file: ./lib/contract_dsl.sh
 file: ./lib/contract_env.sh
 file: ./lib/contract_fs.sh
 file: ./lib/contracts.sh
-file: ./lib/contracts2.sh
 file: ./lib/contracts_dsl.sh
 file: ./lib/contracts_env.sh
 file: ./lib/darwin_memory.sh
