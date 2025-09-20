@@ -1,0 +1,6 @@
+EVENTS=events.ndjson
+FILES_GLOB=ci/check-env-shape.sh
+HOME=/var/folders/1t/mczyq9fj2lb477zrv1fx44t00000gn/T/tmp.Twc8hg5x
+LC_ALL=C
+PATH=/usr/bin:/bin:/var/folders/1t/mczyq9fj2lb477zrv1fx44t00000gn/T/tmp.Twc8hg5x
+TZ=UTC

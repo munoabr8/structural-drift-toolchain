@@ -1,0 +1,31 @@
+{
+  "ci/contract/stage0_autogen.sh": {
+    "no_run": true,
+    "contract_args": ["[S]"],
+    "contract_reads": "target script; optional hints; no network",
+    "contract_tools": ["bash","jq","find","mktemp","comm","sed"]
+  },
+  "ci/contracts/normalize.sh": {
+    "no_run": true,
+    "contract_args": ["<contract.json>"],
+    "contract_reads": "contract file; no network",
+    "contract_tools": ["bash","jq"]
+  },
+
+
+
+  "ci/contract/inject.sh": {
+    "no_run": true,
+    "contract_args": ["<script>","<contract.json>"],
+    "contract_reads": "target script + json; no network",
+    "contract_tools": ["bash","sed","mktemp"],
+    "contract_exit": {"ok":0}
+  }
+
+
+
+
+}
+
+
+ 

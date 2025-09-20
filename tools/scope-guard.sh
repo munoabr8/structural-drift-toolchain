@@ -4,10 +4,12 @@ set -euo pipefail
 shopt -s nullglob globstar
 
 
+ 
 # discover SCOPE if not set
    ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
  # Exit codes: 0 ok, 3 violations, 4 missing deps/config
 
+ 
 BASE=${BASE:-origin/main}
 
 SCOPE="${SCOPE:-$ROOT/scope.yaml}"

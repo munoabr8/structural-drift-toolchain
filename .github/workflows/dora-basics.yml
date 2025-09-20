@@ -1,56 +1,83 @@
-name: DORA Basics
-
+name: DORA
 on:
-  schedule: [{ cron: "13 03 * * *" }]
+  schedule: [{ cron: "0 * * * *" }]
   workflow_dispatch: {}
-  push:
-    paths: [".github/workflows/dora-basics.yml", "ci/dora/**"]
-  pull_request:
-    branches: [dev]
-    types: [opened, synchronize, reopened, closed]
 
 permissions:
   contents: read
   actions: read
-  pull-requests: read
 
 jobs:
   dora:
     runs-on: ubuntu-latest
     env:
-      WINDOW_DAYS: ${{ inputs.window_days || vars.WINDOW_DAYS || '60' }}
-      DEPLOY_WORKFLOW_NAME: ${{ inputs.deploy_workflow_name || vars.DEPLOY_WORKFLOW_NAME || 'Deploy' }}
-      MAIN_BRANCH: ${{ inputs.main_branch || vars.MAIN_BRANCH || 'main' }}
+      WINDOW_DAYS: "14"
+      MAIN_BRANCH: "main"
+      PCTL: "90"
+      MIN_LEAD_SAMPLES: "1"
+      LT_MIN_LEAD_SECONDS: "0"
+      GH_TOKEN: ${{ github.token }}
+      GITHUB_REPOSITORY: ${{ github.repository }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install deps
-        run: sudo apt-get update && sudo apt-get install -y jq gh
-
-      - name: Debug workflows
-        env: 
-          GH_TOKEN: ${{ github.token }}
+      - name: Resolve latest successful Deploy run
+        id: pick
         run: |
-            gh api /repos/${GITHUB_REPOSITORY}/actions/workflows | jq -r '.workflows[].name'
-
-
-      - name: Collect events
+          set -euo pipefail
+          RUN_ID="$(
+            gh run list --workflow 'Deploy' --branch "$MAIN_BRANCH" -L 50 \
+              --json databaseId,createdAt,conclusion \
+            | jq -r 'map(select(.conclusion=="success")) | sort_by(.createdAt) | (last // {}) | (.databaseId // empty)'
+          )"
+          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bash ./ci/dora/collect-events.sh events.ndjson
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Skip if already processed
+        id: cachecheck
+        run: |
+          set -euo pipefail
+          mkdir -p .cache
+          if [[ -s .cache/events.last_run && "$(cat .cache/events.last_run)" == "${{ steps.pick.outputs.run_id }}" ]]; then
+            echo "fresh=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "fresh=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Prepare events (artifact + PR merges + guards)
+        if: steps.cachecheck.outputs.fresh == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEPLOY_WORKFLOW_NAME: Deploy
+          MAIN_BRANCH: ${{ env.MAIN_BRANCH }}
+        run: |
+          set -euo pipefail
+          bash ci/dora/prepare-events.sh
+          echo "${{ steps.pick.outputs.run_id }}" > .cache/events.last_run
+
 
       - name: Compute DORA
         env:
-          PCTL: '90'
-          MIN_LEAD_SAMPLES: '5'
-        run: python3 ./ci/dora/compute-dora.py events.ndjson | tee -a "$GITHUB_STEP_SUMMARY"
+          LT_MIN_LEAD_SECONDS: "0"   # was likely 300
+          MIN_LEAD_SAMPLES: "1"   # emit with 1 sample
+        run: |
+          set -euo pipefail
+          test -s events.ndjson
+          python3 ci/dora/compute-dora.py events.ndjson | tee dora.out.txt
+          {
+            echo "## DORA"
+            echo
+            echo '```'
+            cat dora.out.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload leadtime.csv
-        uses: actions/upload-artifact@v4
-        if: always()
+      - uses: actions/upload-artifact@v4
         with:
-          name: dora-leadtime
-          path: leadtime.csv
-          if-no-files-found: ignore
-          retention-days: 14
+          name: dora-artifacts
+          path: |
+            events.ndjson
+            leadtime.csv
+            dora.out.txt
 
