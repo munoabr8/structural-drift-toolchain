@@ -149,7 +149,6 @@ file: ./docs/README.generated.md
 file: ./docs/README.md
 file: ./lib/README.md
 file: ./lib/cmd.sh
-file: ./lib/cmd2.sh
 file: ./lib/command_contracts.sh
 file: ./lib/contract_dsl.sh
 file: ./lib/contract_env.sh
