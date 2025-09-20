@@ -81,7 +81,7 @@ jobs:
       # ---------- PROBE: PR merges via collector ----------
       - name: Collect PR merges (probe)
         env:
-          DEPLOY_SOURCE: deployments
+          DEPLOY_SOURCE: runs
           DEPLOY_ENV: production
         continue-on-error: true
         run: |
