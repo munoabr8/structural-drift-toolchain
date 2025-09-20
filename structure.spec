@@ -4,6 +4,9 @@ dir: ./
 dir: ./attn/
 dir: ./bin/
 dir: ./ci/
+dir: ./ci/contract/
+dir: ./ci/contract/contracts-gen/
+dir: ./ci/contract/jq/
 dir: ./ci/dora/
 dir: ./ci/dora/artifacts/
 dir: ./ci/git/
@@ -52,6 +55,7 @@ file: ./.github/workflows/churn-pr.yml
 file: ./.github/workflows/ci-hours.yml
 file: ./.github/workflows/deploy.yml
 file: ./.github/workflows/dora-basics.yml
+file: ./.github/workflows/dora-debug.yml
 file: ./.github/workflows/dora-health.yml
 file: ./.github/workflows/first-pass.yml
 file: ./.github/workflows/leadtime-dryrun.yml
@@ -80,6 +84,7 @@ file: ./bin/deploy_exec.sh
 file: ./bin/emit-env
 file: ./bin/gen-scope.sh
 file: ./bin/main.sh
+file: ./bin/probe_coupling.sh
 file: ./bin/risk_pull.sh
 file: ./ci/build.sh
 file: ./ci/check-env-shape.sh
@@ -89,15 +94,23 @@ file: ./ci/check_layering.sh
 file: ./ci/check_predicates.sh
 file: ./ci/check_queries.sh
 file: ./ci/checklib.sh
+file: ./ci/contract/hints.json
+file: ./ci/contract/inject.sh
+file: ./ci/contract/jq/normalize_v1.jq
+file: ./ci/contract/normalize.sh
+file: ./ci/contract/stage0_autogen.sh
 file: ./ci/dora/collect-events.sh
 file: ./ci/dora/compute-dora.py
 file: ./ci/dora/event-append.sh
 file: ./ci/dora/health.sh
 file: ./ci/dora/lt_from_sha.sh
 file: ./ci/dora/prepare-events.sh
+file: ./ci/dora/probe-pairs2.sh
 file: ./ci/dora/probe_pairs.sh
 file: ./ci/dora/test-lead.py
+file: ./ci/enforce_contract.sh
 file: ./ci/env-shape.baseline
+file: ./ci/env-shape.latest
 file: ./ci/failure_taxonomy.yml
 file: ./ci/git/lib-risk.sh
 file: ./ci/git/prepare-ref.sh
@@ -106,6 +119,8 @@ file: ./ci/jq/events_summary.jq
 file: ./ci/jq/events_validate.jq
 file: ./ci/lib.sh
 file: ./ci/probe.sh
+file: ./ci/probe_coupling.sh
+file: ./ci/read-contracts.sh
 file: ./ci/repro.sh
 file: ./ci/roi/build_inputs.sh
 file: ./ci/roi/compute_roit.py
@@ -123,6 +138,7 @@ file: ./ci/test.sh
 file: ./ci/test_github_timings.py
 file: ./ci/test_toggl_parser.py
 file: ./ci/triage.sh
+file: ./ci/verify_contract.sh
 file: ./ci/voi/void_from_dora.py
 file: ./config/policy.rules.yml
 file: ./config/runtime.cfg
