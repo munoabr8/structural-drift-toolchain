@@ -1,6 +1,27 @@
 #!/usr/bin/env bash
 # ci/dora/probe_pairs.sh
 
+
+# CONTRACT-JSON-BEGIN
+# {
+#   "args": ["[E]"],
+#   "env": {},
+#   "reads": "events NDJSON file E (default events.ndjson); no network",
+#   "writes": "stdout text report; stderr HINT lines; no files",
+#   "tools": ["bash","jq","sort","comm","wc","xargs","head"],
+#   "exit": { "ok": 0, "shape_error": 1, "missing_tool": 70, "other": "bubbled via set -e" },
+#   "emits": [
+#     "== totals ==\\nprs=<n> deps=<n> intersect=<n>",
+#     "== bad_rows ==\\nbad_pr=<n> bad_deploy=<n>",
+#     "== sample_unmatched_pr ==",
+#     "== sample_deploy_rows ==",
+#     "== sample_pr_rows =="
+#   ],
+#   "notes": "Shape checks: pr_merged requires .sha 40-hex and .merged_at ending with Z. deployment requires .sha 40-hex, (finished_at||deploy_at) ending with Z, and status success/succeeded."
+# }
+# CONTRACT-JSON-END
+
+
 # bash ci/dora/probe_pairs.sh events.ndjson
 
 

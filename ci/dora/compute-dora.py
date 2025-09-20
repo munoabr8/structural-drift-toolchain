@@ -1,6 +1,51 @@
 #!/usr/bin/env python3
 # ci/dora/compute_dora.py
 
+# CONTRACT-JSON-BEGIN
+# {
+#   "args": ["[PATH]","--show-env"],
+#   "env": {
+#     "PCTL": "int percentile, default 90",
+#     "MIN_LEAD_SAMPLES": "int minimum pairs to report, default 2",
+#     "MAX_FALLBACK_HOURS": "float fallback search window, default 6",
+#     "WINDOW_DAYS": "int lookback window; 0 disables, default 14",
+#     "LT_ALLOW_FALLBACK": "bool {1,true,yes,y} enables non-SHA fallback, default false",
+#     "LT_MIN_LEAD_SECONDS": "int minimum PR→deploy delta, default 300",
+#     "LEAD_UNIT": "hours|minutes|seconds for printed stats, default hours"
+#   },
+#   "reads": "events file PATH (default events.ndjson); tolerant to NDJSON, multiline JSON objects, or single top-level array; no network",
+#   "writes": [
+#     "stdout text sections: '## DORA (basics)', '## DORA (orthogonal)', summary lines",
+#     "dora.json (schema dora/v1)",
+#     "leadtime.csv (only if at least one PR→deploy pair)"
+#   ],
+#   "tools": ["python3"],
+#   "exit": { "ok": 0, "show_env": 0, "io_or_parse_error": 1 },
+#   "emits": {
+#     "dora.json": {
+#       "schema": "dora/v1",
+#       "fields": [
+#         "window_days",
+#         "metrics.deploys_total",
+#         "metrics.deploy_failures",
+#         "metrics.deploys_per_day",
+#         "metrics.daily_histogram",
+#         "lead_time.samples",
+#         "lead_time.median_h",
+#         "lead_time.pctl_h",
+#         "lead_time.pctl"
+#       ]
+#     },
+#     "leadtime.csv": {
+#       "header": ["pr","sha","merged_at","deployed_at","lead_seconds","lead_minutes","lead_hours","match"]
+#     }
+#   },
+#   "notes": "Pairs PR merges to earliest deploy > LT_MIN_LEAD_SECONDS, by exact SHA; optional fallback within MAX_FALLBACK_HOURS when LT_ALLOW_FALLBACK=true. WINDOW_DAYS filters both merges and deploys relative to now (UTC). Deploys counted when status in {success,succeeded}."
+# }
+# CONTRACT-JSON-END
+
+
+
 import os, sys, json, math, statistics, datetime as dt, csv
 from collections import defaultdict
 from datetime import timedelta
