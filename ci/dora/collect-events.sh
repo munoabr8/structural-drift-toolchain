@@ -69,6 +69,11 @@ need() { command -v "$1" >/dev/null 2>&1 || die "missing:$1" 70; }
 api()  { gh api "$@" 2>/dev/null; }             # quiet gh wrapper
 jqr()  { jq -cr "$@"; }
 
+api_arr(){ gh api "$@" 2>/dev/null || echo '[]'; }   # expect array
+api_obj(){ gh api "$@" 2>/dev/null || echo '{}'; }   # expect object
+is_arr(){ jq -e 'type=="array"' >/dev/null; }
+is_obj(){ jq -e 'type=="object"' >/dev/null; }
+
 emit(){ local j="$1"; echo "$j"; [[ -n "${EVENT_SINK_URL:-}" ]] && curl -fsS -X POST -H 'Content-Type: application/json' --data "$j" "$EVENT_SINK_URL" >/dev/null || true; }
 
 # ---------- repo/branch resolve (robust) ----------
@@ -193,69 +198,41 @@ collect_pr_merges() {
 
 # ---------- Resolve deploy workflow id (optional "runs" mode) ----------
 resolve_workflow_id() {
-  if [[ -n "$DEPLOY_WORKFLOW_ID" ]]; then echo "$DEPLOY_WORKFLOW_ID"; return; fi
-  [[ -n "$DEPLOY_WORKFLOW_NAME" ]] || die "deploy_workflow_name_or_id_required" 66
-  local wf_json; wf_json="$(api "/repos/${GITHUB_REPOSITORY}/actions/workflows")"
-  local cnt; cnt="$(jq -r --arg n "$DEPLOY_WORKFLOW_NAME" '[.workflows[]|select(.name==$n)]|length' <<<"$wf_json")"
-  (( cnt==1 )) || die "deploy_workflow_name_ambiguous_or_missing:name=${DEPLOY_WORKFLOW_NAME} count=${cnt}" 66
-  jq -r --arg n "$DEPLOY_WORKFLOW_NAME" '.workflows[]|select(.name==$n)|.id' <<<"$wf_json"
+  if [[ -n "${DEPLOY_WORKFLOW_ID:-}" ]]; then echo "$DEPLOY_WORKFLOW_ID"; return; fi
+  [[ -n "${DEPLOY_WORKFLOW_NAME:-}" ]] || die "deploy_workflow_name_or_id_required" 66
+  local jf; jf="$(api_obj "repos/${GITHUB_REPOSITORY}/actions/workflows")"
+  echo "$jf" | is_obj || die "bad_json_workflows" 65
+  local id; id="$(jq -r --arg n "$DEPLOY_WORKFLOW_NAME" '
+      if (.workflows|type)=="array" then
+        [ .workflows[]? | select((.name // "")==$n) ] | if length==1 then .[0].id else empty end
+      else empty end' <<<"$jf")"
+  [[ -n "$id" ]] || die "deploy_workflow_name_ambiguous_or_missing" 66
+  echo "$id"
 }
 
+
+
+
 # ---------- Deployments API (recommended) ----------
-collect_deployments_api2() {
-  local page=1 SINCE; SINCE="$(since_ts)"
+collect_deployments_api() {
+  local repo="${GITHUB_REPOSITORY:-${REPO:-}}"; [[ -n "$repo" ]] || die "no_repo" 64
+  local page=1 since; since="$(since_ts)"
+
   while :; do
-    local data; data="$(api "/repos/${GITHUB_REPOSITORY}/deployments?environment=${DEPLOY_ENV}&per_page=100&page=${page}")" || break
-    local n; n="$(jq 'length' <<<"$data")"; [[ "$n" -eq 0 ]] && break
-
-    while read -r dep; do
-      local id sha created
-      id="$(jq -r '.id' <<<"$dep")"
-      sha="$(jq -r '.sha' <<<"$dep")"
-      created="$(jq -r '.created_at' <<<"$dep")"
-      [[ -z "$sha" || -z "$created" || "$created" < "$SINCE" ]] && continue
-
-      local st
-      st="$(api "/repos/${GITHUB_REPOSITORY}/deployments/${id}/statuses?per_page=100" \
-            | jq -c '[.[] | select(.state=="success")] | sort_by(.created_at) | last // empty')" || true
-      [[ -z "$st" || "$st" == "null" ]] && continue
-
-      local fin; fin="$(jq -r '.created_at // .updated_at' <<<"$st")"
-      jq -n --arg s "$SCHEMA" --arg repo "$GITHUB_REPOSITORY" --arg sha "$sha" --arg fin "$fin" '
-        {schema:$s,type:"deployment",repo:$repo,sha:$sha,status:"success",finished_at:$fin}'
-    done < <(jq -c '.[]' <<<"$data")
-
-    page=$((page+1))
+    DEP_JSON="$(api_arr -X GET "repos/$repo/deployments" -F environment="${DEPLOY_ENV:-production}" -F per_page=100 -F page="$page")"
+    echo "$DEP_JSON" | is_arr || die "bad_json_deployments" 65
+    # emit deployments
+    echo "$DEP_JSON" | jq -c --arg repo "$repo" --arg since "$since" '
+      .[] | select((.created_at // .updated_at // "") >= $since)
+      | {schema:"events/v1",type:"deployment",repo:$repo,sha:(.sha // ""),
+         status:(.state // .statuses_url // "success" | if .=="success" then "success" else . end),
+         finished_at:(.updated_at // .created_at // "") }'
+    # stop paging
+    [[ "$(jq 'length' <<<"$DEP_JSON")" -lt 100 ]] && break
+    ((page++))
   done
 }
 
-collect_deployments_api() {
-  need gh; need jq
-  local repo; repo="$(resolve_repo)"
-  local env="${DEPLOY_ENV:-prod}"
-  local since; since="$(since_ts)"
-
-  # paginate deployments in env, then pick last success per ref/sha occurrence
-  api --paginate "repos/$repo/deployments?environment=$env&per_page=100" \
-  | jq -r --arg since "$since" '
-      .[]?
-      | . as $d
-      | $d | {id:.id, sha:.sha, ref:.ref}
-      ' \
-  | while read -r line; do
-      id="$(jq -r .id <<<"$line")"; sha="$(jq -r .sha <<<"$line")"
-      # statuses for each deployment id, keep the latest success within window
-      api "repos/$repo/deployments/$id/statuses?per_page=100" \
-      | jq -r --arg since "$since" --arg sha "$sha" '
-          .[] | select((.state|ascii_downcase)=="success" and (.updated_at >= $since))
-          | {sha:$sha, finished_at:.updated_at}
-        ' \
-      | jq -c --arg repo "$repo" '
-          . | {schema:"events/v1",type:"deployment",repo:$repo,sha:.sha,status:"success",finished_at:.finished_at}
-        ' \
-      | while read -r ev; do emit "$ev"; done
-    done
-}
 
 
 # ---------- Deploy runs mode (optional) ----------
