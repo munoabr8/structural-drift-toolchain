@@ -15,7 +15,7 @@ jobs:
       MAIN_BRANCH: "main"
       PCTL: "90"
       MIN_LEAD_SAMPLES: "1"
-      MIN_LEAD_SECONDS: "0"
+      LT_MIN_LEAD_SECONDS: "0"
       GH_TOKEN: ${{ github.token }}
       GITHUB_REPOSITORY: ${{ github.repository }}
     steps:
@@ -47,16 +47,20 @@ jobs:
 
       - name: Prepare events (artifact + PR merges + guards)
         if: steps.cachecheck.outputs.fresh == 'false'
-        run: |
-          set -euo pipefail
-          bash ci/dora/prepare-events.sh
-          echo "${{ steps.pick.outputs.run_id }}" > .cache/events.last_run
         env:
           GH_TOKEN: ${{ github.token }}
           DEPLOY_WORKFLOW_NAME: Deploy
           MAIN_BRANCH: ${{ env.MAIN_BRANCH }}
+        run: |
+          set -euo pipefail
+          bash ci/dora/prepare-events.sh
+          echo "${{ steps.pick.outputs.run_id }}" > .cache/events.last_run
+
 
       - name: Compute DORA
+        env:
+          LT_MIN_LEAD_SECONDS: "0"   # was likely 300
+          MIN_LEAD_SAMPLES: "1"   # emit with 1 sample
         run: |
           set -euo pipefail
           test -s events.ndjson
