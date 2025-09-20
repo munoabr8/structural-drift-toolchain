@@ -193,13 +193,36 @@ collect_pr_merges() {
 
 # ---------- Resolve deploy workflow id (optional "runs" mode) ----------
 resolve_workflow_id() {
-  if [[ -n "$DEPLOY_WORKFLOW_ID" ]]; then echo "$DEPLOY_WORKFLOW_ID"; return; fi
-  [[ -n "$DEPLOY_WORKFLOW_NAME" ]] || die "deploy_workflow_name_or_id_required" 66
-  local wf_json; wf_json="$(api "/repos/${GITHUB_REPOSITORY}/actions/workflows")"
-  local cnt; cnt="$(jq -r --arg n "$DEPLOY_WORKFLOW_NAME" '[.workflows[]|select(.name==$n)]|length' <<<"$wf_json")"
-  (( cnt==1 )) || die "deploy_workflow_name_ambiguous_or_missing:name=${DEPLOY_WORKFLOW_NAME} count=${cnt}" 66
-  jq -r --arg n "$DEPLOY_WORKFLOW_NAME" '.workflows[]|select(.name==$n)|.id' <<<"$wf_json"
+  # explicit id wins
+  if [[ -n "${DEPLOY_WORKFLOW_ID:-}" ]]; then echo "$DEPLOY_WORKFLOW_ID"; return; fi
+  [[ -n "${DEPLOY_WORKFLOW_NAME:-}" ]] || die "deploy_workflow_name_or_id_required" 66
+  [[ -n "${GITHUB_REPOSITORY:-}" ]] || die "no_repo" 64
+
+  # fetch safely
+  local wf_json
+  wf_json="$(api "repos/${GITHUB_REPOSITORY}/actions/workflows" \
+              -H 'Accept: application/vnd.github+json' 2>/dev/null || echo '{}')"
+
+  # count with guards
+  local cnt
+  cnt="$(jq -r --arg n "$DEPLOY_WORKFLOW_NAME" '
+      if ( .workflows | type ) == "array" then
+        [ .workflows[]? | select((.name // "") == $n or (.path // "" | endswith("/" + ($n|gsub(" "; "_" )|ascii_downcase) + ".yml"))) ] | length
+      else 0 end
+    ' <<<"$wf_json")"
+
+  (( cnt == 1 )) || die "deploy_workflow_name_ambiguous_or_missing:name=${DEPLOY_WORKFLOW_NAME} count=${cnt}" 66
+
+  # extract id safely
+  jq -r --arg n "$DEPLOY_WORKFLOW_NAME" '
+    if ( .workflows | type ) == "array" then
+      ( .workflows[]? | select((.name // "") == $n) | .id // empty )
+    else empty end
+  ' <<<"$wf_json"
 }
+
+
+
 
 # ---------- Deployments API (recommended) ----------
 collect_deployments_api2() {

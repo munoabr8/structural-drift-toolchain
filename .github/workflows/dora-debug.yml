@@ -75,16 +75,24 @@ jobs:
           else
             echo "no artifact events.ndjson found" >&2
           fi
-
+ 
       - name: Collect PR merges (probe)
-        continue-on-error: true
+        env:
+              DEPLOY_SOURCE: deployments        # avoid runs-mode entirely
+              DEPLOY_ENV: production            # if your deployments API filter needs it
+              MAIN_BRANCH: main
+              WINDOW_DAYS: "14"
+              GH_TOKEN: ${{ github.token }}
+              GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
-          set -euo pipefail
-          bash ci/dora/collect-events.sh pr.ndjson
-          jq -c 'select(.type=="pr_merged")' pr.ndjson > pr_only.ndjson
-          echo "pr_only count:"; wc -l < pr_only.ndjson || true
-          echo "pr_only sample (keys):"
-          jq -c '{sha:(.merge_commit_sha // .sha // .head_sha), merged_at}' pr_only.ndjson | head
+              set -euo pipefail
+              bash ci/dora/collect-events.sh pr.ndjson
+              jq -c 'select(.type=="pr_merged")' pr.ndjson > pr_only.ndjson
+              echo "pr_only count:"; wc -l < pr_only.ndjson || true
+              jq -c '{sha:(.merge_commit_sha // .sha // .head_sha), merged_at}' pr_only.ndjson | head
+
+
+
 
       - name: Merge artifact+PRs (debug)
         continue-on-error: true
