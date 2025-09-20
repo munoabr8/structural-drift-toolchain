@@ -202,7 +202,7 @@ jobs:
       - name: Compute DORA if possible
         continue-on-error: true
         env:
-          MIN_LEAD_SECONDS: "0"   # was likely 300
+          LT_MIN_LEAD_SECONDS: "0"   # was likely 300
           MIN_LEAD_SAMPLES: "1"   # emit with 1 sample
         run: |
           set -euo pipefail
