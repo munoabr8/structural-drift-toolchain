@@ -30,7 +30,10 @@ jobs:
           echo "repo=$GITHUB_REPOSITORY"
           echo "branch=$MAIN_BRANCH"
           gh --version || true
+          jq --version || true
+          python3 --version || true
 
+      # ---------- PROBE: runs list ----------
       - name: Probe gh run list (raw)
         continue-on-error: true
         run: |
@@ -49,67 +52,67 @@ jobs:
           echo "RUN_ID=$RUN_ID"
           echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
 
+      # ---------- PROBE: artifact ----------
       - name: Download deploy artifact (best-effort)
         continue-on-error: true
         run: |
           set -euo pipefail
           mkdir -p debug_artifacts
           if [[ -n "${{ steps.pick.outputs.run_id }}" ]]; then
-            gh run download "${{ steps.pick.outputs.run_id }}" -n events-ndjson -D debug_artifacts
+            gh run download "${{ steps.pick.outputs.run_id }}" -n events-ndjson -D debug_artifacts || true
           fi
           echo "List:"
           find debug_artifacts -maxdepth 2 -type f -print || true
-          # try common paths
+          # normalize to artifact.events.ndjson if present
           for p in \
             "debug_artifacts/events.ndjson" \
             "debug_artifacts/events-ndjson/events.ndjson" \
-            ; do
+          ; do
             if [[ -f "$p" ]]; then cp -f "$p" artifact.events.ndjson; fi
           done
           if [[ -f artifact.events.ndjson ]]; then
-            echo "artifact events sample:"
-            head -n 5 artifact.events.ndjson
-            echo "artifact events count:"
-            wc -l < artifact.events.ndjson
+            echo "artifact events sample:"; head -n 5 artifact.events.ndjson
+            echo "artifact events count:"; wc -l < artifact.events.ndjson
             jq -s '{deploys: map(select(.type=="deployment")) | length}' artifact.events.ndjson
           else
             echo "no artifact events.ndjson found" >&2
           fi
- 
+
+      # ---------- PROBE: PR merges via collector ----------
       - name: Collect PR merges (probe)
         env:
-              DEPLOY_SOURCE: deployments        # avoid runs-mode entirely
-              DEPLOY_ENV: production            # if your deployments API filter needs it
-              MAIN_BRANCH: main
-              WINDOW_DAYS: "14"
-              GH_TOKEN: ${{ github.token }}
-              GITHUB_REPOSITORY: ${{ github.repository }}
+          DEPLOY_SOURCE: deployments
+          DEPLOY_ENV: production
+        continue-on-error: true
         run: |
-              set -euo pipefail
-              bash ci/dora/collect-events.sh pr.ndjson
-              jq -c 'select(.type=="pr_merged")' pr.ndjson > pr_only.ndjson
-              echo "pr_only count:"; wc -l < pr_only.ndjson || true
-              jq -c '{sha:(.merge_commit_sha // .sha // .head_sha), merged_at}' pr_only.ndjson | head
+          set -euo pipefail
+          bash ci/dora/collect-events.sh pr.ndjson || true
+          jq -c 'select(.type=="pr_merged")' pr.ndjson > pr_only.ndjson || true
+          echo "pr_only count:"; { wc -l < pr_only.ndjson || echo 0; }
+          echo "pr_only sample (keys):"
+          jq -c '{sha:(.merge_commit_sha // .sha // .head_sha), merged_at}' pr_only.ndjson | head || true
 
-
-
-
-      - name: Merge artifact+PRs (debug)
+      # ---------- MERGE + CLEAN ----------
+      - name: Build combined events.ndjson (cleaned)
         continue-on-error: true
         run: |
           set -euo pipefail
           : > events.ndjson
-          [[ -s artifact.events.ndjson ]] && cat artifact.events.ndjson >> events.ndjson
-          [[ -s pr_only.ndjson ]] && cat pr_only.ndjson >> events.ndjson
+          if [[ -s artifact.events.ndjson || -s pr_only.ndjson ]]; then
+            cat artifact.events.ndjson pr_only.ndjson 2>/dev/null \
+            | jq -crR 'fromjson? | select(type=="object")' \
+            > events.ndjson
+          fi
           if [[ -s events.ndjson ]]; then
             echo "combined count:"; wc -l < events.ndjson
-            echo "types:"
-            jq -s '{prs:map(select(.type=="pr_merged"))|length, deps:map(select(.type=="deployment"))|length}' events.ndjson
+            jq -s '{prs:map(select(.type=="pr_merged"))|length,
+                    deps:map(select(.type=="deployment" and ((.status//"success")=="success")))|length}' events.ndjson
           else
             echo "no events combined" >&2
           fi
 
-      - name: Dry-run join check
+      # ---------- JOIN PROBE ----------
+      - name: Dry-run PR→deploy join
         continue-on-error: true
         run: |
           set -euo pipefail
@@ -118,20 +121,30 @@ jobs:
             def key: .sha // .merge_commit_sha // .head_sha;
             def m: .merged_at // .mergedAt // .time;
             def d: .finished_at // .deploy_at // .time;
-            . as $all
-            | ($all|map(select(.type=="pr_merged")|{k:(key),m:(m)})) as $prs
-            | ($all|map(select(.type=="deployment" and ((.status//"success")=="success"))|{k:(key),d:(d)})) as $deps
+
+            [ .[] | select(type=="object") ] as $a
+            | ($a|map(select(.type=="pr_merged")
+                      | {k:(key), m:(m)}))  as $prs
+            | ($a|map(select(.type=="deployment" and ((.status//"success")=="success"))
+                      | {k:(key), d:(d)})) as $deps
             | {
                 prs:($prs|length),
                 deps:($deps|length),
-                sample_pair: ( [ $prs[], $deps[] ]
-                  | combinations
-                  | map({p:.[0], q:.[1]})
-                  | map(select(.p.k==.q.k))
-                  | map(select((.q.d|fromdateiso8601) > (.p.m|fromdateiso8601)))
-                  | .[0] // null)
+                pair_count:
+                  ([ $prs[]? as $p | $deps[]? as $q
+                     | select($p.k and $q.k and $p.m and $q.d)
+                     | select($p.k==$q.k)
+                     | select(($q.d|fromdateiso8601) > ($p.m|fromdateiso8601))
+                   ] | length),
+                sample:
+                  ([ $prs[]? as $p | $deps[]? as $q
+                     | select($p.k==$q.k)
+                     | select(($q.d|fromdateiso8601) > ($p.m|fromdateiso8601))
+                     | {sha:$p.k, merged:$p.m, deployed:$q.d}
+                   ] | .[0] // null)
               }' events.ndjson
 
+      # ---------- INTEGRATED SCRIPT (optional) ----------
       - name: Run prepare-events.sh (continue on error)
         continue-on-error: true
         run: |
@@ -143,7 +156,11 @@ jobs:
           else
             echo "no prepared events.ndjson" >&2
           fi
+        env:
+          DEPLOY_WORKFLOW_NAME: Deploy
+          MAIN_BRANCH: ${{ env.MAIN_BRANCH }}
 
+      # ---------- COMPUTE ----------
       - name: Compute DORA if possible
         continue-on-error: true
         run: |
@@ -154,6 +171,7 @@ jobs:
             echo "skip compute; no events.ndjson"
           fi
 
+      # ---------- ARTIFACTS ----------
       - uses: actions/upload-artifact@v4
         with:
           name: dora-debug-bundle
