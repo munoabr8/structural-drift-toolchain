@@ -83,6 +83,7 @@ jobs:
         env:
           DEPLOY_SOURCE: runs
           DEPLOY_ENV: production
+          DEPLOY_WORKFLOW_NAME: Deploy  
         continue-on-error: true
         run: |
           set -euo pipefail
