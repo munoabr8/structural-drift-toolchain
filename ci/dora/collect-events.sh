@@ -95,6 +95,7 @@ resolve_repo() {
   fi
 }
 
+
 # ---------- rate limit check ----------
 assert_env() {
   need date; need jq; resolve_repo
@@ -122,7 +123,27 @@ PY
   fi
 }
 
- 
+ if [[ "${1:-}" == "--probe" ]]; then
+  set -euo pipefail
+  WF="${DEPLOY_WORKFLOW_NAME:-Deploy}"
+  MAIN_BRANCH="${MAIN_BRANCH:-main}"
+  echo "WF=$WF MAIN_BRANCH=$MAIN_BRANCH"
+  RUNS_JSON="$(gh run list --workflow "$WF" --branch "$MAIN_BRANCH" -L 50 \
+    --json databaseId,createdAt,conclusion 2>/dev/null || echo '[]')"
+  printf 'RAW:\n%s\n' "$RUNS_JSON"
+  echo "jq:type→" ; jq -r 'type' <<<"$RUNS_JSON" || true
+  echo "jq:keys(sample)→" ; jq -r '.[0] | keys? // []' <<<"$RUNS_JSON" || true
+  echo "jq:try id→" ; jq -r 'try (.[0].id) catch ""' <<<"$RUNS_JSON" || true
+  echo "jq:robust RUN_ID→"
+  jq -r '
+    if type=="array" and length>0 then
+      (map(select(.conclusion=="success")) | sort_by(.createdAt) | (last? // {}))
+      | (.databaseId? // .id? // "")
+    else empty end
+  ' <<<"$RUNS_JSON" || true
+  exit 0
+fi
+
 
 # ---------- PR merges (lead-time start) ----------
 collect_pr_merges() {
