@@ -60,6 +60,10 @@ leadtime.csv
 dora.json
 
 
+dora.out.txt
+
+
+
 
 # Spec snapshots / diffs (generated)
 structure.spec.auto

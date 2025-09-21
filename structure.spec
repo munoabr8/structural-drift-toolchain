@@ -1,8 +1,6 @@
 # Auto-generated structure.spec
 
 dir: ./
-dir: ./artifacts/
-dir: ./artifacts/run-17882772287/
 dir: ./attn/
 dir: ./bin/
 dir: ./ci/
@@ -20,7 +18,6 @@ dir: ./lib/
 dir: ./lib/policy/
 dir: ./lib/queries/
 dir: ./lib/testdata/
-dir: ./obs/
 dir: ./system/
 dir: ./system/exit-codes/
 dir: ./system/make/
@@ -104,6 +101,7 @@ file: ./ci/contract/stage0_autogen.sh
 file: ./ci/dora/collect-events.sh
 file: ./ci/dora/compute-dora.py
 file: ./ci/dora/event-append.sh
+file: ./ci/dora/fetch_window_events.sh
 file: ./ci/dora/health.sh
 file: ./ci/dora/lt_from_sha.sh
 file: ./ci/dora/prepare-events.sh
@@ -152,7 +150,6 @@ file: ./darwin_memory.sh
 file: ./docs/CHANGELOG.md
 file: ./docs/README.generated.md
 file: ./docs/README.md
-file: ./lib/README.md
 file: ./lib/cmd.sh
 file: ./lib/cmd2.sh
 file: ./lib/command_contracts.sh
@@ -310,7 +307,6 @@ file: ./tools/providers/terraform/.gitkeep
 file: ./tools/release/gen_notes.sh
 file: ./tools/scan_duplicate_targets.sh
 file: ./tools/scope-guard.sh
-file: ./tools/scope2.yaml
 file: ./tools/setup.sh
 file: ./tools/smoke-scope-guard.sh
 file: ./tools/structure/io-wrap.sh

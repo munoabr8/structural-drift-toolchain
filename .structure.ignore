@@ -23,6 +23,8 @@ result.json
 
 obs/
 
+dora.out.txt
+
 
 pr.ndjson
 pr_only.ndjson
