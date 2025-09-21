@@ -8,7 +8,6 @@ dir: ./ci/contract/
 dir: ./ci/contract/contracts-gen/
 dir: ./ci/contract/jq/
 dir: ./ci/dora/
-dir: ./ci/dora/artifacts/
 dir: ./ci/git/
 dir: ./ci/jq/
 dir: ./ci/roi/
@@ -22,6 +21,7 @@ dir: ./lib/testdata/
 dir: ./system/
 dir: ./system/exit-codes/
 dir: ./system/make/
+dir: ./t/
 dir: ./templates/
 dir: ./test/
 dir: ./test/acceptance/
@@ -149,7 +149,6 @@ file: ./docs/README.generated.md
 file: ./docs/README.md
 file: ./lib/README.md
 file: ./lib/cmd.sh
-file: ./lib/cmd2.sh
 file: ./lib/command_contracts.sh
 file: ./lib/contract_dsl.sh
 file: ./lib/contract_env.sh
