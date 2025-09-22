@@ -1,0 +1,4 @@
+{"type":"pr_merged","sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","merged_at":"2025-01-01T00:00:00Z","pr":1}
+{"type":"deployment","sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","status":"success","finished_at":"2025-01-01T00:10:00Z"}
+{"type":"deployment","sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","status":"success","finished_at":"2025-01-01T00:12:00Z"}
+{"type":"deployment","sha":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","status":"success","finished_at":"2025-01-01T00:20:00Z"}
