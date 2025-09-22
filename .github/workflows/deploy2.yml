@@ -1,0 +1,76 @@
+name: Deploy
+on:
+  workflow_dispatch:
+    inputs:
+      env: { default: production }
+      sha: { required: false }
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Ensure tools
+        run: sudo apt-get update && sudo apt-get install -y jq gh
+
+      # If a PR head SHA was provided, try to resolve its merge commit
+      - name: Resolve merge SHA (if PR head provided)
+        id: resolve
+        if: ${{ inputs.sha }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          SH="${{ inputs.sha }}"
+          M="$(gh pr list --state merged --json number,mergeCommit,headRefOid \
+               -q '[.[]|select(.headRefOid=="'"$SH"'")|.mergeCommit.oid][0]' || true)"
+          echo "merge_sha=${M:-}" >> "$GITHUB_OUTPUT"
+
+      - name: Run deploy executor
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          chmod +x bin/deploy_exec.sh
+          bin/deploy_exec.sh "${{ inputs.env || 'production' }}"
+
+      - name: Emit deployment event
+        if: always()
+        run: |
+          set -euo pipefail
+          # Prefer resolved merge SHA, else the checked-out commit
+          DEPLOY_SHA="${{ steps.resolve.outputs.merge_sha || '' }}"
+          if [ -z "$DEPLOY_SHA" ]; then DEPLOY_SHA="$(git rev-parse HEAD)"; fi
+          FINISHED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          jq -nc --arg repo "${{ github.repository }}" \
+                 --arg env  "${{ inputs.env || 'production' }}" \
+                 --arg sha  "$DEPLOY_SHA" \
+                 --arg st   "${{ job.status }}" \
+                 --arg at   "$FINISHED_AT" '
+            {schema:"events/v1",type:"deployment",repo:$repo,env:$env,
+             sha:$sha,status:($st|ascii_downcase),finished_at:$at}
+          ' > events.ndjson
+
+          jq -e 'select(.type=="deployment" and .schema=="events/v1"
+                 and (.sha|test("^[0-9a-f]{40}$"))
+                 and (.finished_at|test("Z$")) )' events.ndjson >/dev/null
+          echo "preview:"; wc -c events.ndjson; head -1 events.ndjson | jq .
+
+      - name: Validate events.ndjson
+        run: bash ci/probe.sh --kind=events events.ndjson
+
+      - name: Upload events.ndjson
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: events-ndjson
+          path: events.ndjson
+          retention-days: 21
