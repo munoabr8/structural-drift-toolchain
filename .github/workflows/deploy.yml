@@ -29,19 +29,30 @@ jobs:
           chmod +x bin/deploy_exec.sh
           bin/deploy_exec.sh "${{ inputs.env || 'production' }}"
 
-      # Emit deployment event regardless of success/failure
+
       - name: Emit deployment event
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}   # gh CLI reads GH_TOKEN or GITHUB_TOKEN
           DEPLOY_SHA: ${{ inputs.sha || github.sha }}
           DEPLOY_STATUS: ${{ job.status }}        # "success" | "failure" | "cancelled"
-          # Optionally: set a precise finish time from the executor via $GITHUB_ENV
-          # DEPLOY_FINISHED_AT: ${{ env.DEPLOY_FINISHED_AT }}
-        run: bash ci/dora/event-append.sh deployment
+          OUT: events.ndjson                  # force output path
+
+        run: |
+           set -euo pipefail
+           chmod +x ci/dora/event-append.sh || true
+           bash ci/dora/event-append.sh deployment
+           echo "preview:"
+           test -s events.ndjson
+           wc -c events.ndjson
+           head -1 events.ndjson | jq .
 
       - name: Validate events.ndjson
         run: bash ci/probe.sh --kind=events events.ndjson
+
+      - name: Debug workspace
+        if: always()
+        run: ls -la && test -s events.ndjson && echo "events.ndjson present"  
 
       - name: Upload events.ndjson
         uses: actions/upload-artifact@v4
