@@ -1,0 +1,56 @@
+name: DORA Health
+on:
+  workflow_dispatch: {}
+  schedule: [{ cron: '0 * * * 1-5' }]
+
+permissions:
+  contents: read
+  deployments: read
+  actions: read
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_REPOSITORY: ${{ github.repository }}
+      MAIN_BRANCH: main
+      WINDOW_DAYS: '30'
+      DEPLOY_SOURCE: deployments
+      DEPLOY_ENV: production
+      LT_ALLOW_FALLBACK: 'false'
+      LT_MIN_LEAD_SECONDS: '300'
+      MIN_LEAD_SAMPLES: '10'
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq gh
+
+      - name: Collect events
+        run: bash ci/dora/collect-events.sh events.ndjson
+
+      - name: Probe events
+        run: bash ci/probe.sh --kind=events events.ndjson
+
+      - name: Compute DORA
+        run: |
+          python3 ci/dora/compute-dora.py events.ndjson | tee dora.out.txt
+          { echo "## DORA Health"; echo '```'; cat dora.out.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Health checks
+        run: bash ci/dora/health.sh events.ndjson
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dora-health-artifacts
+          path: |
+            events.ndjson
+            leadtime.csv
+            dora.out.txt
+            $GITHUB_STEP_SUMMARY
+          retention-days: 7

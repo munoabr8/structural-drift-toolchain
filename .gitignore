@@ -24,13 +24,46 @@ env/
 
 */__pycache__
 
-.pytest_cache
+ 
+.tmp.dora/
+
+obs/
+ 
+*/artifacts/*
+ 
+ dora.out
+
+ .pytest_cache
 *.pyc
+
+pr.ndjson
+pr_only.ndjson
+raw.ndjson
 
 # Bash runtime/debug artifacts
 *.log
 *.tmp
 *.out
+
+/events.ndjson
+
+/dora_lt.ndjson
+
+events.ndjson
+
+leadtime.csv
+
+*/events.ndjson
+
+*/leadtime.csv
+
+dora.json
+
+
+dora.out.txt
+
+
+
 
 # Spec snapshots / diffs (generated)
 structure.spec.auto
@@ -40,7 +73,13 @@ spec.diff.txt
 
 .missing_module_specs
 
+/result.json
 
+/triage.json
+
+../ci/dora/pr.ndjson
+../ci/dora/pr_only.ndjson
+../ci/dora/raw.ndjson
 # Optional local config
 .env
 .envrc
