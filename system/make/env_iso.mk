@@ -1,7 +1,7 @@
 .PHONY: env/echo env/probe env/ci env/bats env/checks test/hermetic
 
 # knobs
-ENV_ALLOW    ?= "PATH HOME CI GH_TOKEN"
+ENV_ALLOW ?= PATH HOME CI GH_TOKEN PWD SHELL SHLVL TERM _ LC_ALL
 BATS_ALLOW   ?= "PATH HOME WS"
 ISOLATE_CI   := ci/env/isolate_ci.sh
 ISOLATE_BATS := ci/env/isolate_bats.sh
@@ -16,24 +16,25 @@ env/echo:
 env/probe:
 	@bash '$(PROBE)' | tee env.probe.json
 
-
 env/ci:
-	@ALLOWLIST=$(ENV_ALLOW) SNAPSHOT_MODE=head bash '$(ISOLATE_CI)'
+	@ALLOWLIST='$(ENV_ALLOW)' LC_ALL=C SNAPSHOT_MODE=head bash '$(ISOLATE_CI)'
 
 
 env/bats:
 	@ALLOWLIST=$(BATS_ALLOW) SNAPSHOT_MODE=worktree_tracked bash '$(ISOLATE_BATS)'
 
-# invariant checks (fail-fast, machine-checkable)
+
 env/checks:
-	@jq -e '.schema=="env/probe/v1"' before.json >/dev/null
-	@jq -e '.schema=="env/probe/v1"' after.json  >/dev/null
+	@test -f $(BEFORE) && test -f $(AFTER) || { echo "ERR: missing probe JSON"; exit 2; }
+	@jq -e '.schema=="env/probe/v1"' $(BEFORE) >/dev/null
+	@jq -e '.schema=="env/probe/v1"' $(AFTER)  >/dev/null
 	@env | awk -F= '{print $$1}' | \
-	  grep -vE '^(PATH|HOME|WS|CI|GH_TOKEN|LC_ALL|SOURCE_DATE_EPOCH|PWD|SHELL|SHLVL|_)$$' | \
-	  grep . && { echo "ERR: extra env vars"; exit 66; } || true
+	  grep -vE '^(PATH|HOME|WS|CI|GH_TOKEN|LC_ALL|SOURCE_DATE_EPOCH|PWD|SHELL|SHLVL|TERM|_)$$' | \
+	  grep -q . && { echo "ERR: extra env vars"; exit 66; } || true
 	@test "$$(umask)" = "0022"
 	@test "$${LC_ALL:-C}" = "C"
 	@command -v jq git bash >/dev/null
+
 
 # tie into workflows (optional)
 wf/prepare-isolated: env/ci env/checks
