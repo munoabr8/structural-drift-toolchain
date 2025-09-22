@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 # ci/dora/compute-dora.py
-
 import os, sys, json
 from datetime import datetime, timedelta, timezone
 
 from dora_io import load_ndjson, dump_json
+
 from dora_validate import warn_shape, warn_timestamps, assert_ndjson
+
 from dora_pair import lead_times_deployment, lead_times_change, to_dt
+
 from dora_aggregate import deployments_in_window, daily_histogram, failure_count
+
 from dora_assemble import assemble_dora
 
 def now_utc():

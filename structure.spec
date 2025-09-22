@@ -114,6 +114,7 @@ file: ./ci/dora/dora-refactor/dora_assemble.py
 file: ./ci/dora/dora-refactor/dora_io.py
 file: ./ci/dora/dora-refactor/dora_pair.py
 file: ./ci/dora/dora-refactor/dora_validate.py
+file: ./ci/dora/dora-refactor/invariants.py
 file: ./ci/dora/event-append.sh
 file: ./ci/dora/fetch_window_events.sh
 file: ./ci/dora/health.sh
