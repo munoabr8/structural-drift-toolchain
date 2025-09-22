@@ -21,6 +21,8 @@ dir: ./lib/testdata/
 dir: ./system/
 dir: ./system/exit-codes/
 dir: ./system/make/
+dir: ./t/
+dir: ./t/fixtures/
 dir: ./templates/
 dir: ./test/
 dir: ./test/acceptance/
@@ -99,6 +101,7 @@ file: ./ci/contract/stage0_autogen.sh
 file: ./ci/dora/collect-events.sh
 file: ./ci/dora/compute-dora.py
 file: ./ci/dora/event-append.sh
+file: ./ci/dora/fetch_window_events.sh
 file: ./ci/dora/health.sh
 file: ./ci/dora/lt_from_sha.sh
 file: ./ci/dora/prepare-events.sh
@@ -112,6 +115,7 @@ file: ./ci/git/prepare-ref.sh
 file: ./ci/jq/dora_lt_validate.jq
 file: ./ci/jq/events_summary.jq
 file: ./ci/jq/events_validate.jq
+file: ./ci/jq/why_identify.jq
 file: ./ci/lib.sh
 file: ./ci/probe.sh
 file: ./ci/probe_coupling.sh
@@ -144,7 +148,6 @@ file: ./darwin_memory.sh
 file: ./docs/CHANGELOG.md
 file: ./docs/README.generated.md
 file: ./docs/README.md
-file: ./lib/README.md
 file: ./lib/cmd.sh
 file: ./lib/command_contracts.sh
 file: ./lib/contract_dsl.sh
@@ -216,6 +219,7 @@ file: ./lib/with_contract_env.sh
 file: ./lib/with_contracts.sh
 file: ./scope.yaml
 file: ./system/exit-codes/exit_codes_validator.sh
+file: ./system/make/dora.mk
 file: ./system/make/garbage.mk
 file: ./system/make/guard_rails.mk
 file: ./system/make/guard_rails.sh
@@ -223,16 +227,21 @@ file: ./system/make/health.mk
 file: ./system/make/help.mk
 file: ./system/make/hooks.mk
 file: ./system/make/modules.mk
+file: ./system/make/obs.mk
+file: ./system/make/observe.pipeline.mk
+file: ./system/make/pipeline.mk
 file: ./system/make/preflight.mk
 file: ./system/make/preflight_shared.mk
 file: ./system/make/structure.mk
 file: ./system/make/test.mk
+file: ./system/make/workflows.mk
 file: ./system/smoke-structure-validator.sh
 file: ./system/structure
 file: ./system/structure_spec_validator.sh
 file: ./system/structure_validator.rf.sh
 file: ./system/structure_validator.sh
 file: ./system/validate_structure.sh
+file: ./t/fixtures/exact.ndjson
 file: ./test/acceptance/acceptance.bats
 file: ./test/acceptance/assert_upper.sh
 file: ./test/acceptance/domain.log.jsonl
@@ -259,6 +268,7 @@ file: ./test/e2e/structure_validator/test-raw-path.bats
 file: ./test/e2e/structure_validator/test-valid-structure.bats
 file: ./test/e2e/structure_validator_queries.bats
 file: ./test/e2e/testing-setup.sh
+file: ./test/exact.sh
 file: ./test/integration/hooks_install.bats
 file: ./test/integration/runner_hooks_test.sh
 file: ./test/integration/test_pre_git_switch.bats
@@ -293,7 +303,6 @@ file: ./tools/providers/terraform/.gitkeep
 file: ./tools/release/gen_notes.sh
 file: ./tools/scan_duplicate_targets.sh
 file: ./tools/scope-guard.sh
-file: ./tools/scope2.yaml
 file: ./tools/setup.sh
 file: ./tools/smoke-scope-guard.sh
 file: ./tools/structure/io-wrap.sh
