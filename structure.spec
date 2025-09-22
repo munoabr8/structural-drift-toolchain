@@ -109,8 +109,6 @@ file: ./ci/dora/probe-pairs2.sh
 file: ./ci/dora/probe_pairs.sh
 file: ./ci/dora/test-lead.py
 file: ./ci/enforce_contract.sh
-file: ./ci/env-shape.baseline
-file: ./ci/env-shape.latest
 file: ./ci/failure_taxonomy.yml
 file: ./ci/git/lib-risk.sh
 file: ./ci/git/prepare-ref.sh
@@ -151,13 +149,11 @@ file: ./docs/CHANGELOG.md
 file: ./docs/README.generated.md
 file: ./docs/README.md
 file: ./lib/cmd.sh
-file: ./lib/cmd2.sh
 file: ./lib/command_contracts.sh
 file: ./lib/contract_dsl.sh
 file: ./lib/contract_env.sh
 file: ./lib/contract_fs.sh
 file: ./lib/contracts.sh
-file: ./lib/contracts2.sh
 file: ./lib/contracts_dsl.sh
 file: ./lib/contracts_env.sh
 file: ./lib/darwin_memory.sh
