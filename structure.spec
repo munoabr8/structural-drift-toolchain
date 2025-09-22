@@ -8,7 +8,6 @@ dir: ./ci/contract/
 dir: ./ci/contract/contracts-gen/
 dir: ./ci/contract/jq/
 dir: ./ci/dora/
-dir: ./ci/dora/artifacts/
 dir: ./ci/git/
 dir: ./ci/jq/
 dir: ./ci/roi/
@@ -19,11 +18,10 @@ dir: ./lib/
 dir: ./lib/policy/
 dir: ./lib/queries/
 dir: ./lib/testdata/
-dir: ./scripts/
-dir: ./scripts/ci/
 dir: ./system/
 dir: ./system/exit-codes/
 dir: ./system/make/
+dir: ./t/
 dir: ./templates/
 dir: ./test/
 dir: ./test/acceptance/
@@ -222,8 +220,6 @@ file: ./lib/vmmapframe.sh
 file: ./lib/with_contract_env.sh
 file: ./lib/with_contracts.sh
 file: ./scope.yaml
-file: ./scripts/ci/check_boundaries.sh
-file: ./scripts/ci/policy.v1.json
 file: ./system/exit-codes/exit_codes_validator.sh
 file: ./system/make/garbage.mk
 file: ./system/make/guard_rails.mk
