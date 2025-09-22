@@ -1,9 +1,6 @@
 # Auto-generated structure.spec
 
 dir: ./
-dir: ./artifacts/
-dir: ./artifacts/run-17918889258/
-dir: ./artifacts/run-17919440551/
 dir: ./attn/
 dir: ./bin/
 dir: ./ci/

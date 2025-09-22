@@ -24,16 +24,26 @@ env/bats:
 	@ALLOWLIST=$(BATS_ALLOW) SNAPSHOT_MODE=worktree_tracked bash '$(ISOLATE_BATS)'
 
 
+
+
+ENV_ARTDIR ?= artifacts/env
+BEFORE ?= $(ENV_ARTDIR)/before.json
+AFTER  ?= $(ENV_ARTDIR)/after.json
+
+
+
 env/checks:
-	@test -f $(BEFORE) && test -f $(AFTER) || { echo "ERR: missing probe JSON"; exit 2; }
-	@jq -e '.schema=="env/probe/v1"' $(BEFORE) >/dev/null
-	@jq -e '.schema=="env/probe/v1"' $(AFTER)  >/dev/null
-	@env | awk -F= '{print $$1}' | \
-	  grep -vE '^(PATH|HOME|WS|CI|GH_TOKEN|LC_ALL|SOURCE_DATE_EPOCH|PWD|SHELL|SHLVL|TERM|_)$$' | \
-	  grep -q . && { echo "ERR: extra env vars"; exit 66; } || true
-	@test "$$(umask)" = "0022"
-	@test "$${LC_ALL:-C}" = "C"
-	@command -v jq git bash >/dev/null
+	@test -f '$(BEFORE)' -a -f '$(AFTER)' || { echo "ERR: missing probes; run make env/ci"; exit 2; }
+	@jq -e '.schema=="env/probe/v1"' '$(BEFORE)' >/dev/null
+	@jq -e '.schema=="env/probe/v1"' '$(AFTER)'  >/dev/null
+	@echo "OK: probe JSONs valid"
+
+env/checks2:
+	@test -f '$(BEFORE)' -a -f '$(AFTER)' || { echo "ERR: missing probes; run make env/ci"; exit 2; }
+	@jq -e '.schema=="env/probe/v1"' '$(BEFORE)' >/dev/null
+	@jq -e '.schema=="env/probe/v1"' '$(AFTER)'  >/dev/null
+	@ALLOWLIST='$(ENV_ALLOW)' bash -lc '. ci/env/_isolate_core.sh; assert_min_env'
+	@test "$$(umask)" = "0022"; @test "$${LC_ALL:-C}" = "C"; @command -v jq git bash >/dev/null
 
 
 # tie into workflows (optional)
