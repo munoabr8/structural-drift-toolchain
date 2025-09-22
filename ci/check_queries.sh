@@ -1,4 +1,26 @@
 #!/usr/bin/env bash
+
+# CONTRACT-JSON-BEGIN
+# {
+#   "args": ["[FILE]"],
+#   "env": {},
+#   "reads": "target shell file FILE (default: <repo_root>/lib/queries.sh); ci/dora/lib.sh for helpers; git repo to resolve repo_root",
+#   "writes": "stdout: status and offending lines; stderr: reason on failure; no files",
+#   "tools": ["bash","git","grep","sed","awk"],
+#   "exit": { "ok": 0, "violation": 1, "other": "nonzero from missing deps/source errors under set -e" },
+#   "emits": [
+#     "[queries] <FILE>",
+#     "Writes/mutation commands found in <FILE>",
+#     "Write redirection found in <FILE>",
+#     "Process-substitution write found in <FILE>",
+#     "OK"
+#   ],
+#   "notes": "Fails if FILE contains mutating commands (rm|mv|cp|chmod|chown|mkdir|rmdir|ln|truncate|tee), write redirections (> >> >|, except /dev/null and FD dups), or process-substitution writes >(cmd). Depends on lib.sh providing strip_case_labels, strip_comments, tok_grep."
+# }
+# CONTRACT-JSON-END
+
+
+
 set -euo pipefail
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 

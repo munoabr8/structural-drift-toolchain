@@ -3,6 +3,10 @@ roots:
   - config
 
 sub_roots:
+  - ci/contract
   - ci/dora
   - ci/git
+  - ci/jq
   - ci/roi
+  - ci/voi
+  - contract

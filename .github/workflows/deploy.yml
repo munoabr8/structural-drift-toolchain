@@ -1,33 +1,64 @@
-# .github/workflows/deploy.yml
 name: Deploy
-
 on:
   workflow_dispatch:
     inputs:
-      env:    { description: "Environment", default: "production" }
-      reason: { description: "Why/notes", required: false }
-  push:
-    branches: [main]   # change to your release branch (e.g., dev)
+      env: { default: production }
+      sha: { required: false }
 
 permissions:
   contents: read
-  actions: read
 
-concurrency:
-  group: deploy-${{ github.ref }}
-  cancel-in-progress: false
+ 
+
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: ${{ inputs.env || 'production' }}
     steps:
       - uses: actions/checkout@v4
-      # TODO: put real deploy steps here if/when you have them
-      - name: Deploy marker
+        with:
+          ref: ${{ inputs.sha || github.sha }}
+
+      - name: Ensure tools
+        run: sudo apt-get update && sudo apt-get install -y jq gh
+
+      - name: Run deploy executor
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Deploying marker"
-          echo "branch=${GITHUB_REF#refs/heads/}"
-          echo "sha=$GITHUB_SHA"
-          echo "env=${{ inputs.env || 'production' }}"
+          chmod +x bin/deploy_exec.sh
+          bin/deploy_exec.sh "${{ inputs.env || 'production' }}"
+
+
+      - name: Emit deployment event
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}   # gh CLI reads GH_TOKEN or GITHUB_TOKEN
+          DEPLOY_SHA: ${{ inputs.sha || github.sha }}
+          DEPLOY_STATUS: ${{ job.status }}        # "success" | "failure" | "cancelled"
+          OUT: events.ndjson                  # force output path
+
+        run: |
+           set -euo pipefail
+           chmod +x ci/dora/event-append.sh || true
+           bash ci/dora/event-append.sh deployment
+           echo "preview:"
+           test -s events.ndjson
+           wc -c events.ndjson
+           head -1 events.ndjson | jq .
+
+      - name: Validate events.ndjson
+        run: bash ci/probe.sh --kind=events events.ndjson
+
+      - name: Debug workspace
+        if: always()
+        run: ls -la && test -s events.ndjson && echo "events.ndjson present"  
+
+      - name: Upload events.ndjson
+        uses: actions/upload-artifact@v4
+        with:
+          name: events-ndjson
+          path: events.ndjson
+          retention-days: 21
+
+

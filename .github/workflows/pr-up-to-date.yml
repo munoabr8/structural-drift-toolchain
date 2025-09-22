@@ -2,48 +2,67 @@ name: PR sync checks
 on:
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: pr-sync-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   up_to_date:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
+      # Checkout the PR HEAD exactly (handles forks)
       - uses: actions/checkout@v4
         with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Verify head vs base
+      - name: Verify head vs base repo
         shell: bash
         env:
-          BASE_REF: ${{ github.base_ref }}  # PR base only
+          BASE_REF:  ${{ github.base_ref }}
+          BASE_REPO: ${{ github.event.pull_request.base.repo.full_name }}
         run: |
           set -euo pipefail
-          base="${BASE_REF}"
-          git fetch --no-tags --prune origin "+refs/heads/$base:refs/remotes/origin/$base"
-
-          if git merge-base --is-ancestor "origin/$base" HEAD; then
-            read left right < <(git rev-list --left-right --count "origin/$base...HEAD")
-            echo "behind=$left ahead=$right"
-            echo "✅ Up-to-date with $base"
+          # Ensure a remote pointing at the base repo
+          if git remote get-url base >/dev/null 2>&1; then
+            git remote set-url base "https://github.com/${BASE_REPO}.git"
           else
-            read left right < <(git rev-list --left-right --count "origin/$base...HEAD")
+            git remote add base "https://github.com/${BASE_REPO}.git"
+          fi
+          # Fetch only the base branch from the base repo
+          git fetch --no-tags --prune base "+refs/heads/${BASE_REF}:refs/remotes/base/${BASE_REF}"
+
+          # Base must be ancestor of HEAD
+          if git merge-base --is-ancestor "refs/remotes/base/${BASE_REF}" HEAD; then
+            read left right < <(git rev-list --left-right --count "refs/remotes/base/${BASE_REF}...HEAD")
             echo "behind=$left ahead=$right"
-            echo "❌ Behind $base by $left commit(s). Rebase/merge then push."
+            echo "✅ Up-to-date with ${BASE_REPO}:${BASE_REF}"
+          else
+            read left right < <(git rev-list --left-right --count "refs/remotes/base/${BASE_REF}...HEAD")
+            echo "behind=$left ahead=$right"
+            echo "❌ Behind ${BASE_REPO}:${BASE_REF} by $left commit(s). Rebase/merge then push."
             exit 1
           fi
 
-
-  # 2. Check merge ref (branch + main together)
   merge_ref:
+    needs: [up_to_date]
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
+      # On pull_request, this checks out the GitHub-provided merge ref
       - uses: actions/checkout@v4
         with:
-          # default behavior: checkout the merge commit GitHub creates
           fetch-depth: 0
-
       - name: Verify merge build state
         run: |
           git log --oneline -n 3
           echo "✅ Checked out merge ref of PR into ${{ github.base_ref }}"
-          # insert build/tests here
+          # TODO: run fast build/tests here
