@@ -1,9 +1,6 @@
 # Auto-generated structure.spec
 
 dir: ./
-dir: ./artifacts/
-dir: ./artifacts/run-17918889258/
-dir: ./artifacts/run-17919440551/
 dir: ./attn/
 dir: ./bin/
 dir: ./ci/
@@ -35,15 +32,12 @@ dir: ./test/acceptance/
 dir: ./test/bin-tests/
 dir: ./test/e2e/
 dir: ./test/e2e/features/
-dir: ./test/e2e/garbage_detector/
 dir: ./test/e2e/helpers/
-dir: ./test/e2e/structure_generator/
 dir: ./test/e2e/structure_ignore/
 dir: ./test/e2e/structure_negative_tests/
 dir: ./test/e2e/structure_validator/
 dir: ./test/integration/
 dir: ./test/lib-tests/
-dir: ./test/unit/
 dir: ./tools/
 dir: ./tools/git-hooks/
 dir: ./tools/providers/
