@@ -25,6 +25,10 @@ env/
 */__pycache__
 
  
+.tmp.dora/
+
+obs/
+ 
 */artifacts/*
  
  dora.out
@@ -54,6 +58,10 @@ leadtime.csv
 */leadtime.csv
 
 dora.json
+
+
+dora.out.txt
+
 
 
 

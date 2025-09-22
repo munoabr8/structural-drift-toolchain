@@ -329,14 +329,22 @@ def safe_p50(xs):
     return xs[n//2] if n%2 else 0.5*(xs[n//2-1]+xs[n//2])
 
 lead_hours = [s/3600.0 for s in lead]  # 'lead' is seconds list from your code
+
+days_with_deploys = len(daily_df)
+per_active = round(deployments / max(days_with_deploys, 1), 4)
+per_window = (round(deployments / float(WINDOW_DAYS), 4)
+              if WINDOW_DAYS and WINDOW_DAYS > 0 else None)
+
 dora = {
   "schema": "dora/v1",
-  "window_days": WINDOW_DAYS or None,
+  "window_days": int(WINDOW_DAYS) if WINDOW_DAYS else None,
   "metrics": {
     "deploys_total": deployments,
     "deploy_failures": failed,
-    "deploys_per_day": round(sum(daily_df.values())/max(len(daily_df),1), 4),
-    "daily_histogram": daily_df
+    "days_with_deploys": days_with_deploys,
+    "deploys_per_window_day": per_window,   # uses full window
+    "deploys_per_active_day": per_active,   # uses only days present in histogram
+    "daily_histogram": daily_df             # activity-only map you already compute
   },
   "lead_time": {
     "samples": len(lead_hours),
@@ -345,6 +353,53 @@ dora = {
     "pctl": PCTL
   }
 }
+
+# deploys_per_active_day
+
+# Operational planning: if
+# your team has “release
+# days,” this shows how
+# busy those days are.
+# E.g., instead of 39
+# deploys spread evenly
+# (≈3/day), it’s really
+# ~10 deploys per
+# deploy-day. That’s a lot
+# of load on the pipeline,
+# approvers, and
+# monitoring.
+
+# Capacity bottlenecks: if
+# deploys are clustered
+# into a few days, this
+# metric highlights
+# burstiness. Bursty
+# deploys mean reviewers,
+# on-call, or QA get
+# slammed.
+
+# Stability vs. risk: if
+# all deploys are packed
+# into “hot days,” the
+# blast radius of one bad
+# day is bigger. A flat
+# per-window rate hides
+# that risk.
+
+# Improvement experiments:
+# if you’re trying to move
+# from “release-day
+# culture” to “continuous
+# deployment,” you want
+# this metric to trend
+# down
+# (deploys_per_active_day
+# decreasing,
+# days_with_deploys
+# increasing).
+
+
+ 
 with open("dora.json","w",encoding="utf-8") as f:
     json.dump(dora, f, indent=2)
 print("- Wrote dora.json")

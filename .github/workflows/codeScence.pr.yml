@@ -1,0 +1,114 @@
+# .github/workflows/codescene-pr.yml
+# Required repo secrets (Settings → Secrets and variables → Actions):
+# - CODESCENE_DEL_ANALYSIS_URL  (CodeScene Delta Analysis endpoint, project-specific)
+# - CODESCENE_USER              (CodeScene bot/user)
+# - CODESCENE_PASSWORD          (password or API token)
+# - CODESCENE_GH_PAT            (GitHub PAT; scope=repo for private, public_repo for public)
+
+name: codescene-pr
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  codescene:
+    if: ${{ !github.event.pull_request.head.repo.fork }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      TOOL_TAG: v1.3.3
+      CODESCENE_DELTA_ANALYSIS_URL: ${{ secrets.CODESCENE_DEL_ANALYSIS_URL }}
+      CODESCENE_USER:               ${{ secrets.CODESCENE_USER }}
+      CODESCENE_PASSWORD:           ${{ secrets.CODESCENE_PASSWORD }}
+      GITHUB_API_TOKEN:             ${{ secrets.CODESCENE_GH_PAT }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Cache Lein/Maven deps
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository
+            ~/.lein
+          key: ${{ runner.os }}-lein-m2-${{ env.TOOL_TAG }}
+
+      - name: Restore CodeScene jar
+        id: jar-cache
+        uses: actions/cache@v4
+        with:
+          path: .cache/codescene-ci-cd.jar
+          key: ${{ runner.os }}-codescene-ci-cd-${{ env.TOOL_TAG }}
+
+      - name: Install Leiningen (on PATH)
+        if: ${{ steps.jar-cache.outputs.cache-hit != 'true' }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/bin"
+          curl -fsSL https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein -o "$HOME/bin/lein"
+          chmod +x "$HOME/bin/lein"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+          "$HOME/bin/lein" -v
+
+      - name: Build CodeScene CI/CD jar from source
+        if: ${{ steps.jar-cache.outputs.cache-hit != 'true' }}
+        run: |
+          set -euo pipefail
+          rm -f ~/.lein/profiles.clj || true
+          mkdir -p .cache
+          git clone --depth 1 --branch "$TOOL_TAG" https://github.com/empear-analytics/codescene-ci-cd.git .cache/codescene-ci-cd
+          cd .cache/codescene-ci-cd
+          git config --global advice.detachedHead false
+          lein -U deps
+          lein -U uberjar || lein uberjar
+          echo "Built files:"; ls -l target || true
+          JAR="$(ls -1 target/*standalone*.jar | head -n1)"
+          [[ -n "$JAR" && -f "$JAR" ]] || { echo "Standalone jar not found under target/"; exit 1; }
+          cp "$JAR" ../codescene-ci-cd.jar
+          java -jar ../codescene-ci-cd.jar --help >/dev/null
+
+      - name: Validate CodeScene secrets
+        run: |
+          set -euo pipefail
+          missing=0
+          for v in CODESCENE_DELTA_ANALYSIS_URL CODESCENE_USER CODESCENE_PASSWORD GITHUB_API_TOKEN; do
+            if [ -z "${!v:-}" ]; then echo "Missing $v"; missing=1; fi
+          done
+          [ "$missing" -eq 0 ] || exit 1
+
+      - name: Run CodeScene delta analysis and comment
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          OWNER:    ${{ github.repository_owner }}
+          REPO:     ${{ github.event.repository.name }}
+        run: |
+          set -euo pipefail
+          java -jar .cache/codescene-ci-cd.jar \
+            --codescene-delta-analysis-url "$CODESCENE_DELTA_ANALYSIS_URL" \
+            --codescene-user "$CODESCENE_USER" \
+            --codescene-password "$CODESCENE_PASSWORD" \
+            --current-commit-id "$HEAD_SHA" \
+            --base-revision "$BASE_SHA" \
+            --github-owner "$OWNER" \
+            --github-repo "$REPO" \
+            --github-api-url "https://api.github.com" \
+            --github-api-token "$GITHUB_API_TOKEN" \
+            --create-github-comment \
+            --coupling-threshold-percent 75 \
+            --fail-on-high-risk \
+            --result-path result.json \
+            --log-result
+
+      - name: Upload result.json
+        if: ${{ always() && hashFiles('result.json') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: codescene-result
+          path: result.json
