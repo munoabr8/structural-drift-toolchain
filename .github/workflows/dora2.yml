@@ -1,0 +1,71 @@
+name: DORA with make file
+on:
+  schedule: [{ cron: "0 * * * *" }]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  dora:
+    runs-on: ubuntu-latest
+    env:
+      WINDOW_DAYS: "14"
+      MAIN_BRANCH: "main"
+      PCTL: "90"
+      MIN_LEAD_SAMPLES: "1"
+      LT_MIN_LEAD_SECONDS: "0"
+      GH_TOKEN: ${{ github.token }}
+      GITHUB_REPOSITORY: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve latest successful Deploy run
+        id: pick
+        run: |
+          set -euo pipefail
+          RUN_ID="$(
+            gh run list --workflow 'Deploy' --branch "$MAIN_BRANCH" -L 50 \
+              --json databaseId,createdAt,conclusion \
+            | jq -r 'map(select(.conclusion=="success")) | sort_by(.createdAt) | (last // {}) | (.databaseId // empty)'
+          )"
+          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Skip if already processed
+        id: cachecheck
+        run: |
+          set -euo pipefail
+          mkdir -p .cache
+          if [[ -s .cache/events.last_run && "$(cat .cache/events.last_run)" == "${{ steps.pick.outputs.run_id }}" ]];        then
+            echo "fresh=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "fresh=false" >> "$GITHUB_OUTPUT"
+          fi
+      
+      - name: Ensure tools
+        run: sudo apt-get update && sudo apt-get install -y jq gh python3
+
+      - name: Prepare + Compute (windowed)
+        env:
+              WINDOW_DAYS: "14"
+              MAIN_BRANCH: "main"
+        run: |
+          make -f ci/workflows.mk wf/all
+    
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dora-artifacts
+          path: |
+            events.ndjson
+            leadtime.csv
+            dora.out.txt
+
+
+
+
+
+ 
