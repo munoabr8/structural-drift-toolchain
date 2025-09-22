@@ -53,7 +53,7 @@ jobs:
               WINDOW_DAYS: "14"
               MAIN_BRANCH: "main"
         run: |
-          make -f ci/workflows.mk wf/all
+          make -f system/make/workflows.mk wf/all
     
 
       - uses: actions/upload-artifact@v4
