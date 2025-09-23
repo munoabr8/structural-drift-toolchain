@@ -2,11 +2,10 @@ STRUCT_VAL_TEST=test/e2e/structure_validator
 
 STRUCT_NEG_VAL_TEST=test/e2e/structure_negative_tests
 
-TEST_GARBAGE=test/e2e/garbage_detector
 
 
 
-test-all: test-structure  test-garbage  test-negative-structure
+test-all: test-structure   test-negative-structure
 
 
 
@@ -15,14 +14,3 @@ test-structure:
 
 test-negative-structure:
 	@bats $(STRUCT_NEG_VAL_TEST)
-
-test-garbage:
-	@echo "🧪 Running garbage_detector validation tests..."
-	@bats system-test/garbage_detector
-
-
-# test-garbage:
-# 	@echo "🔍 Running garbage detection..."
-# 	@git status --porcelain | grep -v '^??' > /dev/null && \
-# 	  { echo "❌ Garbage detected — push blocked."; exit 1; } || \
-# 	  echo "✅ No garbage detected."

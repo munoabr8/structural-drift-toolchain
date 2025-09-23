@@ -14,7 +14,7 @@ foo.sh
 
 # Temporary dirs created by tests
 /tmp/
-/.evidence
+/.evidenceg
 
 # Python Virtual Environments
 .venv/
@@ -31,6 +31,14 @@ obs/
  
 */artifacts/*
  
+ ./artifacts/env/before.json
+
+ ./artifacts/env/after.json
+
+./artifacts/*/
+
+./artifacts
+
  dora.out
 
  .pytest_cache
