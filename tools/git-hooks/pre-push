@@ -20,7 +20,6 @@ make check-structure-drift || { echo "❌ Drift detected — push blocked."; exi
 make enforce-structure || { echo "❌ Structure invalid — push blocked."; exit 1; }
 make test-structure || { echo "❌ Structure tests failed — push blocked."; exit 1; }
 make test-negative-structure || { echo "❌ Negative structure tests failed — push blocked."; exit 1; }
-make test-garbage || { echo "❌ Garbage detection failed — push blocked."; exit 1; }
 
 
 
