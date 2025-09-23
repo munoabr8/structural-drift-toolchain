@@ -50,8 +50,8 @@ wf/echo:
 
 # ---------------- hygiene ----------------
 wf/install:
-	@test -s "$(WF_DIR)/deploy.yml" || { echo "ERR: missing $(WF_DIR)/deploy.yml"; exit 64; }
-	@test -s "$(WF_DIR)/dora-basics.yml" || { echo "ERR: missing $(WF_DIR)/dora-basics.yml"; exit 64; }
+	@test -s "$(WF_DIR)/deploy2.yml" || { echo "ERR: missing $(WF_DIR)/deploy.yml"; exit 64; }
+	@test -s "$(WF_DIR)/dora2.yml" || { echo "ERR: missing $(WF_DIR)/dora-basics.yml"; exit 64; }
 
 wf/validate:
 	@if command -v actionlint >/dev/null; then actionlint; else echo "note: install actionlint"; fi
@@ -137,8 +137,13 @@ wf/probe:
 	$(Q)bash ci/probe.sh --kind=events '$(EVENTS)'
 
 wf/compute-dora:
-	$(Q)python3 ci/dora/compute-dora.py '$(EVENTS)' | tee dora.out.txt
-	$(Q)echo "wrote dora.out.txt"
+	#$(Q)python3 ci/dora/compute-dora.py '$(EVENTS)' | tee dora.out.txt
+	#$(Q)echo "wrote dora.out.txt"
+
+
+LT_PAIR_MODE=both python3 ci/dora/dora-refactor/main.py '$(EVENTS)' | tee dora.out.txt
+
+
 
 # ---------------- chains --------------
 wf/prepare-events: wf/fetch-window wf/merge-prs wf/guard-pairing
