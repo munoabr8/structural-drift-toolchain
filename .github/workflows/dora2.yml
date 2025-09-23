@@ -50,7 +50,7 @@ jobs:
 
       - name: Prepare + Compute (windowed)
         env:
-              WINDOW_DAYS: "14"
+              WINDOW_DAYS: "60"
               MAIN_BRANCH: "main"
         run: |
           make -f system/make/workflows.mk wf/all
