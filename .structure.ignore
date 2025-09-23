@@ -10,6 +10,20 @@ tmp
 /.evidence
 
  
+ 
+ ./artifacts/env/before.json
+
+ ./artifacts/env/after.json
+
+./artifacts/
+
+./artifacts/*
+
+./artifacts/env/
+
+ 
+./artifacts
+
 
 /.ci-seed
 
