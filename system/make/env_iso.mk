@@ -38,7 +38,6 @@ env/checks:
 	@jq -e '.schema=="env/probe/v1"' '$(AFTER)'  >/dev/null
 	@echo "OK: probe JSONs valid"
 
-
 # tie into workflows (optional)
 wf/prepare-isolated: env/ci env/checks
 	@echo "env isolated + checks passed"
