@@ -14,7 +14,7 @@ DORA_WF     := DORA
 EVENTS      ?= ci/dora/events.ndjson
 ARTDIR      ?= artifacts
 ARTNAME     ?= events-ndjson
-WINDOW_DAYS ?= 14
+WINDOW_DAYS ?= 60
 
 # verbosity: make V=1
 ifeq ($(V),1)
@@ -126,6 +126,12 @@ wf/merge-prs:
 	[ "$$before_dep" = "$$after_dep" ] || { echo "ERR: deployment count changed ($$before_dep -> $$after_dep)"; exit 65; }; \
 	echo "OK: PRs $$before_pr -> $$after_pr; Deployments $$after_dep"
 
+wf/guard-pairing:
+	@test -s '$(EVENTS)' || { echo "ERR: missing $(EVENTS)"; exit 64; }
+	@jq -s -f ci/jq/guard_pairing.jq '$(EVENTS)' \
+	| jq -e '.missing|length==0' >/dev/null \
+	|| { echo "PAIRING_FAIL"; exit 66; }
+
 # ---------------- probe/compute -------
 wf/probe:
 	$(Q)bash ci/probe.sh --kind=events '$(EVENTS)'
@@ -135,7 +141,7 @@ wf/compute-dora:
 	$(Q)echo "wrote dora.out.txt"
 
 # ---------------- chains --------------
-wf/prepare-events: wf/fetch-window wf/merge-prs
+wf/prepare-events: wf/fetch-window wf/merge-prs wf/guard-pairing
 	$(Q)echo "prepared $(EVENTS)"
 
 wf/all: wf/prepare-events wf/probe wf/compute-dora

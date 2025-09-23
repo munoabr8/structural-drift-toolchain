@@ -103,6 +103,13 @@ file: ./ci/contract/normalize.sh
 file: ./ci/contract/stage0_autogen.sh
 file: ./ci/dora/collect-events.sh
 file: ./ci/dora/compute-dora.py
+file: ./ci/dora/dora-refactor/compute-dora.rf.py
+file: ./ci/dora/dora-refactor/dora_aggregate.py
+file: ./ci/dora/dora-refactor/dora_assemble.py
+file: ./ci/dora/dora-refactor/dora_io.py
+file: ./ci/dora/dora-refactor/dora_pair.py
+file: ./ci/dora/dora-refactor/dora_validate.py
+file: ./ci/dora/dora-refactor/invariants.py
 file: ./ci/dora/event-append.sh
 file: ./ci/dora/fetch_window_events.sh
 file: ./ci/dora/health.sh
@@ -122,6 +129,7 @@ file: ./ci/git/prepare-ref.sh
 file: ./ci/jq/dora_lt_validate.jq
 file: ./ci/jq/events_summary.jq
 file: ./ci/jq/events_validate.jq
+file: ./ci/jq/guard_pairing.jq
 file: ./ci/jq/why_identify.jq
 file: ./ci/lib.sh
 file: ./ci/probe.sh
