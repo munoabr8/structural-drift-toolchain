@@ -243,6 +243,7 @@ file: ./system/make/preflight.mk
 file: ./system/make/preflight_shared.mk
 file: ./system/make/structure.mk
 file: ./system/make/test.mk
+file: ./system/make/vm.mk
 file: ./system/make/workflows.mk
 file: ./system/smoke-structure-validator.sh
 file: ./system/structure
