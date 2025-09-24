@@ -24,6 +24,9 @@ env/
 
 */__pycache__
 
+env.probe.json
+
+./env.probe.json
  
 .tmp.dora/
 

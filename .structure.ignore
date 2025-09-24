@@ -10,7 +10,10 @@ tmp
 /.evidence
 
  
- 
+
+ env.probe.json
+ ./env.probe.json
+
  ./artifacts/env/before.json
 
  ./artifacts/env/after.json
