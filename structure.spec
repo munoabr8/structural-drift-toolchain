@@ -8,7 +8,6 @@ dir: ./ci/contract/
 dir: ./ci/contract/jq/
 dir: ./ci/dora/
 dir: ./ci/dora/dora-refactor/
-dir: ./ci/dora/dora-refactor/tests/
 dir: ./ci/env/
 dir: ./ci/git/
 dir: ./ci/jq/
