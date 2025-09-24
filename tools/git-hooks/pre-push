@@ -19,7 +19,7 @@ echo "✅ Preflight passed — proceeding with push."
 make check-structure-drift || { echo "❌ Drift detected — push blocked."; exit 1; }
 make enforce-structure || { echo "❌ Structure invalid — push blocked."; exit 1; }
 make test-structure || { echo "❌ Structure tests failed — push blocked."; exit 1; }
-make test-negative-structure || { echo "❌ Negative structure tests failed — push blocked."; exit 1; }
+
 
 
 

@@ -5,10 +5,9 @@ roots:
 sub_roots:
   - ci/contract
   - ci/dora
-  - ci/env
+  - ci/enviornment
   - ci/git
   - ci/jq
   - ci/roi
   - ci/voi
   - contract
-  - env
