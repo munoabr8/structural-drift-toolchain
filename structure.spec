@@ -118,6 +118,7 @@ file: ./ci/dora/probe-pairs2.sh
 file: ./ci/dora/probe_pairs.sh
 file: ./ci/dora/test-lead.py
 file: ./ci/enforce_contract.sh
+file: ./ci/env/.gitkeep
 file: ./ci/env/_isolate_core.sh
 file: ./ci/env/isolate_bats.sh
 file: ./ci/env/isolate_ci.sh
