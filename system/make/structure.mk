@@ -35,7 +35,6 @@ enforce-structure:
 	@test -f $(STRUCTURE_SPEC) || (echo "❌ Missing spec file: $(STRUCTURE_SPEC)" && exit 1)
 	@test -x $(VALIDATOR) || (echo "❌ Validator not executable: $(VALIDATOR)" && exit 1)
 	@echo "🔍 Enforcing structure from $(STRUCTURE_SPEC)..."
- 
 	@bash $(VALIDATOR) --quiet validate "$(STRUCTURE_SPEC)" \
 		|| { echo "Structure invalid." >&2; exit 1; }
 
@@ -60,8 +59,6 @@ snapshot-and-promote:
 	@echo "✅ structure.spec has been updated."
 
 
-
- 
 
 
 	
