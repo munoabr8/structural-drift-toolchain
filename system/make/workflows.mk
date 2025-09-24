@@ -138,7 +138,7 @@ wf/probe:
 
 wf/compute-dora:
  
-LT_PAIR_MODE=both python3 ci/dora/dora-renfactor/main.py '$(EVENTS)' | tee dora.out.txt
+LT_PAIR_MODE=both python3 ci/dora/dora-refactor/main.py '$(EVENTS)' | tee dora.out.txt
 
 
 
