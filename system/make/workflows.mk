@@ -137,11 +137,8 @@ wf/probe:
 	$(Q)bash ci/probe.sh --kind=events '$(EVENTS)'
 
 wf/compute-dora:
-	#$(Q)python3 ci/dora/compute-dora.py '$(EVENTS)' | tee dora.out.txt
-	#$(Q)echo "wrote dora.out.txt"
-
-
-LT_PAIR_MODE=both python3 ci/dora/dora-refactor/main.py '$(EVENTS)' | tee dora.out.txt
+ 
+LT_PAIR_MODE=both python3 ci/dora/dora-renfactor/main.py '$(EVENTS)' | tee dora.out.txt
 
 
 
