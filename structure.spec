@@ -8,7 +8,7 @@ dir: ./ci/contract/
 dir: ./ci/contract/jq/
 dir: ./ci/dora/
 dir: ./ci/dora/dora-refactor/
-dir: ./ci/env/
+dir: ./ci/enviornment/
 dir: ./ci/git/
 dir: ./ci/jq/
 dir: ./ci/roi/
@@ -32,7 +32,6 @@ dir: ./test/e2e/
 dir: ./test/e2e/features/
 dir: ./test/e2e/helpers/
 dir: ./test/e2e/structure_ignore/
-dir: ./test/e2e/structure_negative_tests/
 dir: ./test/e2e/structure_validator/
 dir: ./test/integration/
 dir: ./test/lib-tests/
@@ -118,11 +117,11 @@ file: ./ci/dora/probe-pairs2.sh
 file: ./ci/dora/probe_pairs.sh
 file: ./ci/dora/test-lead.py
 file: ./ci/enforce_contract.sh
-file: ./ci/env/.gitkeep
-file: ./ci/env/_isolate_core.sh
-file: ./ci/env/isolate_bats.sh
-file: ./ci/env/isolate_ci.sh
-file: ./ci/env/probe_env.sh
+file: ./ci/enviornment/.gitkeep
+file: ./ci/enviornment/_isolate_core.sh
+file: ./ci/enviornment/isolate_bats.sh
+file: ./ci/enviornment/isolate_ci.sh
+file: ./ci/enviornment/probe_env.sh
 file: ./ci/failure_taxonomy.yml
 file: ./ci/git/lib-risk.sh
 file: ./ci/git/prepare-ref.sh
