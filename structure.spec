@@ -164,7 +164,6 @@ file: ./darwin_memory.sh
 file: ./docs/CHANGELOG.md
 file: ./docs/README.generated.md
 file: ./docs/README.md
-file: ./env.probe.json
 file: ./lib/cmd.sh
 file: ./lib/command_contracts.sh
 file: ./lib/contract_dsl.sh
