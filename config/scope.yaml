@@ -11,4 +11,3 @@ sub_roots:
   - ci/roi
   - ci/voi
   - contract
-  - env
