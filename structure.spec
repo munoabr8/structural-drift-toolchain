@@ -5,7 +5,6 @@ dir: ./attn/
 dir: ./bin/
 dir: ./ci/
 dir: ./ci/contract/
-dir: ./ci/contract/contracts-gen/
 dir: ./ci/contract/jq/
 dir: ./ci/dora/
 dir: ./ci/dora/dora-refactor/
