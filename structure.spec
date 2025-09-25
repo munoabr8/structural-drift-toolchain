@@ -153,6 +153,7 @@ file: ./ci/test_toggl_parser.py
 file: ./ci/triage.sh
 file: ./ci/verify_contract.sh
 file: ./ci/voi/void_from_dora.py
+file: ./ci/where.sh
 file: ./config/policy.rules.yml
 file: ./config/runtime.cfg
 file: ./config/runtime_flags.sh
@@ -241,6 +242,7 @@ file: ./system/make/preflight_shared.mk
 file: ./system/make/structure.mk
 file: ./system/make/test.mk
 file: ./system/make/vm.mk
+file: ./system/make/whereami.mk
 file: ./system/make/workflows.mk
 file: ./system/smoke-structure-validator.sh
 file: ./system/structure

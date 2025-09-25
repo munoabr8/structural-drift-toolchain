@@ -66,6 +66,7 @@ AUTO_README_GEN=./tools/gen_readme.sh
  include ./system/make/workflows.mk
  include ./system/make/env_iso.mk
  include ./system/make/vm.mk
+ include ./system/make/whereami.mk
 
 #test-structure-generator:
 	#@echo "🧪 Testing structure spec generation..."
