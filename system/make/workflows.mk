@@ -104,7 +104,6 @@ wf/env:
 	  "$(REPO)" "$(MAIN_BRANCH)" "$(ENV)" "$(WINDOW_DAYS)" "$${GH_TOKEN:+set}"\
 	  "$(DEPLOY_WF_ID)" "$(DORA_WF_ID)"
 
- 
 
 # ---------------- hygiene ----------------
 
