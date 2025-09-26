@@ -17,11 +17,20 @@ DEPLOY_WF   := Deploy
 DORA_WF     := DORA
 
 REPO ?= $(shell gh repo view -q .nameWithOwner --json nameWithOwner)
+
+
+
 DEPLOY_WF_PATH ?= .github/workflows/deploy2.yml
 DORA_WF_PATH   ?= .github/workflows/dora2.yml
+
 DEPLOY_WF_PATH_N := $(patsubst ./%,%,$(DEPLOY_WF_PATH))
 DORA_WF_PATH_N   := $(patsubst ./%,%,$(DORA_WF_PATH))
-ARTDIR ?= artifacts
+DEPLOY_WF_FILE   := $(notdir $(DEPLOY_WF_PATH_N))
+DORA_WF_FILE     := $(notdir $(DORA_WF_PATH_N))
+
+
+
+ ARTDIR ?= artifacts
 
 # ---- cache IDs once, don’t recompute at parse time
 -include $(ARTDIR)/workflow_ids.env
@@ -71,26 +80,15 @@ wf/resolve: $(ARTDIR)/workflow_ids.env
 	  test -n "$$DEPLOY_WF_ID" || { echo "ERR: bad DEPLOY_WF_PATH=$(DEPLOY_SEL)"; exit 65; }; \
 	  test -n "$$DORA_WF_ID"   || { echo "ERR: bad DORA_WF_PATH=$(DORA_SEL)"; exit 65; }
 
+ 
+
 $(ARTDIR)/workflow_ids.env:
-	@mkdir -p '$(ARTDIR)'; r='$(REPO)'; dep='$(DEPLOY_WF_PATH_N)'; dora='$(DORA_WF_PATH_N)'; \
-	  dep_id="$$(gh workflow view "$$dep"  --repo "$$r" --json id -q .id 2>/dev/null || true)"; \
-	  dora_id="$$(gh workflow view "$$dora" --repo "$$r" --json id -q .id 2>/dev/null || true)"; \
+	@mkdir -p '$(ARTDIR)'; r='$(REPO)'; \
+	  dep_id="$$(gh api repos/$$r/actions/workflows/$(DEPLOY_WF_FILE) -q .id 2>/dev/null || true)"; \
+	  dora_id="$$(gh api repos/$$r/actions/workflows/$(DORA_WF_FILE)   -q .id 2>/dev/null || true)"; \
+	  [ -n "$$dep_id" ]  || { echo "ERR: deploy file not found: $(DEPLOY_WF_FILE)"; exit 65; }; \
+	  [ -n "$$dora_id" ] || { echo "ERR: dora file not found: $(DORA_WF_FILE)";   exit 65; }; \
 	  { echo "export REPO=$$r"; echo "export DEPLOY_WF_ID=$$dep_id"; echo "export DORA_WF_ID=$$dora_id"; } >'$@'
-#  	@mkdir -p '$(ARTDIR)'
-#  	r='$(REPO)'; dep='$(DEPLOY_WF_PATH_N)'; dora='$(DORA_WF_PATH_N)'
-#  	test -n "$$dep"  || { echo "ERR: set DEPLOY_WF_PATH"; exit 64; }
-#  	test -n "$$dora" || { echo "ERR: set DORA_WF_PATH"; exit 64; }
-#  	dep_id="$$(gh workflow view "$$dep"  --repo "$$r" --json id -q .id 2>/dev/null || true)"
-#  	dora_id="$$(gh workflow view "$$dora" --repo "$$r" --json id -q .id 2>/dev/null || true)"
-#  	if [ -z "$$dep_id" ] || [ -z "$$dora_id" ]; then
-#  	  echo "ERR: could not resolve IDs. Candidates:" >&2
-#  	  gh api "repos/$$r/actions/workflows" --jq '.workflows[]|[.name,.path, (.id|tostring)]|@tsv' >&2
-#  	  exit 65
-#  	fi
-#  	{ echo "export REPO=$$r"; echo "export DEPLOY_WF_ID=$$dep_id"; echo "export DORA_WF_ID=$$dora_id"; } >'$@'
-
-
-
 
 wf/clear-ids:
 	@rm -f $(ARTDIR)/workflow_ids.env
@@ -106,16 +104,7 @@ wf/env:
 	  "$(REPO)" "$(MAIN_BRANCH)" "$(ENV)" "$(WINDOW_DAYS)" "$${GH_TOKEN:+set}"\
 	  "$(DEPLOY_WF_ID)" "$(DORA_WF_ID)"
 
-
-wf/resolve-ids: | $(ARTDIR)
-	@test -n "$(REPO)" || { echo "ERR: REPO unresolved"; exit 64; }
-	# write an array, not newline objects
-	@gh api repos/$(REPO)/actions/workflows -q '.workflows | map({name,id,path})' > '$(ARTDIR)/workflows.json'
-	@dep_id="$$(jq -r --arg n '$(DEPLOY_WF)' '.[] | select(.name==$n) | .id' '$(ARTDIR)/workflows.json' | head -n1)"; \
-	 dora_id="$$(jq -r --arg n '$(DORA_WF)'   '.[] | select(.name==$n) | .id' '$(ARTDIR)/workflows.json' | head -n1)"; \
-	 echo "Hint: set DEPLOY_WF_ID=$$dep_id"; \
-	 echo "      set DORA_WF_ID=$$dora_id"
-
+ 
 
 # ---------------- hygiene ----------------
 
@@ -214,7 +203,18 @@ wf/compute-dora:
 $(Q)$(E) LT_PAIR_MODE=both python3 ci/dora/dora-refactor/main.py '$(EVENTS)' | tee dora.out.txt 
 
 
-
+wf/obs: ## resolve → fetch → merge PRs → probe → compute
+	@$(MAKE) wf/resolve DEPLOY_WF_PATH=$(DEPLOY_WF_PATH) DORA_WF_PATH=$(DORA_WF_PATH)
+	@gh auth status >/dev/null 2>&1 || { [ -n "$$GH_TOKEN" ] || { echo "ERR: GH auth missing (set GH_TOKEN)"; exit 64; }; }
+	@echo "[obs] repo=$(REPO) window=$(WINDOW_DAYS) deploy=$(DEPLOY_SEL) dora=$(DORA_SEL) sha=$(SHA)"
+	@if [ -n "$(SHA)" ]; then \
+		$(MAKE) wf/fetch-by-sha SHA=$(SHA); \
+	else \
+		$(MAKE) wf/fetch-latest; \
+	fi
+	@$(MAKE) wf/merge-prs
+	@$(MAKE) wf/probe
+	@$(MAKE) wf/compute-dora
 
 # ---------------- chains --------------
 wf/obs: wf/prepare-events wf/probe wf/compute-dora

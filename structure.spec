@@ -133,6 +133,7 @@ file: ./ci/jq/why_identify.jq
 file: ./ci/lib.sh
 file: ./ci/probe.sh
 file: ./ci/probe_coupling.sh
+file: ./ci/probe_deploy.sh
 file: ./ci/read-contracts.sh
 file: ./ci/repro.sh
 file: ./ci/roi/build_inputs.sh
