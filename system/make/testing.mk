@@ -33,11 +33,11 @@ run-env:
 
 
 # --- vm isolation (Ubuntu guest + mounted repo) ---
-vm-up:
+vm-up2:
 	multipass launch $(IMG) --name $(VM) --cpus 2 --mem 4G --disk 20G || true
 	multipass mount . $(VM):/repo || true
 
-run-vm: vm-up
+run-vm: vm-up2
 	multipass exec $(VM) -- bash -lc 'umask 0022; cd /repo && $(PIPE)'
 
 vm-down:
