@@ -52,7 +52,7 @@ jobs:
         run: |
           mkdir -p artifacts
             gh run download ${{ steps.pick.outputs.run_id }} \
-             --name 'dora-artifacts' \
+             --name 'events-ndjson' \
               --dir artifacts
         env:
           GH_TOKEN: ${{ github.token }}  
@@ -62,9 +62,10 @@ jobs:
               WINDOW_DAYS: "60"
               MAIN_BRANCH: "main"
         run: |
-          make -f system/make/workflows.mk wf/all
-    
+          f="$(find artifacts -type f -name 'events.ndjson' -print -quit)"; [ -n "$f" ] || exit 64
 
+          make -f system/make/workflows.mk wf/all EVENTS="$f"
+ 
       - uses: actions/upload-artifact@v4
         with:
           name: dora-artifacts
