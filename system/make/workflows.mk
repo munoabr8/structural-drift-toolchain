@@ -196,7 +196,7 @@ wf/probe:
 	$(Q)bash ci/probe.sh --kind=events '$(EVENTS)'
 
 wf/compute-dora:
-	$(Q)$(E) LT_PAIR_MODE=both python3 ci/dora/dora-refactor/main.py '$(EVENTS)' | tee dora.out.txt 
+	LT_PAIR_MODE=both python3 ci/dora/dora-refactor/main.py '$(EVENTS)' | tee dora.out.txt 
 
 
 wf/obs2: ## resolve → fetch → merge PRs → probe → compute
