@@ -6,9 +6,17 @@ vm/up:
 
 vm/run:
 	
-	multipass exec $(VM) -- bash -lc 'umask 0022; cd /repo && bash ./ci/env/isolate_ci.sh'
+	multipass exec $(VM) -- bash -lc 'umask 0022; cd /repo && bash ./ci/enviornment/isolate_ci.sh'
 
 vm/down:
 	multipass stop $(VM) || true
 	multipass delete $(VM) || true
 	multipass purge || true
+
+
+
+vm/all:   vm/up vm/run vm/doctor
+
+
+vm/doctor:
+	@$(MAKE) -f system/make/vm.mk vm/run CMD='bash ci/where.sh'

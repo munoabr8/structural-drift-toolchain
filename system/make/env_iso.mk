@@ -3,10 +3,10 @@
 # knobs
 ENV_ALLOW ?= PATH HOME CI GH_TOKEN PWD SHELL SHLVL TERM _ LC_ALL
 BATS_ALLOW   ?= "PATH HOME WS"
-ISOLATE_CI   := ci/env/isolate_ci.sh
-ISOLATE_BATS := ci/env/isolate_bats.sh
+ISOLATE_CI   := ci/enviornment/isolate_ci.sh
+ISOLATE_BATS := ci/enviornment/isolate_bats.sh
 
-PROBE        ?= ci/env/probe_env.sh
+PROBE        ?= ci/enviornment/probe_env.sh
 
 SNAPSHOT_MODE ?= head          # CI default
  
