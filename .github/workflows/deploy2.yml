@@ -41,8 +41,7 @@ jobs:
           set -euo pipefail
           chmod +x bin/deploy_exec.sh
           bin/deploy_exec.sh "${{ inputs.env || 'production' }}"
-
-
+          
       - name: Emit deployment event
         if: always()
         run: |
