@@ -52,7 +52,6 @@ file: ./.github/workflows/ci-hours.yml
 file: ./.github/workflows/codeScence.pr.yml
 file: ./.github/workflows/deploy.yml
 file: ./.github/workflows/deploy2.yml
-file: ./.github/workflows/dora-basics.yml
 file: ./.github/workflows/dora-debug.yml
 file: ./.github/workflows/dora-health.yml
 file: ./.github/workflows/dora2.yml
@@ -133,6 +132,7 @@ file: ./ci/jq/why_identify.jq
 file: ./ci/lib.sh
 file: ./ci/probe.sh
 file: ./ci/probe_coupling.sh
+file: ./ci/probe_deploy.sh
 file: ./ci/read-contracts.sh
 file: ./ci/repro.sh
 file: ./ci/roi/build_inputs.sh
@@ -153,6 +153,7 @@ file: ./ci/test_toggl_parser.py
 file: ./ci/triage.sh
 file: ./ci/verify_contract.sh
 file: ./ci/voi/void_from_dora.py
+file: ./ci/where.sh
 file: ./config/policy.rules.yml
 file: ./config/runtime.cfg
 file: ./config/runtime_flags.sh
@@ -240,7 +241,9 @@ file: ./system/make/preflight.mk
 file: ./system/make/preflight_shared.mk
 file: ./system/make/structure.mk
 file: ./system/make/test.mk
+file: ./system/make/testing.mk
 file: ./system/make/vm.mk
+file: ./system/make/whereami.mk
 file: ./system/make/workflows.mk
 file: ./system/smoke-structure-validator.sh
 file: ./system/structure
