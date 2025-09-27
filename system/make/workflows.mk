@@ -173,7 +173,7 @@ wf/fetch-by-sha: | $(ARTDIR)
 
 # ---------------- merge PRs ------------
 wf/merge-prs:
-	$(Q)$(E) test -s '$(EVENTS)' || { echo "ERR: missing $(EVENTS)"; exit 64; }; \
+	test -s '$(EVENTS)' || { echo "ERR: missing $(EVENTS)"; exit 64; }; \
 	since="$$(python3 -c 'from datetime import datetime,timedelta,timezone; import os; wd=int(os.getenv("WINDOW_DAYS","14")); print((datetime.now(timezone.utc)-timedelta(days=wd)).strftime("%Y-%m-%dT%H:%M:%SZ"))')"; \
 	before_pr="$$(jq -s 'map(select(.type=="pr_merged"))|length' '$(EVENTS)')"; \
 	before_dep="$$(jq -s 'map(select(.type=="deployment"))|length' '$(EVENTS)')"; \
@@ -196,8 +196,8 @@ wf/probe:
 	$(Q)bash ci/probe.sh --kind=events '$(EVENTS)'
 
 wf/compute-dora:
-$(Q)$(E) LT_PAIR_MODE=both python3 ci/dora/dora-refactor/main.py '$(EVENTS)' | tee dora.out.txt 
-
+	@set -euo pipefail; \
+	LT_PAIR_MODE=both python3 ci/dora/dora-refactor/main.py '$(EVENTS)' | tee dora.out.txt
 
 wf/obs2: ## resolve → fetch → merge PRs → probe → compute
 	@$(MAKE) wf/resolve DEPLOY_WF_PATH=$(DEPLOY_WF_PATH) DORA_WF_PATH=$(DORA_WF_PATH)
