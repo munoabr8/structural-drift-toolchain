@@ -173,7 +173,7 @@ wf/fetch-by-sha: | $(ARTDIR)
 
 # ---------------- merge PRs ------------
 wf/merge-prs:
-	$(Q)$(E) test -s '$(EVENTS)' || { echo "ERR: missing $(EVENTS)"; exit 64; }; \
+	test -s '$(EVENTS)' || { echo "ERR: missing $(EVENTS)"; exit 64; }; \
 	since="$$(python3 -c 'from datetime import datetime,timedelta,timezone; import os; wd=int(os.getenv("WINDOW_DAYS","14")); print((datetime.now(timezone.utc)-timedelta(days=wd)).strftime("%Y-%m-%dT%H:%M:%SZ"))')"; \
 	before_pr="$$(jq -s 'map(select(.type=="pr_merged"))|length' '$(EVENTS)')"; \
 	before_dep="$$(jq -s 'map(select(.type=="deployment"))|length' '$(EVENTS)')"; \
