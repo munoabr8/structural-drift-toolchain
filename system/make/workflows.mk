@@ -196,8 +196,8 @@ wf/probe:
 	$(Q)bash ci/probe.sh --kind=events '$(EVENTS)'
 
 wf/compute-dora:
-	LT_PAIR_MODE=both python3 ci/dora/dora-refactor/main.py '$(EVENTS)' | tee dora.out.txt 
-
+	@set -euo pipefail; \
+	LT_PAIR_MODE=both python3 ci/dora/dora-refactor/main.py '$(EVENTS)' | tee dora.out.txt
 
 wf/obs2: ## resolve → fetch → merge PRs → probe → compute
 	@$(MAKE) wf/resolve DEPLOY_WF_PATH=$(DEPLOY_WF_PATH) DORA_WF_PATH=$(DORA_WF_PATH)
