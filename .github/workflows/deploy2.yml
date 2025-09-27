@@ -2,8 +2,10 @@ name: Deploy
 on:
   workflow_dispatch:
     inputs:
-      env: { default: production }
-      sha: { required: false }
+      env:
+        default: production
+      sha:
+        required: false
 
 permissions:
   contents: read
@@ -41,6 +43,7 @@ jobs:
           set -euo pipefail
           chmod +x bin/deploy_exec.sh
           bin/deploy_exec.sh "${{ inputs.env || 'production' }}"
+
       - name: Emit deployment event
         if: always()
         run: |
@@ -62,13 +65,6 @@ jobs:
                  and (.sha|test("^[0-9a-f]{40}$"))
                  and (.finished_at|test("Z$")) )' events.ndjson >/dev/null
           echo "preview:"; wc -c events.ndjson; head -1 events.ndjson | jq .
-
-        - name: Resolve merge SHA
-          id: resolve
-          run: |
-            M="$(gh api repos/${{ github.repository }}/commits/${{ github.sha }} -q .sha || true)"
-            echo "merge_sha=$M" >> "$GITHUB_OUTPUT"
-          env: { GH_TOKEN: ${{ github.token }} }          
 
       - name: Validate events.ndjson
         run: bash ci/probe.sh --kind=events events.ndjson
