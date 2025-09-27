@@ -16,8 +16,7 @@ WF_DIR      := .github/workflows
 DEPLOY_WF   := Deploy
 DORA_WF     := DORA
 
-REPO ?= $(shell gh repo view -q .nameWithOwner --json nameWithOwner)
-
+ 
 
 
 DEPLOY_WF_PATH ?= .github/workflows/deploy2.yml
@@ -80,7 +79,6 @@ wf/resolve: $(ARTDIR)/workflow_ids.env
 	  test -n "$$DEPLOY_WF_ID" || { echo "ERR: bad DEPLOY_WF_PATH=$(DEPLOY_SEL)"; exit 65; }; \
 	  test -n "$$DORA_WF_ID"   || { echo "ERR: bad DORA_WF_PATH=$(DORA_SEL)"; exit 65; }
 
- 
 
 $(ARTDIR)/workflow_ids.env:
 	@mkdir -p '$(ARTDIR)'; r='$(REPO)'; \
@@ -198,11 +196,10 @@ wf/probe:
 	$(Q)bash ci/probe.sh --kind=events '$(EVENTS)'
 
 wf/compute-dora:
- 
 $(Q)$(E) LT_PAIR_MODE=both python3 ci/dora/dora-refactor/main.py '$(EVENTS)' | tee dora.out.txt 
 
 
-wf/obs: ## resolve → fetch → merge PRs → probe → compute
+wf/obs2: ## resolve → fetch → merge PRs → probe → compute
 	@$(MAKE) wf/resolve DEPLOY_WF_PATH=$(DEPLOY_WF_PATH) DORA_WF_PATH=$(DORA_WF_PATH)
 	@gh auth status >/dev/null 2>&1 || { [ -n "$$GH_TOKEN" ] || { echo "ERR: GH auth missing (set GH_TOKEN)"; exit 64; }; }
 	@echo "[obs] repo=$(REPO) window=$(WINDOW_DAYS) deploy=$(DEPLOY_SEL) dora=$(DORA_SEL) sha=$(SHA)"

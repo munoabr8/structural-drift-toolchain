@@ -1,13 +1,10 @@
 # --- knobs ---
-PIPE = python3 ci/dora/dora-refactor/main.py
+PIPE =  ci/dora/dora-refactor/main.py
 PIPE_ARGS ?= ci/dora/events.ndjson
 
  
 ALLOW     ?= PATH HOME CI GH_TOKEN LC_ALL
  
-
-
-
 ISOLATE ?= vm                 # env | vm
 VM ?= iso
 IMG ?= 24.04
@@ -26,6 +23,10 @@ PIPE_CMD = $(strip \
 
 run: run-$(ISOLATE)
 
+print-cmd:
+	@echo $(PIPE_CMD)
+
+
 # --- env isolation (clean env, explicit allowlist) ---
 run-env:
 	@env -i $(foreach v,$(ALLOW),$(v)="$($(v))") \
@@ -38,7 +39,7 @@ vm-up2:
 	multipass mount . $(VM):/repo || true
 
 run-vm: vm-up2
-	multipass exec $(VM) -- bash -lc 'umask 0022; cd /repo && $(PIPE)'
+	multipass exec $(VM) -- bash -lc 'umask 0022; cd /repo && $(PIPE_CMD)'
 
 vm-down:
 	multipass stop $(VM) || true; multipass delete $(VM) || true; multipass purge || true

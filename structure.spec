@@ -52,7 +52,6 @@ file: ./.github/workflows/ci-hours.yml
 file: ./.github/workflows/codeScence.pr.yml
 file: ./.github/workflows/deploy.yml
 file: ./.github/workflows/deploy2.yml
-file: ./.github/workflows/dora-basics.yml
 file: ./.github/workflows/dora-debug.yml
 file: ./.github/workflows/dora-health.yml
 file: ./.github/workflows/dora2.yml
