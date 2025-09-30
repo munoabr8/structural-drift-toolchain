@@ -31,10 +31,13 @@ dora-env:
 
 
 # --- env isolation (clean env, explicit allowlist) ---
-run-env:
+run-env2:
 	@env -i $(foreach v,$(ALLOW),$(v)="$($(v))") \
 	  bash -lc 'umask 0022; $(PIPE_CMD)'
-
+	  
+run-env:
+	@env -i $(foreach v,$(ALLOW_ENV),$(v)="$($(v))") \
+	  bash --noprofile --norc -lc 'umask 0022; $(PIPE_CMD)'
 
 # --- vm isolation (Ubuntu guest + mounted repo) ---
 vm-up2:
