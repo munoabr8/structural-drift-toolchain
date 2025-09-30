@@ -105,7 +105,11 @@ wf/env:
 
 # ---------------- hygiene ----------------
 
- 
+.PHONY: wf/debug
+
+wf/debug:
+	 	@bash system/wf:debug.sh
+
 
 wf/install:
 	@test -s "$(WF_DIR)/deploy2.yml" || { echo "ERR: missing $(WF_DIR)/deploy2.yml"; exit 64; }
@@ -137,8 +141,14 @@ $(ARTDIR):
 
 wf/fetch-window:
 	@test -x ci/dora/fetch_window_events.sh || { echo "ERR: missing ci/dora/fetch_window_events.sh"; exit 64; }
-	@WINDOW_DAYS='$(WINDOW_DAYS)' REPO='$(REPO)' DEPLOY_WF_ID='$(DEPLOY_WF_ID)' DEPLOY_WF='$(DEPLOY_WF)' MAIN_BRANCH='$(MAIN_BRANCH)' \
-	ARTDIR='$(ARTDIR)' EVENTS='$(EVENTS)' ARTNAME='$(ARTNAME)' \
+	@WINDOW_DAYS='$(WINDOW_DAYS)' 
+	REPO='$(REPO)' 
+	DEPLOY_WF_ID='$(DEPLOY_WF_ID)' 
+	DEPLOY_WF='$(DEPLOY_WF)' 
+	MAIN_BRANCH='$(MAIN_BRANCH)' \
+	ARTDIR='$(ARTDIR)' 
+	EVENTS='$(EVENTS)' 
+	ARTNAME='$(ARTNAME)' \
 	bash ci/dora/fetch_window_events.sh
 
 
@@ -192,9 +202,9 @@ wf/guard-pairing:
 	|| { echo "PAIRING_FAIL"; exit 66; }
 
 # ---------------- probe/compute -------
+ 
 wf/probe:
-	$(Q)bash ci/probe.sh --kind=events '$(EVENTS)'
-
+	@bash ci/probe.sh --kind=events '$(EVENTS)' > artifacts/probe.json
 wf/compute-dora:
 	@set -euo pipefail; \
 	LT_PAIR_MODE=both python3 ci/dora/dora-refactor/main.py '$(EVENTS)' | tee dora.out.txt
@@ -217,5 +227,5 @@ wf/obs: wf/prepare-events wf/probe wf/compute-dora
 wf/prepare-events: wf/fetch-window wf/merge-prs wf/guard-pairing
 	$(Q)echo "prepared $(EVENTS)"
 
-wf/all: wf/prepare-events wf/probe wf/compute-dora
+wf/all: wf/prepare-events wf/compute-dora
 wf/all-by-sha: wf/fetch-by-sha wf/merge-prs wf/probe wf/compute-dora
