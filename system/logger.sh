@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # --- at top: library-only guard ---
 # Usage: source this file; never exits the shell
 # Emits NDJSON to stderr; also appends to $LOG_OUTPUT_FILE if set.
