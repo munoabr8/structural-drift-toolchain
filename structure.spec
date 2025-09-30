@@ -84,6 +84,7 @@ file: ./bin/gen-scope.sh
 file: ./bin/main.sh
 file: ./bin/probe_coupling.sh
 file: ./bin/risk_pull.sh
+file: ./bin/run-wf
 file: ./ci/build.sh
 file: ./ci/check-env-shape.sh
 file: ./ci/check_contracts.sh
@@ -99,7 +100,6 @@ file: ./ci/contract/normalize.sh
 file: ./ci/contract/stage0_autogen.sh
 file: ./ci/dora/collect-events.sh
 file: ./ci/dora/compute-dora.py
-file: ./ci/dora/dora-refactor/compute-dora.rf.py
 file: ./ci/dora/dora-refactor/dora_aggregate.py
 file: ./ci/dora/dora-refactor/dora_assemble.py
 file: ./ci/dora/dora-refactor/dora_io.py
@@ -225,7 +225,8 @@ file: ./lib/with_contract_env.sh
 file: ./lib/with_contracts.sh
 file: ./scope.yaml
 file: ./system/exit-codes/exit_codes_validator.sh
-file: ./system/make/dora.mk
+file: ./system/log_exec.sh
+file: ./system/logger.sh
 file: ./system/make/env_iso.mk
 file: ./system/make/garbage.mk
 file: ./system/make/guard_rails.mk
@@ -233,6 +234,7 @@ file: ./system/make/guard_rails.sh
 file: ./system/make/health.mk
 file: ./system/make/help.mk
 file: ./system/make/hooks.mk
+file: ./system/make/isoANDdora.mk
 file: ./system/make/modules.mk
 file: ./system/make/obs.mk
 file: ./system/make/observe.pipeline.mk
@@ -241,8 +243,8 @@ file: ./system/make/preflight.mk
 file: ./system/make/preflight_shared.mk
 file: ./system/make/structure.mk
 file: ./system/make/test.mk
-file: ./system/make/testing.mk
 file: ./system/make/vm.mk
+file: ./system/make/wf:debug.sh
 file: ./system/make/whereami.mk
 file: ./system/make/workflows.mk
 file: ./system/smoke-structure-validator.sh
@@ -251,6 +253,7 @@ file: ./system/structure_spec_validator.sh
 file: ./system/structure_validator.rf.sh
 file: ./system/structure_validator.sh
 file: ./system/validate_structure.sh
+file: ./system/wf:debug.sh
 file: ./t/fixtures/exact.ndjson
 file: ./test/acceptance/acceptance.bats
 file: ./test/acceptance/assert_upper.sh

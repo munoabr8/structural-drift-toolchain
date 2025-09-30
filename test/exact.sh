@@ -6,7 +6,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 PY=python3
-SCRIPT_REL="ci/dora/compute-dora.py"   # you said this is the correct path
+SCRIPT_REL="ci/dora/dora-refactor/main.py"   
 SCRIPT="$ROOT/$SCRIPT_REL"
 
 # deps

@@ -57,15 +57,34 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}  
 
+
+
       - name: Prepare + Compute (windowed)
         env:
-              WINDOW_DAYS: "60"
-              MAIN_BRANCH: "main"
+                WINDOW_DAYS: "60"
+                MAIN_BRANCH: "main"
         run: |
-          f="$(find artifacts -type f -name 'events.ndjson' -print -quit)"; [ -n "$f" ] || exit 64
+            f="$(find artifacts -type f -name 'events.ndjson' -print -quit)"; [ -n "$f" ] || exit 64
 
-          make -f system/make/workflows.mk wf/all EVENTS="$f"
- 
+            bin/run-wf -f system/make/workflows.mk wf/all EVENTS="$f"
+
+      - name: Probe summary → artifacts/probe.json
+        run: |
+            f="$(find artifacts -type f -name 'events.ndjson' -print -quit)"; [ -n "$f" ] || exit 64
+
+            bin/run-wf -f system/make/workflows.mk wf/probe -- EVENTS="$f" || true
+
+            cp -f artifacts/stdout/wf__probe.out artifacts/probe.json 2>/dev/null || true
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: run-logs
+          path: artifacts/logs/*.ndjson
+
+
+   
       - uses: actions/upload-artifact@v4
         with:
           name: dora-artifacts
@@ -73,9 +92,3 @@ jobs:
             events.ndjson
             leadtime.csv
             dora.out.txt
-
-
-
-
-
- 

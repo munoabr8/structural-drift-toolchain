@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# bin/run-wf — run a workflows.mk target with logging, no Make changes needed.
+# Usage:
+#   bin/run-wf <target> [-- <extra make args/vars>]
+#   bin/run-wf wf/fetch-by-sha -- SHA=<merge_commit_sha>
+set -euo pipefail
+
+# repo root
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+MAKEFILE_DEFAULT="system/make/workflows.mk"
+LOGS_DIR_DEFAULT="$ROOT/artifacts/logs"
+LOG_EXEC="$ROOT/system/log_exec.sh"
+# flags (optional)
+MAKEFILE="${MAKEFILE_DEFAULT}"
+LOG_FILE=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -f|--makefile) MAKEFILE="$2"; shift 2;;
+    -l|--log) LOG_FILE="$2"; shift 2;;
+    --logs-dir) LOGS_DIR_DEFAULT="$2"; shift 2;;
+    --) shift; break;;
+    -* ) echo "unknown flag: $1" >&2; exit 64;;
+    * ) break;;
+  esac
+done
+
+target="${1:-}"; [[ -n "$target" ]] || { echo "usage: $0 <target> [-- make-args]"; exit 64; }
+shift || true
+
+# pick sink
+if [[ -z "${LOG_FILE}" ]]; then
+  ts="$(date -u +%Y%m%dT%H%M%SZ)"
+  LOG_FILE="$LOGS_DIR_DEFAULT/run.$ts.ndjson"
+fi
+mkdir -p "$(dirname "$LOG_FILE")"
+
+# paths
+LOG_EXEC="$ROOT/system/log_exec.sh"
+[[ -x "$LOG_EXEC" ]] || { echo "missing $LOG_EXEC (make it executable)"; exit 64; }
+
+# show command (useful in CI logs)
+echo "run-wf: target=$target makefile=${MAKEFILE#$ROOT/} log=${LOG_FILE#$ROOT/}" >&2
+
+# exec with logging; propagate exit
+LOG_OUTPUT_FILE="$LOG_FILE" \
+
+LOG_OUTPUT_FILE="$LOG_FILE" bash "$LOG_EXEC" "$target" -- make -f "$ROOT/$MAKEFILE" "$target" "$@"

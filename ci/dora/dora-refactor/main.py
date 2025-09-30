@@ -13,6 +13,15 @@ from dora_aggregate import deployments_in_window, daily_histogram, failure_count
 
 from dora_assemble import assemble_dora
 
+
+# This script must be given the path to events.ndjson.
+# This script will does not search for it on its own.
+# useage:
+# python3 ci/dora/dora-refactor/main.py ci/dora/events.ndjson
+
+
+
+
 def now_utc():
     return datetime.now(timezone.utc)
 

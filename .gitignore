@@ -34,6 +34,12 @@ env.probe.json
 .tmp.dora/
 
 obs/
+
+artifacts/stderr/
+artifacts/probe.json
+artifacts/logs/
+
+./env.probe.json
  
 */artifacts/*
  

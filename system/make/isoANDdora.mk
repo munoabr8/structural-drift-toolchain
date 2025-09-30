@@ -5,7 +5,7 @@ PIPE_ARGS ?= ci/dora/events.ndjson
  
 ALLOW     ?= PATH HOME CI GH_TOKEN LC_ALL
  
-ISOLATE ?= vm                 # env | vm
+ISOLATE ?= env                 # env | vm
 VM ?= iso
 IMG ?= 24.04
 
@@ -25,6 +25,9 @@ run: run-$(ISOLATE)
 
 print-cmd:
 	@echo $(PIPE_CMD)
+
+dora-env:
+	env -i PATH="$$PATH" TZ=UTC LC_ALL=C python3 ci/dora/compute-dora.py --show-env
 
 
 # --- env isolation (clean env, explicit allowlist) ---
