@@ -10,19 +10,7 @@ def percentile(xs,p):
     return xs[i]+(xs[j]-xs[i])*(k-i)
 
 
-def lead_times_deployment(events, min_sec, pctl):
-    prs={e["sha"]:e for e in events if e.get("type")=="pr_merged"}
-    hours=[]
-    for d in (e for e in events if e.get("type")=="deployment"):
-        p=prs.get(d["sha"]); 
-        if not p: continue
-        dt=(to_dt(d["finished_at"])-to_dt(p["merged_at"])).total_seconds()
-        if dt>=min_sec: hours.append(dt/3600.0)
-    return {"samples":len(hours),
-            "median_h": round(stats.median(hours),4) if hours else None,
-            f"p{pctl}_h": round(percentile(hours,pctl),4) if hours else None}
-
-
+ 
  
 def normalize_deploy_sha(events):
     """
@@ -39,22 +27,56 @@ def normalize_deploy_sha(events):
         norm[sha] = head_to_merge.get(sha, sha)
     return norm
 
-
-
-def lead_times_change(events, min_sec=0, pctl=90):
-    norm = normalize_deploy_sha(events)
-
-    # PR merge time by merge SHA
-    pr_at = {
-        e["merge_commit_sha"]: to_dt(e["merged_at"])
-        for e in events if e.get("type") == "pr_merged"
+# def lead_times_deployment(events, min_sec, pctl):
+#     prs={e["sha"]:e for e in events if e.get("type")=="pr_merged"}
+#     hours=[]
+#     for d in (e for e in events if e.get("type")=="deployment"):
+#         p=prs.get(d["sha"]); 
+#         if not p: continue
+#         dt=(to_dt(d["finished_at"])-to_dt(p["merged_at"])).total_seconds()
+#         if dt>=min_sec: hours.append(dt/3600.0)
+#     return {"samples":len(hours),
+#             "median_h": round(stats.median(hours),4) if hours else None,
+#             f"p{pctl}_h": round(percentile(hours,pctl),4) if hours else None}
+def lead_times_deployment(events, min_sec, pctl):
+    prs = {e["sha"]: e for e in events if e.get("type")=="pr_merged"}
+    rows = []
+    for d in (e for e in events if e.get("type")=="deployment"):
+        p = prs.get(d["sha"])
+        if not p: 
+            continue
+        merged_at = p["merged_at"]
+        deployed_at = d["finished_at"]
+        dt = (to_dt(deployed_at) - to_dt(merged_at)).total_seconds()
+        if dt >= min_sec:
+            rows.append({
+                "pr": p.get("pr"),
+                "sha": p.get("sha"),
+                "merged_at": merged_at,
+                "deployed_at": deployed_at,
+                "lead_seconds": int(dt),
+                "match": True,
+            })
+    hours = [r["lead_seconds"]/3600.0 for r in rows]
+    return {
+        "samples": len(hours),
+        "median_h": round(stats.median(hours),4) if hours else None,
+        f"p{pctl}_h": round(percentile(hours,pctl),4) if hours else None,
+        "details": rows,
     }
 
+
+
+    # change-paired lead times (merge_commit_sha → earliest deploy)
+def lead_times_change(events, min_sec=0, pctl=90):
+    norm = normalize_deploy_sha(events)
+    pr_at = {e["merge_commit_sha"]: to_dt(e["merged_at"])
+             for e in events if e.get("type")=="pr_merged"}
     earliest_dep_at = {}
-    for d in (e for e in events if e.get("type") == "deployment"):
-        msha = norm.get(d["sha"], d["sha"])  # normalize
+    for d in (e for e in events if e.get("type")=="deployment"):
+        msha = norm.get(d["sha"], d["sha"])
         m_at = pr_at.get(msha)
-        if not m_at:
+        if not m_at: 
             continue
         f_at = to_dt(d["finished_at"])
         if f_at < m_at:
@@ -63,16 +85,61 @@ def lead_times_change(events, min_sec=0, pctl=90):
         if prev is None or f_at < prev:
             earliest_dep_at[msha] = f_at
 
-    hours = []
+    rows = []
     for msha, f_at in earliest_dep_at.items():
         dt = (f_at - pr_at[msha]).total_seconds()
         if dt >= min_sec:
-            hours.append(dt/3600.0)
-
+            rows.append({
+                "pr": None,             # fill if you track PR number by merge sha
+                "sha": msha,
+                "merged_at": pr_at[msha].isoformat(),
+                "deployed_at": f_at.isoformat(),
+                "lead_seconds": int(dt),
+                "match": True,
+            })
+    hours = [r["lead_seconds"]/3600.0 for r in rows]
     return {
         "samples": len(hours),
-        "median_h": round(stats.median(hours), 4) if hours else None,
-        f"p{pctl}_h": round(percentile(hours, pctl), 4) if hours else None,
+        "median_h": round(stats.median(hours),4) if hours else None,
+        f"p{pctl}_h": round(percentile(hours,pctl),4) if hours else None,
+        "details": rows,
     }
+
+
+
+
+# def lead_times_change(events, min_sec=0, pctl=90):
+#     norm = normalize_deploy_sha(events)
+
+#     # PR merge time by merge SHA
+#     pr_at = {
+#         e["merge_commit_sha"]: to_dt(e["merged_at"])
+#         for e in events if e.get("type") == "pr_merged"
+#     }
+
+#     earliest_dep_at = {}
+#     for d in (e for e in events if e.get("type") == "deployment"):
+#         msha = norm.get(d["sha"], d["sha"])  # normalize
+#         m_at = pr_at.get(msha)
+#         if not m_at:
+#             continue
+#         f_at = to_dt(d["finished_at"])
+#         if f_at < m_at:
+#             continue
+#         prev = earliest_dep_at.get(msha)
+#         if prev is None or f_at < prev:
+#             earliest_dep_at[msha] = f_at
+
+#     hours = []
+#     for msha, f_at in earliest_dep_at.items():
+#         dt = (f_at - pr_at[msha]).total_seconds()
+#         if dt >= min_sec:
+#             hours.append(dt/3600.0)
+
+#     return {
+#         "samples": len(hours),
+#         "median_h": round(stats.median(hours), 4) if hours else None,
+#         f"p{pctl}_h": round(percentile(hours, pctl), 4) if hours else None,
+#     }
 
 

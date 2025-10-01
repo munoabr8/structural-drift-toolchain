@@ -203,8 +203,14 @@ wf/guard-pairing:
 
 # ---------------- probe/compute -------
  
-wf/probe:
+wf/probe2:
 	@bash ci/probe.sh --kind=events '$(EVENTS)' > artifacts/probe.json
+wf/probe:
+	@bash ci/probe.sh --kind=events '$(EVENTS)'  
+
+
+
+
 wf/compute-dora:
 	@set -euo pipefail; \
 	LT_PAIR_MODE=both python3 ci/dora/dora-refactor/main.py '$(EVENTS)' | tee dora.out.txt

@@ -9,7 +9,7 @@ ISOLATE ?= env                 # env | vm
 VM ?= iso
 IMG ?= 24.04
 
-
+ 
 
 PIPE_CMD = $(strip \
   $(if $(filter .py,$(suffix $(PIPE))),python3 '$(PIPE)',\
@@ -34,7 +34,7 @@ dora-env:
 run-env2:
 	@env -i $(foreach v,$(ALLOW),$(v)="$($(v))") \
 	  bash -lc 'umask 0022; $(PIPE_CMD)'
-	  
+
 run-env:
 	@env -i $(foreach v,$(ALLOW_ENV),$(v)="$($(v))") \
 	  bash --noprofile --norc -lc 'umask 0022; $(PIPE_CMD)'

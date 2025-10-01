@@ -20,6 +20,7 @@ dir: ./lib/policy/
 dir: ./lib/queries/
 dir: ./lib/testdata/
 dir: ./system/
+dir: ./system/env/
 dir: ./system/exit-codes/
 dir: ./system/make/
 dir: ./t/
@@ -93,10 +94,12 @@ file: ./ci/check_layering.sh
 file: ./ci/check_predicates.sh
 file: ./ci/check_queries.sh
 file: ./ci/checklib.sh
+file: ./ci/contract/compute-dora.contract.json
 file: ./ci/contract/hints.json
 file: ./ci/contract/inject.sh
 file: ./ci/contract/jq/normalize_v1.jq
 file: ./ci/contract/normalize.sh
+file: ./ci/contract/probe.contract.json
 file: ./ci/contract/stage0_autogen.sh
 file: ./ci/dora/collect-events.sh
 file: ./ci/dora/compute-dora.py
@@ -154,6 +157,9 @@ file: ./ci/triage.sh
 file: ./ci/verify_contract.sh
 file: ./ci/voi/void_from_dora.py
 file: ./ci/where.sh
+file: ./config/.env.example
+file: ./config/ci.env
+file: ./config/default.env
 file: ./config/policy.rules.yml
 file: ./config/runtime.cfg
 file: ./config/runtime_flags.sh
@@ -224,9 +230,12 @@ file: ./lib/vmmapframe.sh
 file: ./lib/with_contract_env.sh
 file: ./lib/with_contracts.sh
 file: ./scope.yaml
+file: ./system/env/assert.sh
+file: ./system/env/load.sh
 file: ./system/exit-codes/exit_codes_validator.sh
 file: ./system/log_exec.sh
 file: ./system/logger.sh
+file: ./system/make/contracts.mk
 file: ./system/make/env_iso.mk
 file: ./system/make/garbage.mk
 file: ./system/make/guard_rails.mk
