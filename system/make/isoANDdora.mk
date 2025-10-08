@@ -31,20 +31,17 @@ dora-env:
 
 
 # --- env isolation (clean env, explicit allowlist) ---
-run-env2:
-	@env -i $(foreach v,$(ALLOW),$(v)="$($(v))") \
-	  bash -lc 'umask 0022; $(PIPE_CMD)'
-
+ 
 run-env:
 	@env -i $(foreach v,$(ALLOW_ENV),$(v)="$($(v))") \
 	  bash --noprofile --norc -lc 'umask 0022; $(PIPE_CMD)'
 
 # --- vm isolation (Ubuntu guest + mounted repo) ---
-vm-up2:
+vm-up:
 	multipass launch $(IMG) --name $(VM) --cpus 2 --mem 4G --disk 20G || true
 	multipass mount . $(VM):/repo || true
 
-run-vm: vm-up2
+run-vm: vm-up
 	multipass exec $(VM) -- bash -lc 'umask 0022; cd /repo && $(PIPE_CMD)'
 
 vm-down:

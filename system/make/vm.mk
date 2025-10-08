@@ -22,4 +22,5 @@ vm/doctor:
 	@$(MAKE) -f system/make/vm.mk vm/run CMD='bash ci/where.sh'
 
 
-
+wf/probe:
+	@echo "Welcome to the VM make file" 

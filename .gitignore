@@ -33,6 +33,8 @@ env.probe.json
  
 .tmp.dora/
 
+#Configuration files
+
 config/local.env
 
 ./config/local.env
@@ -40,6 +42,9 @@ config/local.env
 ./config/required.env
 
 config/required.env
+
+
+
 
 obs/
 

@@ -7,4 +7,4 @@ echo "WORKFLOWS=$({ gh api repos/{owner}/{repo}/actions/workflows -q '.workflows
 for f in events.ndjson leadtime.csv dora.json; do
   [[ -f "$f" ]] && echo "HAS_$f=1" || echo "HAS_$f=0"
 done
-make -f vm.mk vm/run CMD='bash ci/where.sh'
+#make -f vm.mk vm/run CMD='bash ci/where.sh'

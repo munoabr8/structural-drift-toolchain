@@ -14,12 +14,15 @@ dir: ./ci/jq/
 dir: ./ci/roi/
 dir: ./ci/voi/
 dir: ./config/
+dir: ./config/env/
 dir: ./docs/
 dir: ./lib/
 dir: ./lib/policy/
 dir: ./lib/queries/
 dir: ./lib/testdata/
 dir: ./system/
+dir: ./system/ci/
+dir: ./system/contracts/
 dir: ./system/env/
 dir: ./system/exit-codes/
 dir: ./system/make/
@@ -74,6 +77,8 @@ file: ./.github/workflows/structural_drift.yml
 file: ./.github/workflows/validate-hooks.yml
 file: ./.gitignore
 file: ./.structure.ignore
+file: ./.wip.pre-complexity.patch
+file: ./.wip.pre-complexity.status
 file: ./Makefile
 file: ./README.generated.md
 file: ./attn/context-status.rf.sh
@@ -160,6 +165,7 @@ file: ./ci/where.sh
 file: ./config/.env.example
 file: ./config/ci.env
 file: ./config/default.env
+file: ./config/env/required.schema.json
 file: ./config/policy.rules.yml
 file: ./config/runtime.cfg
 file: ./config/runtime_flags.sh
@@ -169,6 +175,7 @@ file: ./darwin_memory.sh
 file: ./docs/CHANGELOG.md
 file: ./docs/README.generated.md
 file: ./docs/README.md
+file: ./env.probe.json
 file: ./lib/cmd.sh
 file: ./lib/command_contracts.sh
 file: ./lib/contract_dsl.sh
@@ -230,12 +237,17 @@ file: ./lib/vmmapframe.sh
 file: ./lib/with_contract_env.sh
 file: ./lib/with_contracts.sh
 file: ./scope.yaml
+file: ./system/ci/env_validated.jq
+file: ./system/contracts/postcheck.sh
+file: ./system/contracts/run_frame.sh
 file: ./system/env/assert.sh
 file: ./system/env/load.sh
+file: ./system/exec_isolated.sh
 file: ./system/exit-codes/exit_codes_validator.sh
 file: ./system/log_exec.sh
 file: ./system/logger.sh
 file: ./system/make/contracts.mk
+file: ./system/make/env.mk
 file: ./system/make/env_iso.mk
 file: ./system/make/garbage.mk
 file: ./system/make/guard_rails.mk
@@ -244,6 +256,7 @@ file: ./system/make/health.mk
 file: ./system/make/help.mk
 file: ./system/make/hooks.mk
 file: ./system/make/isoANDdora.mk
+file: ./system/make/isolation.mk
 file: ./system/make/modules.mk
 file: ./system/make/obs.mk
 file: ./system/make/observe.pipeline.mk
@@ -256,6 +269,7 @@ file: ./system/make/vm.mk
 file: ./system/make/wf:debug.sh
 file: ./system/make/whereami.mk
 file: ./system/make/workflows.mk
+file: ./system/names.sh
 file: ./system/smoke-structure-validator.sh
 file: ./system/structure
 file: ./system/structure_spec_validator.sh

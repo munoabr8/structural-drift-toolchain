@@ -28,6 +28,7 @@ DEPLOY_WF_FILE   := $(notdir $(DEPLOY_WF_PATH_N))
 DORA_WF_FILE     := $(notdir $(DORA_WF_PATH_N))
 
 
+EVENTS ?= artifacts/events.ndjson
 
  ARTDIR ?= artifacts
 
@@ -91,17 +92,20 @@ $(ARTDIR)/workflow_ids.env:
 wf/clear-ids:
 	@rm -f $(ARTDIR)/workflow_ids.env
 
-
-
+ 
 wf/echo:
 	$(Q)echo "REPO=$(REPO) MAIN_BRANCH=$(MAIN_BRANCH) ENV=$(ENV) EVENTS=$(EVENTS) ARTDIR=$(ARTDIR) ARTNAME=$(ARTNAME)"
 
+# Keeps wf/env as your stable, contract-like view, 
+# while wf/env-check becomes your debug probe.
 
-wf/env:
+probe/env-summary:
 	@printf "REPO=%s\nMAIN_BRANCH=%s\nENV=%s\nWINDOW_DAYS=%s\nGH_TOKEN=%s\nDEPLOY_WF_ID=%s\nDORA_WF_ID=%s\n" \
 	  "$(REPO)" "$(MAIN_BRANCH)" "$(ENV)" "$(WINDOW_DAYS)" "$${GH_TOKEN:+set}"\
 	  "$(DEPLOY_WF_ID)" "$(DORA_WF_ID)"
-
+probe/env-snapshot:
+	@echo "Environment snapshot:" >&2
+	@env | grep -E '^(DEPLOY_ENV|EVENTS|WINDOW_DAYS|MAIN_BRANCH|REPO)=' || echo "(none matched)"
 
 # ---------------- hygiene ----------------
 
@@ -203,12 +207,14 @@ wf/guard-pairing:
 
 # ---------------- probe/compute -------
  
-wf/probe2:
-	@bash ci/probe.sh --kind=events '$(EVENTS)' > artifacts/probe.json
-wf/probe:
-	@bash ci/probe.sh --kind=events '$(EVENTS)'  
+ 
+wf/probe: $(EVENTS) ## probe events file
+	@bash ci/probe.sh --kind=events '$(EVENTS)'
 
 
+$(EVENTS): ## build events file
+	@mkdir -p $(dir $@)
+	@bash ci/dora/collect-events.sh '$@'
 
 
 wf/compute-dora:
@@ -227,6 +233,49 @@ wf/obs2: ## resolve → fetch → merge PRs → probe → compute
 	@$(MAKE) wf/merge-prs
 	@$(MAKE) wf/probe
 	@$(MAKE) wf/compute-dora
+
+# ---------------- isolation experiments ----------------
+.PHONY: iso/env-local iso/env-vm iso/fs iso/net iso/timeout
+
+iso/env-local:
+	@MODE=local ALLOW="PATH HOME" ./bin/run-wf -f system/make/workflows.mk wf/env
+
+iso/env-vm:
+	@MODE=vm ALLOW="HOME" ./bin/run-wf -f system/make/workflows.mk wf/env
+
+iso/fs:
+	@MODE=vm ./bin/run-wf -f system/make/workflows.mk wf/fs-escape
+
+iso/net:
+	@MODE=vm ./bin/run-wf -f system/make/workflows.mk wf/net
+
+iso/timeout:
+	@TIMEOUT=5 MODE=vm ./bin/run-wf -f system/make/workflows.mk wf/hang || echo "timeout ok"
+
+wf/env: ## print visible vars
+	@env | sort > artifacts/env.visible
+
+
+wf/net:
+	@curl -sS https://ifconfig.me || true
+
+# wf/mount-only:
+# 	@python3 - <<'PY'
+# import os, sys
+# paths=["/","/home","/root","/repo","/mnt","/media"]
+# for p in paths:
+#     print(p, "exists=", os.path.exists(p))
+ 
+wf/vm-setup:
+	@multipass exec iso -- bash -lc 'sudo apt-get update && sudo apt-get install -y make jq git'
+
+
+wf/fs-escape:
+	@echo TRY > /tmp/escape.txt || true
+	@echo OK > artifacts/fs.ok
+
+wf/hang:
+	@sleep 600
 
 # ---------------- chains --------------
 wf/obs: wf/prepare-events wf/probe wf/compute-dora

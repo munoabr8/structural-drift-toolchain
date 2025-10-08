@@ -1,0 +1,8 @@
+Contract: ChatGPT augments cognition.
+Pre: User retains interpretive authority.
+Post: Output must be validated by experiment or reasoning.
+Invariant: No decision delegated without falsifiability or traceability.
+
+Boundary marker:
+If the task’s value depends on choosing, weighing, or interpreting, it remains yours.
+If it depends on producing, aggregating, or enumerating, it can be delegated.
