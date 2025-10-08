@@ -20,7 +20,7 @@ foo.sh
 .venv/
 env/
 
-!config/env/**
+!./config/env/
 
 /__pycache__
 
