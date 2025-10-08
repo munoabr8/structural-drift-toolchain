@@ -5,9 +5,64 @@
 #   bin/run-wf wf/fetch-by-sha -- SHA=<merge_commit_sha>
 set -euo pipefail
 
+
+# ----- add near top (after set -euo pipefail) -----
+CONTRACT_DIR="${CONTRACT_DIR:-ci/contract}"
+NORMALIZER="${NORMALIZER:-$CONTRACT_DIR/jq/normalize_v1.jq}"
+
+contract_path() {
+  # map wf target → contract file
+  # e.g. wf/compute-dora -> compute-dora.contract.json
+  local wf="$1" base
+  base="$(printf '%s\n' "$wf" | sed 's|^wf/||; s|/|-|g')"
+  printf '%s/%s.contract.json' "$CONTRACT_DIR" "$base"
+}
+
+show_contract() {
+  local wf="$1" cf; cf="$(contract_path "$wf")"
+  command -v jq >/dev/null || { echo "ERR: need jq" >&2; exit 69; }
+  test -s "$cf" || { echo "ERR: contract missing: $cf" >&2; exit 64; }
+  test -s "$NORMALIZER" || { echo "ERR: normalizer missing: $NORMALIZER" >&2; exit 64; }
+  jq -f "$NORMALIZER" "$cf"
+}
+
+check_contract() {
+  local wf="$1"
+  show_contract "$wf" >/tmp/contract.norm.$$ || exit 64
+  jq -e '
+    .schema=="ir/v1" and
+    (.args|type=="array") and
+    (.env|type=="object") and
+    (.tools|type=="array" or .tools==null) and
+    (.exit.ok==0) and
+    (.writes|type=="array")
+  ' /tmp/contract.norm.$$ >/dev/null
+}
+
+usage() {
+  echo "usage: $(basename "$0") [--contract WF|--check-contract WF] [-f MAKEFILE] WF [-- VARS...]"
+  exit 64
+}
+
+# ----- parse flags before your existing logic -----
+case "${1:-}" in
+  --contract)
+    shift; wf="${1:-}"; [ -n "$wf" ] || usage
+    show_contract "$wf"; exit 0;;
+  --check-contract)
+    shift; wf_chk="${1:-}"; [ -n "$wf_chk" ] || usage
+    check_contract "$wf_chk" || { echo "contract invalid for $wf_chk" >&2; exit 64; }
+    shift # leave remaining args to normal run
+    ;;
+esac
+
+
 # repo root
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-MAKEFILE_DEFAULT="system/make/workflows.mk"
+#MAKEFILE_DEFAULT="system/make/workflows.mk"
+MAKEFILE_DEFAULT="Makefile"
+
+
 LOGS_DIR_DEFAULT="$ROOT/artifacts/logs"
 LOG_EXEC="$ROOT/system/log_exec.sh"
 # flags (optional)

@@ -1,0 +1,19 @@
+{
+  "schema": "ir/v1",
+  "name": "wf/probe",
+  "version": "2025-09-30",
+  "args": [],
+  "env": {
+    "EVENTS": {"required": true, "type": "path"}
+  },
+  "reads": "$EVENTS",
+  "writes": ["stdout: probe JSON or artifacts/probe.json"],
+  "tools": ["bash","jq"],
+  "exit": { "ok": 0, "bad_env": 64, "validator": 65, "other": "bubble" },
+  "outputs": {
+    "probe_json": {
+      "fields": ["totals","by_type","schemas","matches","per_day","recent"]
+    }
+  },
+  "idempotent": true
+}

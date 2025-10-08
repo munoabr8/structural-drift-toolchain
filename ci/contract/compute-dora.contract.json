@@ -1,0 +1,25 @@
+{
+  "schema": "ir/v1",
+  "name": "wf/compute-dora",
+  "version": "2025-09-30",
+  "args": ["<events.ndjson>"],
+  "env": {
+    "WINDOW_DAYS": {"required": false, "type": "int"},
+    "PCTL": {"required": false, "type": "int"},
+    "LT_MIN_LEAD_SECONDS": {"required": false, "type": "int"},
+    "LT_PAIR_MODE": {"required": false, "type": "enum", "values": ["change","deployment","both"]},
+    "LEADTIME_CSV": {"required": false, "type": "path"}
+  },
+  "reads": "NDJSON events file",
+  "writes": ["stdout: dora/v1 JSON", "file?: $LEADTIME_CSV"],
+  "tools": ["python3"],
+  "exit": { "ok": 0, "bad_env": 64, "validator": 65, "other": "bubble" },
+  "outputs": {
+    "dora_json": {"schema": "dora/v1"},
+    "leadtime_csv?": {
+      "columns": ["pr","sha","merged_at","deployed_at","lead_seconds","lead_minutes","lead_hours","match"]
+    }
+  },
+  "idempotent": true,
+  "notes": "Writes CSV only if LEADTIME_CSV set and details exist."
+}
