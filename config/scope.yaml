@@ -1,6 +1,7 @@
 roots:
   - ci
   - config
+  - tests
 
 sub_roots:
   - ci/contract
@@ -10,4 +11,7 @@ sub_roots:
   - ci/jq
   - ci/roi
   - ci/voi
+  - config/env
   - contract
+  - env
+  - tests/complexity
