@@ -78,6 +78,12 @@ leadtime.csv
 
 dora.out
 
+
+./.wip.pre-complexity.patch
+
+./.wip.pre-complexity.status
+
+
 dora.json
 
 */dora.json

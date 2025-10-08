@@ -82,8 +82,6 @@ file: ./.github/workflows/structural_drift.yml
 file: ./.github/workflows/validate-hooks.yml
 file: ./.gitignore
 file: ./.structure.ignore
-file: ./.wip.pre-complexity.patch
-file: ./.wip.pre-complexity.status
 file: ./Makefile
 file: ./README.generated.md
 file: ./attn/context-status.rf.sh

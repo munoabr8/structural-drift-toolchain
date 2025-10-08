@@ -1,0 +1,11 @@
+{
+  "schema": "env/required.v1",
+  "keys": {
+    "REPO":        {"type":"string","pattern":"^[^/]+/[^/]+$"},
+    "MAIN_BRANCH": {"type":"string"},
+    "GH_TOKEN":    {"type":"string","minlen":20},
+    "EVENTS":      {"type":"path"},
+    "WINDOW_DAYS": {"type":"int","min":1,"max":60},
+    "ENV":         {"type":"enum","enum":["production","staging","dev"]}
+  }
+}
