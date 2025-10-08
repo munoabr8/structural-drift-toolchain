@@ -1,4 +1,5 @@
 #shellcheck shell=bash 
+ 
 # system/env/load.sh  (source this file)
 __opts="$(set +o)"; set +u   # disable nounset temporarily
 ROOT="${ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
