@@ -14,15 +14,19 @@ dir: ./ci/jq/
 dir: ./ci/roi/
 dir: ./ci/voi/
 dir: ./config/
+dir: ./config/env/
 dir: ./docs/
 dir: ./lib/
 dir: ./lib/policy/
 dir: ./lib/queries/
 dir: ./lib/testdata/
 dir: ./system/
+dir: ./system/complexity/
+dir: ./system/complexity/schema/
 dir: ./system/env/
 dir: ./system/exit-codes/
 dir: ./system/make/
+dir: ./system/make/includes/
 dir: ./t/
 dir: ./t/fixtures/
 dir: ./templates/
@@ -36,6 +40,10 @@ dir: ./test/e2e/structure_ignore/
 dir: ./test/e2e/structure_validator/
 dir: ./test/integration/
 dir: ./test/lib-tests/
+dir: ./tests/
+dir: ./tests/complexity/
+dir: ./tests/complexity/mk/
+dir: ./tests/complexity/mk/includes/
 dir: ./tools/
 dir: ./tools/git-hooks/
 dir: ./tools/providers/
@@ -74,6 +82,8 @@ file: ./.github/workflows/structural_drift.yml
 file: ./.github/workflows/validate-hooks.yml
 file: ./.gitignore
 file: ./.structure.ignore
+file: ./.wip.pre-complexity.patch
+file: ./.wip.pre-complexity.status
 file: ./Makefile
 file: ./README.generated.md
 file: ./attn/context-status.rf.sh
@@ -160,6 +170,7 @@ file: ./ci/where.sh
 file: ./config/.env.example
 file: ./config/ci.env
 file: ./config/default.env
+file: ./config/env/required.schema.json
 file: ./config/policy.rules.yml
 file: ./config/runtime.cfg
 file: ./config/runtime_flags.sh
@@ -169,6 +180,7 @@ file: ./darwin_memory.sh
 file: ./docs/CHANGELOG.md
 file: ./docs/README.generated.md
 file: ./docs/README.md
+file: ./env.probe.json
 file: ./lib/cmd.sh
 file: ./lib/command_contracts.sh
 file: ./lib/contract_dsl.sh
@@ -230,6 +242,8 @@ file: ./lib/vmmapframe.sh
 file: ./lib/with_contract_env.sh
 file: ./lib/with_contracts.sh
 file: ./scope.yaml
+file: ./system/complexity/make_indirection_complexity.py
+file: ./system/complexity/schema/indirection.v1.json
 file: ./system/env/assert.sh
 file: ./system/env/load.sh
 file: ./system/exit-codes/exit_codes_validator.sh
@@ -243,6 +257,7 @@ file: ./system/make/guard_rails.sh
 file: ./system/make/health.mk
 file: ./system/make/help.mk
 file: ./system/make/hooks.mk
+file: ./system/make/includes/common.mk
 file: ./system/make/isoANDdora.mk
 file: ./system/make/modules.mk
 file: ./system/make/obs.mk
@@ -279,6 +294,9 @@ file: ./test/exact.sh
 file: ./test/integration/runner_hooks_test.sh
 file: ./test/lib-tests/test_logger_min.sh
 file: ./test/toggle_module_contracts.sh
+file: ./tests/complexity/golden.ndjson
+file: ./tests/complexity/mk/includes/common.mk
+file: ./tests/complexity/mk/minimal.mk
 file: ./tools/bats-guard.sh
 file: ./tools/check_git_trash.sh
 file: ./tools/churn-by-layer.sh

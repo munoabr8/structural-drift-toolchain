@@ -1,4 +1,7 @@
 # ci/workflows.mk
+ifndef WORKFLOWS_MK_GUARD
+WORKFLOWS_MK_GUARD := 1
+
 SHELL := /usr/bin/env bash
 .SHELLFLAGS := -euo pipefail -c
 
@@ -38,6 +41,11 @@ DORA_WF_FILE     := $(notdir $(DORA_WF_PATH_N))
 DEPLOY_SEL := $(or $(DEPLOY_WF_ID),$(DEPLOY_WF_PATH_N))
 DORA_SEL   := $(or $(DORA_WF_ID),$(DORA_WF_PATH_N))
 
+
+ 
+.PHONY: ping
+ping: ; @echo ok
+	
 
 # verbosity: make V=1
 ifeq ($(V),1)
@@ -235,3 +243,6 @@ wf/prepare-events: wf/fetch-window wf/merge-prs wf/guard-pairing
 
 wf/all: wf/prepare-events wf/compute-dora
 wf/all-by-sha: wf/fetch-by-sha wf/merge-prs wf/probe wf/compute-dora
+
+
+endif  # WORKFLOWS_MK_GUARD

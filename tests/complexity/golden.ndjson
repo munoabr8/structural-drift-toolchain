@@ -1,0 +1,18 @@
+{
+  "schema": "make/indirection_complexity.v1",
+  "makefiles": [
+    "tests/complexity/mk/minimal.mk"
+  ],
+  "version": "0.3",
+  "var_depth": 2,
+  "include_depth": 0,
+  "dep_depth": 6,
+  "macro_breadth": 22,
+  "weights": {
+    "var_depth": 1.0,
+    "include_depth": 1.0,
+    "dep_depth": 1.0,
+    "macro_breadth": 0.25
+  },
+  "C_indirection": 13.5
+}

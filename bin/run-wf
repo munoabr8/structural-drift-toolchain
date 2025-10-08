@@ -59,7 +59,10 @@ esac
 
 # repo root
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-MAKEFILE_DEFAULT="system/make/workflows.mk"
+#MAKEFILE_DEFAULT="system/make/workflows.mk"
+MAKEFILE_DEFAULT="Makefile"
+
+
 LOGS_DIR_DEFAULT="$ROOT/artifacts/logs"
 LOG_EXEC="$ROOT/system/log_exec.sh"
 # flags (optional)
