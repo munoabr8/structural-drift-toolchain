@@ -1,0 +1,33 @@
+
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "make/indirection_complexity.v1",
+  "title": "Make Indirection Complexity",
+  "type": "object",
+  "properties": {
+    "schema": { "type": "string", "const": "make/indirection_complexity.v1" },
+    "makefile": { "type": "string" },
+    "version": { "type": "string" },
+    "var_depth": { "type": "integer", "minimum": 0 },
+    "include_depth": { "type": "integer", "minimum": 0 },
+    "dep_depth": { "type": "integer", "minimum": 0 },
+    "macro_breadth": { "type": "integer", "minimum": 0 },
+    "weights": {
+      "type": "object",
+      "properties": {
+        "var_depth": { "type": "number" },
+        "include_depth": { "type": "number" },
+        "dep_depth": { "type": "number" },
+        "macro_breadth": { "type": "number" }
+      },
+      "additionalProperties": false,
+      "required": ["var_depth", "include_depth", "dep_depth", "macro_breadth"]
+    },
+    "C_indirection": { "type": "number", "minimum": 0 }
+  },
+  "required": [
+    "schema","makefile","var_depth","include_depth","dep_depth",
+    "macro_breadth","weights","C_indirection"
+  ],
+  "additionalProperties": true
+}

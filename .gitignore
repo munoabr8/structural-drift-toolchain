@@ -43,6 +43,10 @@ config/required.env
 
 obs/
 
+.wip*.patch
+.wip*.status
+artifacts/complexity/
+
 artifacts/stderr/
 artifacts/probe.json
 artifacts/logs/
