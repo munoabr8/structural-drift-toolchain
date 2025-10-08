@@ -44,9 +44,17 @@ config/local.env
 config/required.env
 
 
+.wip.pre-complexity.status
+.wip.pre-complexity.patch
 
+artifacts/complexity/
+artifacts/runs/
 
 obs/
+
+README.generated.md
+../.wip.pre-complexity.status
+../.wip.pre-complexity.patch
 
 artifacts/stderr/
 artifacts/probe.json
