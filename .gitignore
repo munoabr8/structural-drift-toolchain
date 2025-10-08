@@ -20,6 +20,8 @@ foo.sh
 .venv/
 env/
 
+!config/env/**
+
 /__pycache__
 
 */__pycache__
