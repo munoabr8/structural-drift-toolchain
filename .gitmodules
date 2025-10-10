@@ -1,0 +1,3 @@
+[submodule "tools/evidence-kit"]
+	path = tools/evidence-kit
+	url = https://github.com/munoabr8/evidence-kit
