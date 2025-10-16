@@ -109,7 +109,11 @@ MAKEFLAGS += -I config
 -include config/vars.mk
 -include local.mk
  
- 
+ART_DIR := $(CURDIR)/artifacts/complexity
+EVIDENCE_ROOT ?= tools/evidence-kit/artifacts
+
+TS            := $(shell date -u +%Y%m%dT%H%M%SZ)
+MAKE_BIN      ?= $(MAKE)
  
 # === normal targets below ===
 .PHONY: all
@@ -124,7 +128,16 @@ build:
  
 
 .PHONY: complexity/log complexity/plot
+
+
 complexity/log:
+	@mkdir -p "$(ART_DIR)"
+	@python3 system/complexity/make_indirection_complexity.py \
+	  --make-bin "$(MAKE_BIN)" -f Makefile \
+	  | tee "$(ART_DIR)/complexity.$(TS).json" >/dev/null
+	@echo "wrote $(ART_DIR)"
+
+complexity/log2:
 	@mkdir -p $(ART_DIR)
 	@python3 system/complexity/make_indirection_complexity.py \
 	  --make-bin $(MAKE_BIN) -f Makefile \
@@ -157,6 +170,37 @@ radon/log:
 	@radon hal system/   > artifacts/complexity/radon/halstead.txt
 	@radon mi -s system/ > artifacts/complexity/radon/maintainability.txt
 	@radon cc -j system/ > artifacts/complexity/radon/cc.json
+
+
+include ./tools/evidence-kit/hunchly.mk
+
+
+ROOT ?= $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+ART_DIR ?= $(abspath $(ROOT)/artifacts)
+CAPTURE_DEST ?= $(abspath $(ART_DIR)/capture)
+PROBE ?= $(ROOT)/bin/env_probe
+
+.PHONY: env-before env-after env-diff env-guard capture capture+env-diff
+
+env-before:
+	@mkdir -p '$(ART_DIR)/env'
+	@'$(PROBE)' --print-env > '$(ART_DIR)/env/before.ndjson'
+
+ 
+env-after:
+	@'$(PROBE)' --print-env > '$(ART_DIR)/env/after.ndjson'
+
+env-diff:
+	@diff -u '$(ART_DIR)/env/before.ndjson' '$(ART_DIR)/env/after.ndjson' || true
+
+#env-guard:
+#@./bin/env_delta_guard.sh \
+	 # '$(ART_DIR)/env/before.ndjson' '$(ART_DIR)/env/after.ndjson' \
+	 # PATH,HOME,SHELL,ROOT,ART_DIR
+
+#capture+env-diff: env-before capture env-after env-diff env-guard
+#@echo '[capture+env-diff] done'
+
 
 .DEFAULT_GOAL := help
 

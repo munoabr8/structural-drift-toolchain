@@ -2,7 +2,7 @@
 # make_indirection_complexity.py
 # Compute a dimensionless indirection complexity index from one or more makefiles.
 
-import argparse, json, re, subprocess, sys
+import argparse, json, re, subprocess, sys, shutil
 from collections import defaultdict
 
 DEFAULT_WEIGHTS = {"var_depth": 1.0, "include_depth": 1.0, "dep_depth": 1.0, "macro_breadth": 0.25}
@@ -22,25 +22,28 @@ TARGET_LINE_RE = re.compile(r"""^(?![#\s])
 
 
 def run_make_dump(makefiles=None, make_bin="make"):
-    """Run make -pn, tolerate errors, fall back to -pRrq if needed."""
-    cmd = [make_bin, "-pn"]
-    for mf in (makefiles or []):
-        cmd += ["-f", mf]
+    """Run `make -pn`, fall back to `-pRrq` if needed."""
+    # 1. Resolve a real binary safely
+    mb = shutil.which((make_bin or "make").strip()) or shutil.which("make") or "make"
 
-    p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    def run_mode(flags):
+        cmd = [mb] + flags
+        for mf in (makefiles or []):
+            cmd += ["-f", mf]
+        return subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+    # 2. Try normal mode first
+    p = run_mode(["-pn"])
     if p.stdout:
         return p.stdout
 
-    fallback = [make_bin, "-pRrq"]
-    for mf in (makefiles or []):
-        fallback += ["-f", mf]
-
-    p2 = subprocess.run(fallback, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    # 3. Fallback to reduced info mode
+    p2 = run_mode(["-pRrq"])
     if p2.stdout:
         return p2.stdout
 
-    raise RuntimeError(f"{make_bin} dump failed:\n{p.stderr or p2.stderr}")
-
+    # 4. Both failed — raise
+    raise RuntimeError(f"{mb} dump failed:\n{p.stderr or p2.stderr}")
 
 def max_var_nesting(s: str) -> int:
     depth = maxd = 0
