@@ -198,8 +198,6 @@ env-diff:
 	 # '$(ART_DIR)/env/before.ndjson' '$(ART_DIR)/env/after.ndjson' \
 	 # PATH,HOME,SHELL,ROOT,ART_DIR
 
-#capture+env-diff: env-before capture env-after env-diff env-guard
-#@echo '[capture+env-diff] done'
 
 
 .DEFAULT_GOAL := help
