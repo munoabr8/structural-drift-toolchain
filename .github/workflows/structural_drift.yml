@@ -9,14 +9,25 @@ on:
 jobs:
   validate-structure:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: recursive          # pull submodules
+          fetch-depth: 0                 # optional
+          # token: ${{ secrets.SUBMODULE_TOKEN }}  # if private submodules (HTTPS)
+          # ssh-key: ${{ secrets.SUBMODULE_SSH_KEY }}  # if SSH submodules
+
+      # Only needed if you didn't set submodules: recursive
+      # - name: Init submodules
+      #   run: |
+      #     git submodule sync --recursive
+      #     git submodule update --init --recursive
 
       - name: Run structure validator (diagnostic)
+        shell: bash
         env:
-          MINIMAL_MODE: "1"                       # run without local utility deps
+          MINIMAL_MODE: "1"
           SPEC_SEARCH_PATHS: ".:config:system-test"
           LOG_OUTPUT_FILE: "structure_validator.jsonl"
           LOG_FILE: "structure_validator.log"
@@ -29,7 +40,6 @@ jobs:
           ls -la system || true
           ls -la config || true
 
-          # adjust path if your script lives elsewhere
           SCRIPT="system/structure_validator.rf.sh"
           test -f "$SCRIPT"
           chmod +x "$SCRIPT"
@@ -46,7 +56,6 @@ jobs:
           if [ -f "$LOG_FILE" ]; then sed -n '1,200p' "$LOG_FILE"; else echo "(missing)"; fi
 
           exit $rc
-          
 
       - name: Upload logs
         if: always()

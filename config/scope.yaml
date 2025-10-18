@@ -16,6 +16,7 @@ sub_roots:
   - contract
   - env
   - tests/complexity
+  - tools/evidence
   - tools/evidence-kit
   - tools/evidence-kit/bin
   - tools/evidence-kit/templates
