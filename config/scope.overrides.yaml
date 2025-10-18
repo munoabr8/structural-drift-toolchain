@@ -2,4 +2,4 @@ ignore_roots: [docs, test, util, lib, attn, bin, system, templates, roi,voi,env,
 ignore_sub_roots: []
 
 add_roots: [ci,config,tools]
-add_sub_roots: [contract,env,tools/evidence-kit/templates,tools/evidence-kit/bin]
+add_sub_roots: [contract,env,tools/evidence,tools/evidence-kit/templates,tools/evidence-kit/bin]
