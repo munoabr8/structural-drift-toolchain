@@ -2,8 +2,10 @@ roots:
   - ci
   - config
   - tests
+  - tools
 
 sub_roots:
+  - bin
   - ci/contract
   - ci/dora
   - ci/enviornment
@@ -15,3 +17,8 @@ sub_roots:
   - contract
   - env
   - tests/complexity
+  - tools/evidence-kit
+  - tools/git-hooks
+  - tools/providers
+  - tools/release
+  - tools/structure
