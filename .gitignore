@@ -54,6 +54,10 @@ artifacts/logs/
 
 ./env.probe.json
  
+
+.env.probe
+
+ 
 */artifacts/*
  
  ./artifacts/env/before.json

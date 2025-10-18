@@ -55,7 +55,6 @@ dir: ./tools/providers/terraform/
 dir: ./tools/release/
 dir: ./tools/structure/
 dir: ./util/
-file: ./.env.probe
 file: ./.github/CODEOWNERS
 file: ./.github/pull_request_template.md
 file: ./.github/workflows/acceptance.yml
