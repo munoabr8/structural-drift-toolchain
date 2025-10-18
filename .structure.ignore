@@ -17,12 +17,14 @@ artifacts/logs/
 
  
  .env.probe
+
+
  ./.env.probe
  */.env.probe
 
 *.env.probe
 ./.env.probe
-
+ 
  ./env.probe.json
  
  
