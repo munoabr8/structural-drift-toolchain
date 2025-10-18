@@ -65,7 +65,7 @@ AUTO_README_GEN=./tools/gen_readme.sh
 #  include ./system/make/observe.pipeline.mk
   include ./system/make/workflows.mk
 #  include ./system/make/env_iso.mk
-#  include ./system/make/vm.mk
+  include ./system/make/vm.mk
 #  include ./system/make/whereami.mk
 #  include ./system/make/isoANDdora.mk
 #   include ./system/make/contracts.mk

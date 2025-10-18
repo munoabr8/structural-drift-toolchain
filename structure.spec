@@ -45,6 +45,9 @@ dir: ./tests/complexity/
 dir: ./tests/complexity/mk/
 dir: ./tests/complexity/mk/includes/
 dir: ./tools/
+dir: ./tools/evidence-kit/
+dir: ./tools/evidence-kit/bin/
+dir: ./tools/evidence-kit/templates/
 dir: ./tools/git-hooks/
 dir: ./tools/providers/
 dir: ./tools/providers/localfs/
@@ -81,6 +84,7 @@ file: ./.github/workflows/shellcheck.yml
 file: ./.github/workflows/structural_drift.yml
 file: ./.github/workflows/validate-hooks.yml
 file: ./.gitignore
+file: ./.gitmodules
 file: ./.structure.ignore
 file: ./Makefile
 file: ./README.generated.md
@@ -238,6 +242,7 @@ file: ./lib/tty.sh
 file: ./lib/vmmapframe.sh
 file: ./lib/with_contract_env.sh
 file: ./lib/with_contracts.sh
+file: ./run_complexity.sh
 file: ./scope.yaml
 file: ./system/complexity/make_indirection_complexity.py
 file: ./system/complexity/schema/indirection.v1.json
@@ -301,6 +306,16 @@ file: ./tools/churn_compare.sh
 file: ./tools/detect_garbage.sh
 file: ./tools/doctor.sh
 file: ./tools/enforce_policy.sh
+file: ./tools/evidence-kit/.git
+file: ./tools/evidence-kit/README.md
+file: ./tools/evidence-kit/bin/capture_setup.sh
+file: ./tools/evidence-kit/bin/env_probe
+file: ./tools/evidence-kit/bin/gen-index.py
+file: ./tools/evidence-kit/bin/open-capture-manifest.sh
+file: ./tools/evidence-kit/bin/run-wf
+file: ./tools/evidence-kit/bin/run_and_capture.sh
+file: ./tools/evidence-kit/hunchly.mk
+file: ./tools/evidence-kit/templates/reusable-action.yml
 file: ./tools/exit_codes_enforcer.sh
 file: ./tools/fix_missing_specs.sh
 file: ./tools/gen_readme.sh

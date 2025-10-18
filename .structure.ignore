@@ -16,7 +16,15 @@ artifacts/logs/
  env.probe.json
 
  
+ .env.probe
 
+
+ ./.env.probe
+ */.env.probe
+
+*.env.probe
+./.env.probe
+ 
  ./env.probe.json
  
  
